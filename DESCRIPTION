@@ -1,0 +1,33 @@
+Package: RBERT
+Type: Package
+Title: R Implementation of BERT
+Version: 0.1.0
+Authors@R: c(
+    person("Jonathan", "Bratt", email = "jonathan.bratt@macmillan.com", 
+           role = c("aut", "cre")
+    ),
+    person("Jon", "Harmon", email = "jon.harmon@macmillan.com", 
+           role = c("aut")
+    ),
+    person(family = "Google Inc.", role = c("ctb", "cph"),
+           comment = "Original Python code; Examples and Tutorials")
+    )
+Description: Use pretrained models from Google Research's BERT in R.
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/macmillanhighered/RBERT
+BugReports: https://github.com/macmillanhighered/RBERT/issues
+Depends: R (>= 3.5.2)
+License: file LICENSE
+RoxygenNote: 6.1.1
+Imports:
+    purrr (>= 0.3.0),
+    reticulate (>= 1.12),
+    stringi (>= 1.2.4),
+    tensorflow (>= 1.10),
+    utils (>= 3.5.2)
+Suggests: 
+    testthat (>= 2.1.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
