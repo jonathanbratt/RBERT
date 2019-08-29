@@ -1,16 +1,30 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-RBERT <img src='man/figures/rbert_hex.png' align="right" height="138.5" />
-==========================================================================
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# RBERT <img src='man/figures/rbert_hex.png' align="right" height="138.5" />
 
 <!-- badges: start -->
-[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) <!-- badges don't work yet
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+<!-- badges don't work yet
 [![Travis build status](https://travis-ci.org/macmillanlearning-open/RBERT.svg?branch=master)](https://travis-ci.org/macmillanlearning-open/RBERT)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/macmillanlearning-open/RBERT?branch=master&svg=true)](https://ci.appveyor.com/project/macmillanlearning-open/RBERT)
 [![Codecov test coverage](https://codecov.io/gh/macmillanlearning-open/RBERT/branch/master/graph/badge.svg)](https://codecov.io/gh/macmillanlearning-open/RBERT?branch=master)
---> <!-- badges: end -->
+-->
+<!-- badges: end -->
 
 RBERT is an R implementation of the Python package [BERT](https://github.com/google-research/bert) developed at Google for Natural Language Processing.
+
 
 ### Basic usage
 
@@ -20,10 +34,11 @@ RBERT is best suited for exploring pre-trained BERT models, and obtaining contex
 
 See the "Introduction to RBERT" vignette included with the package for more specific examples.
 
+
 ### Disclaimer
 
 This is not an officially supported Macmillan Learning product.
 
 ### Contact information
 
-Questions or comments should be directed to Jonathan Bratt (<jonathan.bratt@macmillan.com>) and Jon Harmon (<jon.harmon@macmillan.com>).
+Questions or comments should be directed to Jonathan Bratt (jonathan.bratt@macmillan.com) and Jon Harmon (jon.harmon@macmillan.com).
