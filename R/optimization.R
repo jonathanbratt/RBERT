@@ -162,7 +162,7 @@ create_optimizer <- function(loss,
 #'   dividing by even smaller numbers.
 #' @param exclude_from_weight_decay Character; list of parameter names to
 #'   exclude from weight decay.
-#' @param name
+#' @param name Character; the name of the constructed object.
 #'
 #' @return An object of class "AdamWeightDecayOptimizer", which is a (hacky)
 #'   modification of the tf.train.Optimizer class.

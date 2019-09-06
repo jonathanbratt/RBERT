@@ -25,7 +25,7 @@ seq_length]}.}
 \item{use_one_hot_embeddings}{(optional) Logical; whether to use one-hot word
 embeddings or tf.embedding_lookup() for the word embeddings.}
 
-\item{scope:}{(optional) Character; name for variable scope. Defaults to
+\item{scope}{(optional) Character; name for variable scope. Defaults to
 "bert".}
 }
 \value{

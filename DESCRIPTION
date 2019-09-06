@@ -21,13 +21,16 @@ Depends: R (>= 3.5.2)
 License: file LICENSE
 RoxygenNote: 6.1.1
 Imports:
+    jsonlite (>= 1.6),
     purrr (>= 0.3.0),
     reticulate (>= 1.12),
     stringi (>= 1.2.4),
+    stringr (>= 1.4.0),
     tensorflow (>= 1.10),
     utils (>= 3.5.2)
 Suggests: 
     testthat (>= 2.1.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    covr
 VignetteBuilder: knitr

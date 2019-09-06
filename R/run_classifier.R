@@ -21,11 +21,11 @@
 #' classification.
 #'
 #' @param guid Unique id for the example (character or integer?).
-#' @param text_a: Character; the untokenized text of the first sequence. For
+#' @param text_a Character; the untokenized text of the first sequence. For
 #'   single sequence tasks, only this sequence must be specified.
-#' @param text_b: (Optional) Character; the untokenized text of the second
+#' @param text_b (Optional) Character; the untokenized text of the second
 #'   sequence. Only must be specified for sequence pair tasks.
-#' @param label: (Optional) Character; the label of the example. This should be
+#' @param label (Optional) Character; the label of the example. This should be
 #'   specified for train and dev examples, but not for test examples.
 #'
 #' @return An object of class \code{InputExample}.
@@ -259,10 +259,6 @@ convert_single_example <- function(ex_index,
 #'
 #' @return return value
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' }
 file_based_convert_examples_to_features <- function(examples,
                                                     label_list,
                                                     max_seq_length,
@@ -281,14 +277,10 @@ file_based_convert_examples_to_features <- function(examples,
 #'
 #' description
 #'
-#' @param x
+#' @param x This parameter will be described when this function is implemented.
 #'
 #' @return return value
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' }
 file_based_input_fn_builder <- function(x) {
   stop("file_based_input_fn_builder is not yet implemented.")
 }
@@ -365,7 +357,7 @@ truncate_seq_pair <- function(tokens_a, tokens_b, max_length) {
 #' @export
 #'
 #' @examples
-#'\dontrun{
+#' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
 #'                                    reuse = tensorflow::tf$AUTO_REUSE),
 #'      {
@@ -420,7 +412,7 @@ create_model <- function(bert_config,
   # output_layer$shape is a "TensorShape" object that is *zero*-indexed.
   # output_layer$shape$as_list() returns an integer vector, so *one*-indexed.
   # hidden_size <- output_layer$shape[[-1L]]$value # This gives the same as:
-  hidden_size <- tail(output_layer$shape$as_list(), -1)
+  hidden_size <- utils::tail(output_layer$shape$as_list(), -1)
 
   output_weights <- tensorflow::tf$get_variable(
     name = "output_weights",

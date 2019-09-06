@@ -13,7 +13,7 @@ get_shape_list(tensor, expected_rank = NULL, name = NULL)
 or list. If this is specified and the \code{tensor} has a rank not listed
 in \code{expected_rank}, an exception will be thrown.}
 
-\item{name:}{Optional name of the tensor for the error message.}
+\item{name}{Optional name of the tensor for the error message.}
 }
 \value{
 A list of dimensions of the shape of tensor. All static dimensions

@@ -1,0 +1,30 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+warnings_are_errors: false
+
+env:
+  global:
+    - TENSORFLOW_TEST_EXAMPLES="1"
+
+cache:
+  packages: true
+  directories:
+    - $HOME/.cache/pip
+
+addons:
+  apt:
+    packages:
+      python3-dev
+      python3-pip
+      python3-virtualenv
+      python3-venv
+
+before_script:
+  - python3 -m pip install --upgrade --ignore-installed --user travis virtualenv
+  - R CMD INSTALL .
+  - R -e 'tensorflow::install_tensorflow(version = "1.11.0", extra_packages="IPython")'
+  - R -e 'tensorflow::tf_config()'
+
+after_success:
+  - Rscript -e 'covr::codecov()'

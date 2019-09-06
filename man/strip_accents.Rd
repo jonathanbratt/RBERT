@@ -16,7 +16,4 @@ text with accents removed.
 (R implementation of BasicTokenizer._run_strip_accents from
 BERT: tokenization.py.)
 }
-\examples{
-strip_accents("fa\\u00E7ile")
-}
 \keyword{internal}

@@ -17,7 +17,4 @@ characters.
 (R implementation of BasicTokenizer._run_split_on_punc from
 BERT: tokenization.py.)
 }
-\examples{
-split_on_punc("stop! don't touch that.")
-}
 \keyword{internal}

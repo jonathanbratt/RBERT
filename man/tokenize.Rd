@@ -8,6 +8,8 @@ tokenize(x, ...)
 }
 \arguments{
 \item{x}{The Tokenizer object to refer to.}
+
+\item{...}{Additional arguments passed on to methods.}
 }
 \value{
 A list of tokens.

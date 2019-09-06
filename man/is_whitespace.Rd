@@ -19,8 +19,4 @@ TRUE if char is a whitespace character.
 "\\t", "\\n", and "\\r" are technically control characters but we treat them
 as whitespace since they are generally considered as such.
 }
-\examples{
-is_whitespace('a')
-is_whitespace(' ')
-}
 \keyword{internal}

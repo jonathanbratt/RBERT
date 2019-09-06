@@ -7,15 +7,11 @@
 file_based_input_fn_builder(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{This parameter will be described when this function is implemented.}
 }
 \value{
 return value
 }
 \description{
 description
-}
-\examples{
-\dontrun{
-}
 }

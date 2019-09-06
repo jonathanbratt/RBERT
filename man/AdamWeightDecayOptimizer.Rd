@@ -23,7 +23,7 @@ dividing by even smaller numbers.}
 \item{exclude_from_weight_decay}{Character; list of parameter names to
 exclude from weight decay.}
 
-\item{name}{}
+\item{name}{Character; the name of the constructed object.}
 }
 \value{
 An object of class "AdamWeightDecayOptimizer", which is a (hacky)

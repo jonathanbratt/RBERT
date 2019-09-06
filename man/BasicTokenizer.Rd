@@ -7,7 +7,8 @@
 BasicTokenizer(do_lower_case = TRUE)
 }
 \arguments{
-\item{do_lower_case}{}
+\item{do_lower_case}{Logical; the value to give to the "do_lower_case"
+argument in the BasicTokenizer object.}
 }
 \value{
 an object of class BasicTokenizer
@@ -17,10 +18,8 @@ an object of class BasicTokenizer
 but for now just trying to reproduce python functionality.)
 }
 \details{
-Has methods:
-`tokenize.BasicTokenizer()`
-`run_strip_accents.BasicTokenizer()` (internal use)
-`run_split_on_punc.BasicTokenizer()` (internal use)
+Has methods: `tokenize.BasicTokenizer()` `run_strip_accents.BasicTokenizer()`
+(internal use) `run_split_on_punc.BasicTokenizer()` (internal use)
 `tokenize_chinese_chars.BasicTokenizer()` (internal use)
 `is_chinese_char.BasicTokenizer()` (internal use)
 `clean_text.BasicTokenizer()` (internal use)

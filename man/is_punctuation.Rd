@@ -21,8 +21,4 @@ Characters such as "^", "$", and "`" are not in the Unicode
 Punctuation class but we treat them as punctuation anyway, for
 consistency.
 }
-\examples{
-is_punctuation('.')
-is_punctuation('p')
-}
 \keyword{internal}

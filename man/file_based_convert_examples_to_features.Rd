@@ -26,7 +26,3 @@ return value
 \description{
 description
 }
-\examples{
-\dontrun{
-}
-}

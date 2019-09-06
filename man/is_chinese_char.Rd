@@ -25,8 +25,4 @@ as is Japanese Hiragana and Katakana. Those alphabets are used to write
 space-separated words, so they are not treated specially and are handled
 like the alphabets of the other languages.)
 }
-\examples{
-is_chinese_char(20000)
-is_chinese_char(200)
-}
 \keyword{internal}
