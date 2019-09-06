@@ -103,46 +103,46 @@ test_that("get_activation works", {
   testthat::expect_true(is.na(get_activation("linear")))
 })
 
-test_that("get_assignment_map_from_checkpoint works", {
-  # Create a "model" with a couple variables that overlap some variable
-  # names in the BERT checkpoint. (The actual variables aren't compatible
-  # with the checkpoint.)
-  # The BERT checkpoint is large, and won't be included in repo. Eventually
-  # should save a tiny checkpoint to use for testing purposes. For now,
-  # run this test only if the checkpoint can be found.
-
-  init_checkpoint <- file.path("/shared",
-                               "BERT_checkpoints",
-                               "uncased_L-12_H-768_A-12",
-                               "bert_model.ckpt")
-
-  # Checkpoint "path" is actually only a stub filename; add ".index" to
-  # check for a specific file.
-  testthat::skip_if_not(file.exists(paste0(init_checkpoint,
-                                           ".index")),
-                        message = "Checkpoint index not found; skipping test.")
-
-  with(tensorflow::tf$variable_scope("bert",
-                                     reuse = tensorflow::tf$AUTO_REUSE ),
-       {
-         test_ten1 <- tensorflow::tf$get_variable(
-           "encoder/layer_9/output/dense/bias",
-           shape = c(1L, 2L, 3L)
-         )
-         test_ten2 <- tensorflow::tf$get_variable(
-           "encoder/layer_9/output/dense/kernel",
-           shape = c(1L, 2L, 3L)
-         )
-       }
-  )
-  tvars <- tensorflow::tf$get_collection(
-    tensorflow::tf$GraphKeys$GLOBAL_VARIABLES
-  )
-
-  amap <- get_assignment_map_from_checkpoint(tvars, init_checkpoint)
-  expected_result <- readRDS("sample_amap.rds")
-  testthat::expect_identical(amap, expected_result)
-})
+# test_that("get_assignment_map_from_checkpoint works", {
+#   # Create a "model" with a couple variables that overlap some variable
+#   # names in the BERT checkpoint. (The actual variables aren't compatible
+#   # with the checkpoint.)
+#   # The BERT checkpoint is large, and won't be included in repo. Eventually
+#   # should save a tiny checkpoint to use for testing purposes. For now,
+#   # run this test only if the checkpoint can be found.
+#
+#   init_checkpoint <- file.path("/shared",
+#                                "BERT_checkpoints",
+#                                "uncased_L-12_H-768_A-12",
+#                                "bert_model.ckpt")
+#
+#   # Checkpoint "path" is actually only a stub filename; add ".index" to
+#   # check for a specific file.
+#   testthat::skip_if_not(file.exists(paste0(init_checkpoint,
+#                                            ".index")),
+#                         message = "Checkpoint index not found; skipping test.")
+#
+#   with(tensorflow::tf$variable_scope("bert",
+#                                      reuse = tensorflow::tf$AUTO_REUSE ),
+#        {
+#          test_ten1 <- tensorflow::tf$get_variable(
+#            "encoder/layer_9/output/dense/bias",
+#            shape = c(1L, 2L, 3L)
+#          )
+#          test_ten2 <- tensorflow::tf$get_variable(
+#            "encoder/layer_9/output/dense/kernel",
+#            shape = c(1L, 2L, 3L)
+#          )
+#        }
+#   )
+#   tvars <- tensorflow::tf$get_collection(
+#     tensorflow::tf$GraphKeys$GLOBAL_VARIABLES
+#   )
+#
+#   amap <- get_assignment_map_from_checkpoint(tvars, init_checkpoint)
+#   expected_result <- readRDS("sample_amap.rds")
+#   testthat::expect_identical(amap, expected_result)
+# })
 
 
 test_that("dropout works", {
