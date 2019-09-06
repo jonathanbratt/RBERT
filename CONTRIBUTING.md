@@ -14,7 +14,7 @@ We use the github [fork and pull review process](https://help.github.com/article
 
 Add an upstream remote so you can easily keep up to date with the main repository:
 
-    $ git remote add upstream https://github.com/macmillanlearning-open/RBERT.git
+    $ git remote add upstream https://github.com/jonathanbratt/RBERT.git
 
 To update your local repo from the main:
 

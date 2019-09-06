@@ -4,11 +4,7 @@ RBERT <img src='man/figures/rbert_hex.png' align="right" height="138.5" />
 ==========================================================================
 
 <!-- badges: start -->
-[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) <!-- badges don't work yet
-[![Travis build status](https://travis-ci.org/macmillanlearning-open/RBERT.svg?branch=master)](https://travis-ci.org/macmillanlearning-open/RBERT)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/macmillanlearning-open/RBERT?branch=master&svg=true)](https://ci.appveyor.com/project/macmillanlearning-open/RBERT)
-[![Codecov test coverage](https://codecov.io/gh/macmillanlearning-open/RBERT/branch/master/graph/badge.svg)](https://codecov.io/gh/macmillanlearning-open/RBERT?branch=master)
---> <!-- badges: end -->
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) [![Travis build status](https://travis-ci.org/jonathanbratt/RBERT.svg?branch=master)](https://travis-ci.org/jonathanbratt/RBERT) [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/jonathanbratt/RBERT?branch=master&svg=true)](https://ci.appveyor.com/project/jonathanbratt/RBERT) [![Codecov test coverage](https://codecov.io/gh/jonathanbratt/RBERT/branch/master/graph/badge.svg)](https://codecov.io/gh/jonathanbratt/RBERT?branch=master) <!-- badges: end -->
 
 RBERT is an R implementation of the Python package [BERT](https://github.com/google-research/bert) developed at Google for Natural Language Processing.
 
