@@ -21,11 +21,11 @@
 #' classification.
 #'
 #' @param guid Unique id for the example (character or integer?).
-#' @param text_a: Character; the untokenized text of the first sequence. For
+#' @param text_a Character; the untokenized text of the first sequence. For
 #'   single sequence tasks, only this sequence must be specified.
-#' @param text_b: (Optional) Character; the untokenized text of the second
+#' @param text_b (Optional) Character; the untokenized text of the second
 #'   sequence. Only must be specified for sequence pair tasks.
-#' @param label: (Optional) Character; the label of the example. This should be
+#' @param label (Optional) Character; the label of the example. This should be
 #'   specified for train and dev examples, but not for test examples.
 #'
 #' @return An object of class \code{InputExample}.

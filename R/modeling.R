@@ -1327,7 +1327,7 @@ transformer_model <- function(input_tensor,
 #'   or list. If this is specified and the \code{tensor} has a rank not listed
 #'   in \code{expected_rank}, an exception will be thrown.
 #'
-#' @param name: Optional name of the tensor for the error message.
+#' @param name Optional name of the tensor for the error message.
 #'
 #' @return A list of dimensions of the shape of tensor. All static dimensions
 #'   will be returned as native integers, and dynamic dimensions will be
@@ -1481,7 +1481,7 @@ reshape_from_matrix <- function(output_tensor, orig_shape_list) {
 #'
 #' @param tensor A tf.Tensor to check the rank of.
 #' @param expected_rank  Integer vector or list of integers, expected rank.
-#' @param name: Optional name of the tensor for the error message.
+#' @param name Optional name of the tensor for the error message.
 #'
 #' @return TRUE if the Tensor is of the expected rank (error otherwise).
 #' @export

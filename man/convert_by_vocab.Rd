@@ -18,6 +18,12 @@ be in fact an "inverse vocabulary", where the names are the indices and
 the values are the tokens.)}
 
 \item{items}{Vector of the keys (names in the vocab vector) to "convert".}
+
+\item{tokens}{Equivalent to items.}
+
+\item{inv_vocab}{Equivalent to vocab.}
+
+\item{ids}{Equivalent to items.}
 }
 \value{
 Vector of the values in `vocab` corresponding to `items`.

@@ -91,6 +91,8 @@ convert_by_vocab <- function(vocab, items) {
 
 #' @describeIn convert_by_vocab Wrapper function for specifically converting
 #' tokens to ids.
+#'
+#' @param tokens Equivalent to items.
 #' @export
 convert_tokens_to_ids <- function(vocab, tokens) {
   return(convert_by_vocab(vocab, tokens))
@@ -98,6 +100,10 @@ convert_tokens_to_ids <- function(vocab, tokens) {
 
 #' @describeIn convert_by_vocab Wrapper function for specifically converting
 #' ids to tokens.
+#'
+#' @param inv_vocab Equivalent to vocab.
+#' @param ids Equivalent to items.
+#'
 #' @export
 convert_ids_to_tokens <- function(inv_vocab, ids) {
   return(convert_by_vocab(inv_vocab, ids))
@@ -161,6 +167,7 @@ FullTokenizer <- function(vocab_file, do_lower_case = TRUE) {
 #' Generic method for tokenize.
 #'
 #' @param x The Tokenizer object to refer to.
+#' @param ... Additional arguments passed on to methods.
 #'
 #' @return A list of tokens.
 #' @export

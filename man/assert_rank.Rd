@@ -11,7 +11,7 @@ assert_rank(tensor, expected_rank, name = NULL)
 
 \item{expected_rank}{Integer vector or list of integers, expected rank.}
 
-\item{name:}{Optional name of the tensor for the error message.}
+\item{name}{Optional name of the tensor for the error message.}
 }
 \value{
 TRUE if the Tensor is of the expected rank (error otherwise).

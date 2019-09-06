@@ -1,5 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^CONTRIBUTING\.md$
+^LICENSE\.md$
+^Contributor_Code_of_Conduct\.md$
 ^README\.Rmd$
 ^\.travis\.yml$
 ^appveyor\.yml$
