@@ -19,8 +19,4 @@ TRUE if char is a control character.
 "\\t", "\\n", and "\\r" are technically control characters but we treat them
 as whitespace since they are generally considered as such.
 }
-\examples{
-is_control("\\t")
-is_control('c')
-}
 \keyword{internal}

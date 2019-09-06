@@ -17,9 +17,4 @@ Text with spaces around CJK characters.
 BERT: tokenization.py.) This may result in doubled-up spaces,
 but that's the behavior of the python code...
 }
-\examples{
-tokenize_chinese_chars("\\u535A\\u63A8") # I assume this isn't obscene.
-tokenize_chinese_chars("word\\u535Aword")
-tokenize_chinese_chars("word\\u005fword")
-}
 \keyword{internal}

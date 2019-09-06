@@ -16,7 +16,4 @@ Cleaned up text.
 (R implementation of BasicTokenizer._clean_text from
 BERT: tokenization.py.)
 }
-\examples{
-clean_text("this is\\nthe 'unknown' char: \\ufffd")
-}
 \keyword{internal}

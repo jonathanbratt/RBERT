@@ -21,13 +21,4 @@ each character of the input string, and concatenating the results.
 \description{
 Utility function for something done a lot in this package.
 }
-\examples{
-apply_to_chars("some words",
-               function(char) {
-                 if (char \%in\% c("a", "e", "o")) {
-                   return(paste0(char, char))
-                 }
-                 return(char)
-               })
-}
 \keyword{internal}

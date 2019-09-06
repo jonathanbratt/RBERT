@@ -210,15 +210,14 @@ tokenize.FullTokenizer <- function(f_tokenizer, text) {
 #' (I'm not sure that this object-based approach is best for R implementation,
 #' but for now just trying to reproduce python functionality.)
 #'
-#' Has methods:
-#' `tokenize.BasicTokenizer()`
-#' `run_strip_accents.BasicTokenizer()` (internal use)
-#' `run_split_on_punc.BasicTokenizer()` (internal use)
+#' Has methods: `tokenize.BasicTokenizer()` `run_strip_accents.BasicTokenizer()`
+#' (internal use) `run_split_on_punc.BasicTokenizer()` (internal use)
 #' `tokenize_chinese_chars.BasicTokenizer()` (internal use)
 #' `is_chinese_char.BasicTokenizer()` (internal use)
 #' `clean_text.BasicTokenizer()` (internal use)
 #'
-#' @param do_lower_case
+#' @param do_lower_case Logical; the value to give to the "do_lower_case"
+#'   argument in the BasicTokenizer object.
 #'
 #' @return an object of class BasicTokenizer
 #' @export
@@ -246,8 +245,6 @@ BasicTokenizer <- function(do_lower_case = TRUE) {
 #'
 #' @return text with accents removed.
 #'
-#' @examples
-#' strip_accents("fa\u00E7ile")
 #' @keywords internal
 strip_accents <- function(text) {
   # perhaps confirm utf-8 first?
@@ -278,8 +275,6 @@ strip_accents <- function(text) {
 #' @return The input text as a character vector, split on punctuation
 #' characters.
 #'
-#' @examples
-#' split_on_punc("stop! don't touch that.")
 #' @keywords internal
 split_on_punc <- function(text) {
   # this feels icky, but try to break it :-P
@@ -314,10 +309,6 @@ split_on_punc <- function(text) {
 #'
 #' @return Text with spaces around CJK characters.
 #'
-#' @examples
-#' tokenize_chinese_chars("\u535A\u63A8") # I assume this isn't obscene.
-#' tokenize_chinese_chars("word\u535Aword")
-#' tokenize_chinese_chars("word\u005fword")
 #' @keywords internal
 tokenize_chinese_chars <- function(text) {
   return(
@@ -353,9 +344,6 @@ tokenize_chinese_chars <- function(text) {
 #'
 #' @return Logical TRUE if cp is codepoint of a CJK character.
 #'
-#' @examples
-#' is_chinese_char(20000)
-#' is_chinese_char(200)
 #' @keywords internal
 is_chinese_char <- function(cp) {
   if ((cp >= 0x4E00 & cp <= 0x9FFF) |
@@ -384,8 +372,6 @@ is_chinese_char <- function(cp) {
 #'
 #' @return Cleaned up text.
 #'
-#' @examples
-#' clean_text("this is\nthe 'unknown' char: \ufffd")
 #' @keywords internal
 clean_text <- function(text) {
   return(
@@ -607,9 +593,6 @@ tokenize_word <- function(word, vocab, unk_token = "[UNK]", max_chars = 100) {
 #'
 #' @return TRUE if char is a whitespace character.
 #'
-#' @examples
-#' is_whitespace('a')
-#' is_whitespace(' ')
 #' @keywords internal
 is_whitespace <- function(char) {
   # This is a way to check the unicode general category:
@@ -634,9 +617,6 @@ is_whitespace <- function(char) {
 #'
 #' @return TRUE if char is a control character.
 #'
-#' @examples
-#' is_control("\t")
-#' is_control('c')
 #' @keywords internal
 is_control <- function(char) {
   if (char %in% c(" ", "\t", "\n", "\r")) {
@@ -660,9 +640,6 @@ is_control <- function(char) {
 #'
 #' @return TRUE if char is a punctuation character.
 #'
-#' @examples
-#' is_punctuation('.')
-#' is_punctuation('p')
 #' @keywords internal
 is_punctuation <- function(char) {
   cp <- utf8ToInt(char)
@@ -689,14 +666,6 @@ is_punctuation <- function(char) {
 #' @return The character scalar obtained by applying the given function to
 #' each character of the input string, and concatenating the results.
 #'
-#' @examples
-#' apply_to_chars("some words",
-#'                function(char) {
-#'                  if (char %in% c("a", "e", "o")) {
-#'                    return(paste0(char, char))
-#'                  }
-#'                  return(char)
-#'                })
 #' @keywords internal
 apply_to_chars <- function(text, .f, ...) {
   paste(
