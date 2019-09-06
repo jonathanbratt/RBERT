@@ -15,8 +15,8 @@ Authors@R: c(
 Description: Use pretrained models from Google Research's BERT in R.
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/macmillanhighered/RBERT
-BugReports: https://github.com/macmillanhighered/RBERT/issues
+URL: https://github.com/jonathanbratt/RBERT
+BugReports: https://github.com/jonathanbratt/RBERT/issues
 Depends: R (>= 3.5.2)
 License: file LICENSE
 RoxygenNote: 6.1.1
