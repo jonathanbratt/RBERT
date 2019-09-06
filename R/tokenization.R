@@ -166,11 +166,12 @@ FullTokenizer <- function(vocab_file, do_lower_case = TRUE) {
 
 #' Tokenizers for various objects.
 #'
-#' This tokenizer performs some basic cleaning, then splits up text
-#' on whitespace and punctuation.
+#' This tokenizer performs some basic cleaning, then splits up text on
+#' whitespace and punctuation.
 #'
 #' @param tokenizer The Tokenizer object to refer to.
-#' @param text The text to tokenize.
+#' @param text The text to tokenize. For tokenize.WordpieceTokenizer, the text
+#'   should have already been passed through BasicTokenizer.
 #'
 #' @return A list of tokens.
 #' @export
@@ -470,7 +471,11 @@ WordpieceTokenizer <- function(vocab,
 
 
 #' @describeIn tokenize Tokenizer method for objects of WordpieceTokenizer
-#'   class.
+#'   class. This uses a greedy longest-match-first algorithm to perform
+#'   tokenization using the given vocabulary. For example: input = "unaffable"
+#'   output = list("un", "##aff", "##able") ... although, ironically, the BERT
+#'   vocabulary actually gives output = list("una", "##ffa", "##ble") for this
+#'   example, even though they use it as an example in their code.
 #' @export
 #'
 #' @examples

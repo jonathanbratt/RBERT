@@ -18,14 +18,15 @@ tokenize(tokenizer, text)
 \arguments{
 \item{tokenizer}{The Tokenizer object to refer to.}
 
-\item{text}{The text to tokenize.}
+\item{text}{The text to tokenize. For tokenize.WordpieceTokenizer, the text
+should have already been passed through BasicTokenizer.}
 }
 \value{
 A list of tokens.
 }
 \description{
-This tokenizer performs some basic cleaning, then splits up text
-on whitespace and punctuation.
+This tokenizer performs some basic cleaning, then splits up text on
+whitespace and punctuation.
 }
 \section{Methods (by class)}{
 \itemize{
@@ -34,7 +35,11 @@ on whitespace and punctuation.
 \item \code{BasicTokenizer}: Tokenizer method for objects of BasicTokenizer class.
 
 \item \code{WordpieceTokenizer}: Tokenizer method for objects of WordpieceTokenizer
-class.
+class. This uses a greedy longest-match-first algorithm to perform
+tokenization using the given vocabulary. For example: input = "unaffable"
+output = list("un", "##aff", "##able") ... although, ironically, the BERT
+vocabulary actually gives output = list("una", "##ffa", "##ble") for this
+example, even though they use it as an example in their code.
 }}
 
 \examples{
