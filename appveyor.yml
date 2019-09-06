@@ -17,13 +17,16 @@ environment:
   NOT_CRAN: true
   # env vars that may need to be set, at least temporarily, from time to time
   # see https://github.com/krlmlr/r-appveyor#readme for details
-  # USE_RTOOLS: true
+  USE_RTOOLS: true
+  TF_VERSION: 1.11.0
   # R_REMOTES_STANDALONE: true
 
 # Adapt as necessary starting from here
 
 build_script:
   - travis-tool.sh install_deps
+  - R CMD INSTALL .
+  - R -e "tensorflow::install_tensorflow(version = Sys.getenv('TF_VERSION'), extra_packages = 'IPython')"
 
 test_script:
   - travis-tool.sh run_tests
