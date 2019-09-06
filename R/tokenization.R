@@ -164,45 +164,40 @@ FullTokenizer <- function(vocab_file, do_lower_case = TRUE) {
 # generic tokenize --------------------------------------------------------
 
 
-#' Generic method for tokenize.
+#' Tokenizers for various objects.
 #'
-#' @param x The Tokenizer object to refer to.
-#' @param ... Additional arguments passed on to methods.
+#' This tokenizer performs some basic cleaning, then splits up text
+#' on whitespace and punctuation.
+#'
+#' @param tokenizer The Tokenizer object to refer to.
+#' @param text The text to tokenize.
 #'
 #' @return A list of tokens.
 #' @export
-tokenize <- function (x, ...) {
-  UseMethod("tokenize", x)
+tokenize <- function (tokenizer, text) {
+  UseMethod("tokenize", tokenizer)
 }
 
 
 # tokenize.FullTokenizer --------------------------------------------------
 
 
-#' Tokenizer method for objects of FullTokenizer class.
-#'
-#' This tokenizer performs some basic cleaning, then splits up text
-#' on whitespace and punctuation.
-#'
-#' @param f_tokenizer The FullTokenizer object to apply.
-#' @param text The text to tokenize.
-#'
-#' @return A list of wordpiece tokens.
+#' @describeIn tokenize Tokenizer method for objects of FullTokenizer class.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' f_tokenizer <- FullTokenizer("vocab.txt", TRUE)
-#' tokenize(f_tokenizer, text = "a bunch of words")
+#' tokenizer <- FullTokenizer("vocab.txt", TRUE)
+#' tokenize(tokenizer, text = "a bunch of words")
 #' }
-tokenize.FullTokenizer <- function(f_tokenizer, text) {
-  b_tokens <- tokenize(f_tokenizer$basic_tokenizer, text) # this is really ugly.
+tokenize.FullTokenizer <- function(tokenizer, text) {
+  b_tokens <- tokenize(tokenizer$basic_tokenizer, text) # this is really ugly.
 
   # We can't use purrr::map_chr here, since the output of .f is itself a vector
   # of variable length (map_chr died trying...). Use map + unlist.
   split_tokens <- purrr::map(b_tokens,
                              function(bt) {
-                               tokenize(f_tokenizer$wordpiece_tokenizer, bt)
+                               tokenize(tokenizer$wordpiece_tokenizer, bt)
                              })
   return(unlist(split_tokens))
 }
@@ -398,25 +393,15 @@ clean_text <- function(text) {
 
 # tokenize.BasicTokenizer -------------------------------------------------
 
-
-
-#' Tokenizer method for objects of BasicTokenizer class.
-#'
-#' This tokenizer performs some basic cleaning, then splits up text
-#' on whitespace and punctuation.
-#'
-#' @param b_tokenizer the BasicTokenizer object to apply.
-#' @param text The text to tokenize.
-#'
-#' @return A character vector of wordpiece tokens.
+#' @describeIn tokenize Tokenizer method for objects of BasicTokenizer class.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' b_tokenizer <- BasicTokenizer(TRUE)
-#' tokenize(b_tokenizer, text = "a bunch of words")
+#' tokenizer <- BasicTokenizer(TRUE)
+#' tokenize(tokenizer, text = "a bunch of words")
 #' }
-tokenize.BasicTokenizer <- function(b_tokenizer, text) {
+tokenize.BasicTokenizer <- function(tokenizer, text) {
   text <- convert_to_unicode(text)
   text <- clean_text(text)
 
@@ -439,7 +424,7 @@ tokenize.BasicTokenizer <- function(b_tokenizer, text) {
                                 orig_token <- strip_accents(orig_token)
                                 return(split_on_punc(orig_token))
                               },
-                              do_lower_case = b_tokenizer$do_lower_case
+                              do_lower_case = tokenizer$do_lower_case
                               )
   return(unlist(output_tokens))
 
@@ -484,40 +469,26 @@ WordpieceTokenizer <- function(vocab,
 
 
 
-#' Tokenizer method for objects of WordpieceTokenizer class.
-#'
-#' Tokenizes a piece of text into its word pieces.
-#' This uses a greedy longest-match-first algorithm to perform tokenization
-#' using the given vocabulary.
-#' For example:
-#'  input = "unaffable"
-#'  output = list("un", "##aff", "##able")
-#'  ... although, ironically, the BERT vocabulary gives
-#'  output = list("una", "##ffa", "##ble")
-#'  for this example.
-#' @param wp_tokenizer the WordpieceTokenizer object to apply.
-#' @param text The text to tokenize. Should have already been passed through
-#' BasicTokenizer.
-#'
-#' @return A list of wordpiece tokens.
+#' @describeIn tokenize Tokenizer method for objects of WordpieceTokenizer
+#'   class.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' vocab <- load_vocab(vocab_file = "vocab.txt")
-#' wp_tokenizer <- WordpieceTokenizer(vocab)
-#' tokenize(wp_tokenizer, text = "a bunch of words")
+#' tokenizer <- WordpieceTokenizer(vocab)
+#' tokenize(tokenizer, text = "a bunch of words")
 #' }
-tokenize.WordpieceTokenizer <- function(wp_tokenizer, text) {
+tokenize.WordpieceTokenizer <- function(tokenizer, text) {
   text <- convert_to_unicode(text)
   # departing from structure of python code for efficiency
   # We can't use purrr::map_chr here, since the output of .f is itself a vector
   # of variable length (map_chr died trying...). Use map + unlist.
   output_tokens <- purrr::map(whitespace_tokenize(text),
                               .f = tokenize_word,
-                              vocab = wp_tokenizer$vocab,
-                              unk_token = wp_tokenizer$unk_token,
-                              max_chars = wp_tokenizer$max_input_chars_per_word)
+                              vocab = tokenizer$vocab,
+                              unk_token = tokenizer$unk_token,
+                              max_chars = tokenizer$max_input_chars_per_word)
   return(unlist(output_tokens))
 }
 

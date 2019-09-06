@@ -2,18 +2,53 @@
 % Please edit documentation in R/tokenization.R
 \name{tokenize}
 \alias{tokenize}
-\title{Generic method for tokenize.}
+\alias{tokenize.FullTokenizer}
+\alias{tokenize.BasicTokenizer}
+\alias{tokenize.WordpieceTokenizer}
+\title{Tokenizers for various objects.}
 \usage{
-tokenize(x, ...)
+tokenize(tokenizer, text)
+
+\method{tokenize}{FullTokenizer}(tokenizer, text)
+
+\method{tokenize}{BasicTokenizer}(tokenizer, text)
+
+\method{tokenize}{WordpieceTokenizer}(tokenizer, text)
 }
 \arguments{
-\item{x}{The Tokenizer object to refer to.}
+\item{tokenizer}{The Tokenizer object to refer to.}
 
-\item{...}{Additional arguments passed on to methods.}
+\item{text}{The text to tokenize.}
 }
 \value{
 A list of tokens.
 }
 \description{
-Generic method for tokenize.
+This tokenizer performs some basic cleaning, then splits up text
+on whitespace and punctuation.
+}
+\section{Methods (by class)}{
+\itemize{
+\item \code{FullTokenizer}: Tokenizer method for objects of FullTokenizer class.
+
+\item \code{BasicTokenizer}: Tokenizer method for objects of BasicTokenizer class.
+
+\item \code{WordpieceTokenizer}: Tokenizer method for objects of WordpieceTokenizer
+class.
+}}
+
+\examples{
+\dontrun{
+tokenizer <- FullTokenizer("vocab.txt", TRUE)
+tokenize(tokenizer, text = "a bunch of words")
+}
+\dontrun{
+tokenizer <- BasicTokenizer(TRUE)
+tokenize(tokenizer, text = "a bunch of words")
+}
+\dontrun{
+vocab <- load_vocab(vocab_file = "vocab.txt")
+tokenizer <- WordpieceTokenizer(vocab)
+tokenize(tokenizer, text = "a bunch of words")
+}
 }
