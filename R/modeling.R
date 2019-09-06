@@ -137,7 +137,7 @@ bert_config_from_json_file <- function(json_file) {
 #'   seq_length]}.
 #' @param use_one_hot_embeddings (optional) Logical; whether to use one-hot word
 #'   embeddings or tf.embedding_lookup() for the word embeddings.
-#' @param scope: (optional) Character; name for variable scope. Defaults to
+#' @param scope (optional) Character; name for variable scope. Defaults to
 #'   "bert".
 #'
 #' @return An object of class BertModel.
