@@ -250,6 +250,10 @@ model_fn_builder_EF <- function(bert_config,
 
     predictions <- list()
     predictions[["unique_id"]] <-  unique_ids
+
+    # for now, always include raw embeddings as the zeroth layer "output"
+    predictions[["layer_output_0"]] <- model$embedding_output
+
     for (i in seq_along(layer_indexes)) {
       layer_index <- layer_indexes[[i]]
       # Accomodate both positive and negative indices.
@@ -558,6 +562,11 @@ extract_features <- function(examples, # list of InputExamples_EF
     for (i in seq_len(num_tokens)) {
       token <- feature$tokens[[i]]
       all_layers <- list()
+      # let's always include "zeroth" layer (fixed embeddings) for now
+      # maybe later make this controlled by "zero" index?
+      zeroth_layer <- list("index" = 0,
+                           "values" = result[["layer_output_0"]][i, ])
+      all_layers[["layer_output_0"]] <- zeroth_layer
       for (j in seq_along(layer_indexes)) {
         layer_index <- layer_indexes[[j]]
         # Accomodate both positive and negative indices.
