@@ -461,8 +461,10 @@ convert_examples_to_features_EF <- function(examples,
 #'   to.
 #' @param max_seq_length Integer; the maximum number of tokens that will be
 #'   considered together.
-#' @param layer_indexes Integer list; indexes (positive, or negative counting
+#' @param layer_indexes Integer vector; indexes (positive, or negative counting
 #'   back from the end) indicating which layers to extract as "output features".
+#'   The "zeroth" layer embeddings (input embedding vectors to first layer) are
+#'   always included.
 #' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
 #'   or tf.embedding_lookup() for the word embeddings.
 #' @param batch_size Integer; how many examples to process per batch.
@@ -494,9 +496,10 @@ extract_features <- function(examples, # list of InputExamples_EF
                              init_checkpoint,
                              output_file = NULL,
                              max_seq_length = 128L,
-                             layer_indexes = as.list(-4:-1),
+                             layer_indexes = -4:-1,
                              use_one_hot_embeddings = FALSE,
                              batch_size = 2L) {
+  layer_indexes <- as.list(layer_indexes)
   bert_config <-  bert_config_from_json_file(bert_config_file)
   n_layers <- bert_config$num_hidden_layers
   tokenizer <- FullTokenizer(vocab_file = vocab_file,
@@ -562,8 +565,7 @@ extract_features <- function(examples, # list of InputExamples_EF
     for (i in seq_len(num_tokens)) {
       token <- feature$tokens[[i]]
       all_layers <- list()
-      # let's always include "zeroth" layer (fixed embeddings) for now
-      # maybe later make this controlled by "zero" index?
+      # Always include "zeroth" layer (fixed embeddings) for now
       zeroth_layer <- list("index" = 0,
                            "values" = result[["layer_output_0"]][i, ])
       all_layers[["layer_output_0"]] <- zeroth_layer
