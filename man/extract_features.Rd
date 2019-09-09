@@ -5,9 +5,8 @@
 \title{Extract output features from BERT}
 \usage{
 extract_features(examples, vocab_file, bert_config_file, init_checkpoint,
-  output_file = NULL, max_seq_length = 128L,
-  layer_indexes = as.list(-4:-1), use_one_hot_embeddings = FALSE,
-  batch_size = 2L)
+  output_file = NULL, max_seq_length = 128L, layer_indexes = -4:-1,
+  use_one_hot_embeddings = FALSE, batch_size = 2L)
 }
 \arguments{
 \item{examples}{List of \code{InputExample_EF}s to convert.}
@@ -28,8 +27,10 @@ to.}
 \item{max_seq_length}{Integer; the maximum number of tokens that will be
 considered together.}
 
-\item{layer_indexes}{Integer list; indexes (positive, or negative counting
-back from the end) indicating which layers to extract as "output features".}
+\item{layer_indexes}{Integer vector; indexes (positive, or negative counting
+back from the end) indicating which layers to extract as "output features".
+The "zeroth" layer embeddings (input embedding vectors to first layer) are
+always included.}
 
 \item{use_one_hot_embeddings}{Logical; whether to use one-hot word embeddings
 or tf.embedding_lookup() for the word embeddings.}
