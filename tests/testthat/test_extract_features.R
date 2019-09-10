@@ -78,6 +78,7 @@ test_that("features and examples routines work", {
   result_iterator <- estimator$predict(reticulate::py_func(input_fn),
                                        yield_single_examples = TRUE)
   testthat::expect_is(result_iterator, "python.builtin.iterator")
+  print(names(result_iterator))
 
   result <- result_iterator$`next`()
   testthat::expect_equal(length(result), 26L)
