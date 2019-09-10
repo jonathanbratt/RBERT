@@ -82,7 +82,7 @@ test_that("features and examples routines work", {
   if ("next" %in% names(result_iterator)) {
     result <- result_iterator$`next`()
   } else {
-    result <- result_iterator$gi_yieldfrom()
+    result <- result_iterator$`__next__`()
   }
 
   # result <- result_iterator$`next`()
