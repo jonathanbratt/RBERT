@@ -5,5 +5,6 @@
 paste(reticulate::conda_list()$name, collapse = " | ")
 
 test_that("TF is working.", {
+  expect_true(!is.null(reticulate::conda_list()))
   expect_true(!is.null(tensorflow::tf_version()))
 })
