@@ -68,8 +68,7 @@ test_that("features and examples routines work", {
   testthat::expect_is(estimator,
                       "tensorflow.python.estimator.estimator.Estimator")
 
-  tokenizer <- FullTokenizer(vocab_file = vocab_file,
-                             do_lower_case = TRUE)
+
   features <-  convert_examples_to_features_EF(examples = examples,
                                                seq_length = 128L,
                                                tokenizer = tokenizer)
@@ -80,6 +79,8 @@ test_that("features and examples routines work", {
                                        yield_single_examples = TRUE)
   testthat::expect_is(result_iterator, "python.builtin.iterator")
 
+  result <- result_iterator$`next`()
+  testthat::expect_equal(length(result), 26L)
 
   feats <- extract_features(examples = examples,
                             vocab_file = vocab_file,
