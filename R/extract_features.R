@@ -546,7 +546,11 @@ extract_features <- function(examples, # list of InputExamples_EF
   big_attention <- list()
   while (TRUE) {
     result <- tryCatch({
-      result_iterator$`next`()
+      if ("next" %in% names(result_iterator)) {
+        result_iterator$`next`()  # nocov
+      } else {
+        result_iterator$`__next__`() # nocov
+      }
     }, error = function(e) {
       FALSE
       # If we get error, `result` will be assigned this FALSE.

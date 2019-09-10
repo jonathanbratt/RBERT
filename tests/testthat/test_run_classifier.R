@@ -70,9 +70,7 @@ test_that("create_model works", {
 
 test_that("model_fn_builder works", {
   # Run this test only if the checkpoint can be found.
-  init_checkpoint <- file.path("/shared",
-                               "BERT_checkpoints",
-                               "uncased_L-12_H-768_A-12",
+  init_checkpoint <- file.path(cpdir,  # from setup.R
                                "bert_model.ckpt")
 
   # Checkpoint "path" is actually only a stub filename; add ".index" to

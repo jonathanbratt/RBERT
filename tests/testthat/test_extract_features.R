@@ -28,10 +28,8 @@ test_that("features and examples routines work", {
   testthat::expect_identical(feat_in, expected_feat_in)
 
 
-  # Run this test only if checkpoint is found.
-  BERT_PRETRAINED_DIR <- file.path("/shared",
-                                   "BERT_checkpoints",
-                                   "uncased_L-12_H-768_A-12")
+  # Run these test only if checkpoint is found.
+  BERT_PRETRAINED_DIR <- cpdir # from setup.R
 
   vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
   init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
@@ -48,10 +46,48 @@ test_that("features and examples routines work", {
                             bert_config_file = bert_config_file,
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L)
+  testthat::expect_equal(length(feats$layer_outputs$example_1$features), 17L)
+
+  # There may be some minor numerical differences across different systems.
+  # Need to do a comparison along the lines of dplyr::near.
+  test_feats_flat <- suppressWarnings(as.numeric(unlist(feats$layer_outputs)))
+
   expected_feats <- readRDS("sample_feats.rds")
-  testthat::expect_identical(feats$layer_outputs, expected_feats)
-  expected_attention_probs <- readRDS("attention_probs.rds")
-  testthat::expect_identical(feats$attention_probs, expected_attention_probs)
+  expected_feats_flat <- suppressWarnings(as.numeric(unlist(expected_feats)))
+
+  tol <- 10^(-5)
+
+  # check both the sum and mean relative difference
+  rel_diff_sum <- abs(sum(test_feats_flat, na.rm = TRUE) -
+                        sum(expected_feats_flat, na.rm = TRUE)) /
+    (tol + abs(sum(test_feats_flat, na.rm = TRUE) +
+                 sum(expected_feats_flat, na.rm = TRUE)))
+  testthat::expect_lte(rel_diff_sum, tol)
+
+  mean_relative_difference <- mean(abs(test_feats_flat - expected_feats_flat) /
+                                     (tol + abs(test_feats_flat +
+                                                  expected_feats_flat)),
+                                   na.rm = TRUE)
+
+  testthat::expect_lte(mean_relative_difference, tol)
+
+  test_attn_flat <- suppressWarnings(as.numeric(unlist(feats$attention_probs)))
+
+  expected_attn <- readRDS("attention_probs.rds")
+  expected_attn_flat <- suppressWarnings(as.numeric(unlist(expected_attn)))
+
+  rel_diff_sum <- abs(sum(test_attn_flat, na.rm = TRUE) -
+                        sum(expected_attn_flat, na.rm = TRUE)) /
+    (tol + abs(sum(test_attn_flat, na.rm = TRUE) +
+                 sum(expected_attn_flat, na.rm = TRUE)))
+  testthat::expect_lte(rel_diff_sum, tol)
+
+  mean_relative_difference <- mean(abs(test_attn_flat - expected_attn_flat) /
+                                     (tol + abs(test_attn_flat +
+                                                  expected_attn_flat)),
+                                   na.rm = TRUE)
+
+  testthat::expect_lte(mean_relative_difference, tol)
 })
 
 
