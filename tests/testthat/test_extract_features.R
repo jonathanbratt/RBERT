@@ -55,7 +55,7 @@ test_that("features and examples routines work", {
   expected_feats <- readRDS("sample_feats.rds")
   expected_feats_flat <- suppressWarnings(as.numeric(unlist(expected_feats)))
 
-  tol <- 10^(-6)
+  tol <- 10^(-5)
 
   # check both the sum and mean relative difference
   rel_diff_sum <- abs(sum(test_feats_flat, na.rm = TRUE) -
