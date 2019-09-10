@@ -68,7 +68,17 @@ test_that("features and examples routines work", {
   testthat::expect_is(estimator,
                       "tensorflow.python.estimator.estimator.Estimator")
 
+  tokenizer <- FullTokenizer(vocab_file = vocab_file,
+                             do_lower_case = TRUE)
+  features <-  convert_examples_to_features_EF(examples = examples,
+                                               seq_length = 128L,
+                                               tokenizer = tokenizer)
+  input_fn <- input_fn_builder_EF(features = features,
+                                  seq_length = 128L)
 
+  result_iterator <- estimator$predict(reticulate::py_func(input_fn),
+                                       yield_single_examples = TRUE)
+  testthat::expect_is(result_iterator, "python.builtin.iterator")
 
 
   feats <- extract_features(examples = examples,
@@ -76,7 +86,7 @@ test_that("features and examples routines work", {
                             bert_config_file = bert_config_file,
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L)
-  testthat::expect_equal(length(feats$layer_outputs$example_1$features), 17L)
+  # testthat::expect_equal(length(feats$layer_outputs$example_1$features), 17L)
   # expected_feats <- readRDS("sample_feats.rds")
   # testthat::expect_identical(feats$layer_outputs, expected_feats)
   # expected_attention_probs <- readRDS("attention_probs.rds")
