@@ -2,8 +2,8 @@
 # conda <- reticulate:::conda_binary("auto")
 # system(paste(conda, "info --json"))
 
+reticulate::conda_list()
+
 test_that("TF is working.", {
-  tensorflow::install_tensorflow(version = "1.12.0", restart_session = FALSE)
-  library(tensorflow)
-  expect_true(!is.null(tf_version()))
+  expect_true(!is.null(tensorflow::tf_version()))
 })
