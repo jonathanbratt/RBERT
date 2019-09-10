@@ -93,11 +93,11 @@ test_that("features and examples routines work", {
                             bert_config_file = bert_config_file,
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L)
-  # testthat::expect_equal(length(feats$layer_outputs$example_1$features), 17L)
-  # expected_feats <- readRDS("sample_feats.rds")
-  # testthat::expect_identical(feats$layer_outputs, expected_feats)
-  # expected_attention_probs <- readRDS("attention_probs.rds")
-  # testthat::expect_identical(feats$attention_probs, expected_attention_probs)
+  testthat::expect_equal(length(feats$layer_outputs$example_1$features), 17L)
+  expected_feats <- readRDS("sample_feats.rds")
+  testthat::expect_identical(feats$layer_outputs, expected_feats)
+  expected_attention_probs <- readRDS("attention_probs.rds")
+  testthat::expect_identical(feats$attention_probs, expected_attention_probs)
 })
 
 
