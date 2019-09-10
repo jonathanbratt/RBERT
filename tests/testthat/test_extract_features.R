@@ -28,7 +28,7 @@ test_that("features and examples routines work", {
   testthat::expect_identical(feat_in, expected_feat_in)
 
 
-  # Run this test only if checkpoint is found.
+  # Run these test only if checkpoint is found.
   BERT_PRETRAINED_DIR <- cpdir # from setup.R
 
   vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
@@ -40,6 +40,36 @@ test_that("features and examples routines work", {
                         message = "Checkpoint index not found; skipping test.")
 
   bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
+
+  # more incremental tests for troubleshooting
+  bert_config <-  bert_config_from_json_file(bert_config_file)
+  testthat::expect_equal(length(bert_config), 11L)
+
+  model_fn <- model_fn_builder_EF(
+    bert_config = bert_config,
+    init_checkpoint = init_checkpoint,
+    layer_indexes = 1:12,
+    use_tpu = FALSE,
+    use_one_hot_embeddings = FALSE)
+  testthat::expect_is(model_fn, "function")
+
+  is_per_host <- tensorflow::tf$contrib$tpu$InputPipelineConfig$PER_HOST_V2
+  run_config <- tensorflow::tf$contrib$tpu$RunConfig(
+    master = NULL, # assume for now *not* for TPU
+    tpu_config = tensorflow::tf$contrib$tpu$TPUConfig(
+      num_shards = 8L,
+      per_host_input_for_training = is_per_host))
+
+  estimator <- tensorflow::tf$contrib$tpu$TPUEstimator(
+    use_tpu=FALSE, # no tpu for now
+    model_fn = reticulate::py_func(model_fn),
+    config = run_config,
+    predict_batch_size = 2L)
+  testthat::expect_is(estimator,
+                      "tensorflow.python.estimator.estimator.Estimator")
+
+
+
 
   feats <- extract_features(examples = examples,
                             vocab_file = vocab_file,
