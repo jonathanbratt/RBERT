@@ -25,6 +25,7 @@ environment:
 
 build_script:
   - travis-tool.sh install_deps
+  - R -e "devtools::install_version('reticulate', version = 1.12)"
   - R CMD INSTALL .
   - R -e "tensorflow::install_tensorflow(version = Sys.getenv('TF_VERSION'), extra_packages = 'IPython')"
 
