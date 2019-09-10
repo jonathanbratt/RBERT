@@ -5,6 +5,9 @@ environment:
     USE_RTOOLS: true
   matrix:
     - TF_VERSION: 1.12.0
+    - TF_VERSION: 1.13.1
+  # - TF_VERSION: 1.14.0
+  # - TF_VERSION: 2.0.0-rc0
 
 # Download script file from GitHub
 init:
