@@ -4,5 +4,6 @@
 
 test_that("TF is working.", {
   tensorflow::install_tensorflow(version = "1.12.0", restart_session = FALSE)
-  expect_true(!is.null(tensorflow::tf_version()))
+  library(tensorflow)
+  expect_true(!is.null(tf_version()))
 })
