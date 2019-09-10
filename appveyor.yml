@@ -25,6 +25,7 @@ environment:
 
 build_script:
   - travis-tool.sh install_deps
+  - python -m pip install --upgrade pip
   - R CMD INSTALL .
   - R -e "tensorflow::install_tensorflow(version = Sys.getenv('TF_VERSION'), extra_packages = 'IPython')"
 
