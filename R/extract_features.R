@@ -547,9 +547,9 @@ extract_features <- function(examples, # list of InputExamples_EF
   while (TRUE) {
     result <- tryCatch({
       if ("next" %in% names(result_iterator)) {
-        result_iterator$`next`()
+        result_iterator$`next`()  # nocov
       } else {
-        result_iterator$`__next__`()
+        result_iterator$`__next__`() # nocov
       }
     }, error = function(e) {
       FALSE

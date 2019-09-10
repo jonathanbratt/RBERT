@@ -55,8 +55,16 @@ test_that("features and examples routines work", {
   expected_feats <- readRDS("sample_feats.rds")
   expected_feats_flat <- suppressWarnings(as.numeric(unlist(expected_feats)))
 
+  # check both the sum and mean relative difference
+  testthat::expect_lte(abs(sum(test_feats_flat, na.rm=TRUE) -
+                             sum(expected_feats_flat, na.rm=TRUE)) /
+                         abs(sum(test_feats_flat, na.rm=TRUE) +
+                               sum(expected_feats_flat, na.rm=TRUE)),
+                       10^(-6)
+  )
+
   mean_relative_difference <- mean(abs(test_feats_flat - expected_feats_flat) /
-                                     (test_feats_flat + expected_feats_flat),
+                                     abs(test_feats_flat + expected_feats_flat),
                                    na.rm = TRUE)
 
   testthat::expect_lte(mean_relative_difference, 10^(-6))
@@ -66,8 +74,15 @@ test_that("features and examples routines work", {
   expected_attn <- readRDS("attention_probs.rds")
   expected_attn_flat <- suppressWarnings(as.numeric(unlist(expected_attn)))
 
+
+  testthat::expect_lte(abs(sum(test_attn_flat, na.rm=TRUE) -
+                             sum(expected_attn_flat, na.rm=TRUE)) /
+                         abs(sum(test_attn_flat, na.rm=TRUE) +
+                               sum(expected_attn_flat, na.rm=TRUE)),
+                       10^(-6)
+  )
   mean_relative_difference <- mean(abs(test_attn_flat - expected_attn_flat) /
-                                     (test_attn_flat + expected_attn_flat),
+                                     abs(test_attn_flat + expected_attn_flat),
                                    na.rm = TRUE)
 
   testthat::expect_lte(mean_relative_difference, 10^(-6))
