@@ -79,8 +79,13 @@ test_that("features and examples routines work", {
                                        yield_single_examples = TRUE)
   testthat::expect_is(result_iterator, "python.builtin.iterator")
   print(names(result_iterator))
+  if ("next" %in% names(result_iterator)) {
+    result <- result_iterator$`next`()
+  } else {
+    result <- result_iterator$gi_yieldfrom()
+  }
 
-  result <- result_iterator$`next`()
+  # result <- result_iterator$`next`()
   testthat::expect_equal(length(result), 26L)
 
   feats <- extract_features(examples = examples,
