@@ -41,63 +41,37 @@ test_that("features and examples routines work", {
 
   bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
 
-  # more incremental tests for troubleshooting
-  # bert_config <-  bert_config_from_json_file(bert_config_file)
-  # testthat::expect_equal(length(bert_config), 11L)
-  #
-  # model_fn <- model_fn_builder_EF(
-  #   bert_config = bert_config,
-  #   init_checkpoint = init_checkpoint,
-  #   layer_indexes = 1:12,
-  #   use_tpu = FALSE,
-  #   use_one_hot_embeddings = FALSE)
-  # testthat::expect_is(model_fn, "function")
-  #
-  # is_per_host <- tensorflow::tf$contrib$tpu$InputPipelineConfig$PER_HOST_V2
-  # run_config <- tensorflow::tf$contrib$tpu$RunConfig(
-  #   master = NULL, # assume for now *not* for TPU
-  #   tpu_config = tensorflow::tf$contrib$tpu$TPUConfig(
-  #     num_shards = 8L,
-  #     per_host_input_for_training = is_per_host))
-  #
-  # estimator <- tensorflow::tf$contrib$tpu$TPUEstimator(
-  #   use_tpu=FALSE, # no tpu for now
-  #   model_fn = reticulate::py_func(model_fn),
-  #   config = run_config,
-  #   predict_batch_size = 2L)
-  # testthat::expect_is(estimator,
-  #                     "tensorflow.python.estimator.estimator.Estimator")
-  #
-  #
-  # features <-  convert_examples_to_features_EF(examples = examples,
-  #                                              seq_length = 128L,
-  #                                              tokenizer = tokenizer)
-  # input_fn <- input_fn_builder_EF(features = features,
-  #                                 seq_length = 128L)
-  #
-  # result_iterator <- estimator$predict(reticulate::py_func(input_fn),
-  #                                      yield_single_examples = TRUE)
-  # testthat::expect_is(result_iterator, "python.builtin.iterator")
-  # print(names(result_iterator))
-  # if ("next" %in% names(result_iterator)) {
-  #   result <- result_iterator$`next`()
-  # } else {
-  #   result <- result_iterator$`__next__`()
-  # }
-  #
-  # # result <- result_iterator$`next`()
-  # testthat::expect_equal(length(result), 26L)
-
   feats <- extract_features(examples = examples,
                             vocab_file = vocab_file,
                             bert_config_file = bert_config_file,
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L)
   testthat::expect_equal(length(feats$layer_outputs$example_1$features), 17L)
+
+  # There may be some minor numerical differences across different systems.
+  # Need to do a comparison along the lines of dplyr::near.
+  test_feats_flat <- suppressWarnings(as.numeric(unlist(feats$layer_outputs)))
+
   expected_feats <- readRDS("sample_feats.rds")
-  testthat::expect_identical(feats$layer_outputs, expected_feats)
-  expected_attention_probs <- readRDS("attention_probs.rds")
-  testthat::expect_identical(feats$attention_probs, expected_attention_probs)
+  expected_feats_flat <- suppressWarnings(as.numeric(unlist(expected_feats)))
+
+  mean_relative_difference <- mean(abs(test_feats_flat - expected_feats_flat) /
+                                     (test_feats_flat + expected_feats_flat),
+                                   na.rm = TRUE)
+
+  testthat::expect_lte(mean_relative_difference, 10^(-6))
+
+  test_attn_flat <- suppressWarnings(as.numeric(unlist(feats$attention_probs)))
+
+  expected_attn <- readRDS("attention_probs.rds")
+  expected_attn_flat <- suppressWarnings(as.numeric(unlist(expected_attn)))
+
+  mean_relative_difference <- mean(abs(test_attn_flat - expected_attn_flat) /
+                                     (test_attn_flat + expected_attn_flat),
+                                   na.rm = TRUE)
+
+  testthat::expect_lte(mean_relative_difference, 10^(-6))
+
 })
 
 
