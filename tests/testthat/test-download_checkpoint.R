@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# We need this file to run first, so that the checkpoint is available
+# for the other tests.
+
+temp_checkpoint_dir <- tempdir()
 
 test_that("download_checkpoint works", {
 
-  temp_directory <- tempdir()
   cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
-                                    destination = temp_directory)
+                                    destination = temp_checkpoint_dir)
   testthat::expect_true(
     file.exists(file.path(cpdir, "vocab.txt")))
   testthat::expect_true(
@@ -28,6 +31,4 @@ test_that("download_checkpoint works", {
     file.exists(file.path(cpdir, "bert_model.ckpt.meta")))
   testthat::expect_true(
     file.exists(file.path(cpdir, "bert_model.ckpt.data-00000-of-00001")))
-
-  unlink(temp_directory, recursive = TRUE)
 })
