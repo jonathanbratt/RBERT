@@ -55,38 +55,39 @@ test_that("features and examples routines work", {
   expected_feats <- readRDS("sample_feats.rds")
   expected_feats_flat <- suppressWarnings(as.numeric(unlist(expected_feats)))
 
+  tol <- 10^(-6)
+
   # check both the sum and mean relative difference
-  testthat::expect_lte(abs(sum(test_feats_flat, na.rm=TRUE) -
-                             sum(expected_feats_flat, na.rm=TRUE)) /
-                         abs(sum(test_feats_flat, na.rm=TRUE) +
-                               sum(expected_feats_flat, na.rm=TRUE)),
-                       10^(-6)
-  )
+  rel_diff_sum <- abs(sum(test_feats_flat, na.rm = TRUE) -
+                        sum(expected_feats_flat, na.rm = TRUE)) /
+    (tol + abs(sum(test_feats_flat, na.rm = TRUE) +
+                 sum(expected_feats_flat, na.rm = TRUE)))
+  testthat::expect_lte(rel_diff_sum, tol)
 
   mean_relative_difference <- mean(abs(test_feats_flat - expected_feats_flat) /
-                                     abs(test_feats_flat + expected_feats_flat),
+                                     (tol + abs(test_feats_flat +
+                                                  expected_feats_flat)),
                                    na.rm = TRUE)
 
-  testthat::expect_lte(mean_relative_difference, 10^(-6))
+  testthat::expect_lte(mean_relative_difference, tol)
 
   test_attn_flat <- suppressWarnings(as.numeric(unlist(feats$attention_probs)))
 
   expected_attn <- readRDS("attention_probs.rds")
   expected_attn_flat <- suppressWarnings(as.numeric(unlist(expected_attn)))
 
+  rel_diff_sum <- abs(sum(test_attn_flat, na.rm = TRUE) -
+                        sum(expected_attn_flat, na.rm = TRUE)) /
+    (tol + abs(sum(test_attn_flat, na.rm = TRUE) +
+                 sum(expected_attn_flat, na.rm = TRUE)))
+  testthat::expect_lte(rel_diff_sum, tol)
 
-  testthat::expect_lte(abs(sum(test_attn_flat, na.rm=TRUE) -
-                             sum(expected_attn_flat, na.rm=TRUE)) /
-                         abs(sum(test_attn_flat, na.rm=TRUE) +
-                               sum(expected_attn_flat, na.rm=TRUE)),
-                       10^(-6)
-  )
   mean_relative_difference <- mean(abs(test_attn_flat - expected_attn_flat) /
-                                     abs(test_attn_flat + expected_attn_flat),
+                                     (tol + abs(test_attn_flat +
+                                                  expected_attn_flat)),
                                    na.rm = TRUE)
 
-  testthat::expect_lte(mean_relative_difference, 10^(-6))
-
+  testthat::expect_lte(mean_relative_difference, tol)
 })
 
 
