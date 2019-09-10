@@ -104,16 +104,13 @@ test_that("get_activation works", {
 })
 
 test_that("get_assignment_map_from_checkpoint works", {
-  # Create a "model" with a couple variables that overlap some variable
-  # names in the BERT checkpoint. (The actual variables aren't compatible
-  # with the checkpoint.)
-  # The BERT checkpoint is large, and won't be included in repo. Eventually
-  # should save a tiny checkpoint to use for testing purposes. For now,
-  # run this test only if the checkpoint can be found.
+  # Create a "model" with a couple variables that overlap some variable names in
+  # the BERT checkpoint. (The actual variables aren't compatible with the
+  # checkpoint.) The BERT checkpoint is large, and won't be included in repo. A
+  # checkpoint is downloaded as part of test setup. Run this test only if the
+  # checkpoint can be found.
 
-  init_checkpoint <- file.path("/shared",
-                               "BERT_checkpoints",
-                               "uncased_L-12_H-768_A-12",
+  init_checkpoint <- file.path(cpdir,
                                "bert_model.ckpt")
 
   # Checkpoint "path" is actually only a stub filename; add ".index" to

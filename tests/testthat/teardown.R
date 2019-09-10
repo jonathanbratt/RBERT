@@ -13,16 +13,4 @@
 # limitations under the License.
 
 
-test_that("download_checkpoint works", {
-# checkpoint was downloaded in setup.R
-  testthat::expect_true(
-    file.exists(file.path(cpdir, "vocab.txt")))
-  testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_config.json")))
-  testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_model.ckpt.index")))
-  testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_model.ckpt.meta")))
-  testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_model.ckpt.data-00000-of-00001")))
-})
+unlink(temp_checkpoint_dir, recursive = TRUE)

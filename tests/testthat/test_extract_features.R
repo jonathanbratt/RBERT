@@ -29,9 +29,7 @@ test_that("features and examples routines work", {
 
 
   # Run this test only if checkpoint is found.
-  BERT_PRETRAINED_DIR <- file.path("/shared",
-                                   "BERT_checkpoints",
-                                   "uncased_L-12_H-768_A-12")
+  BERT_PRETRAINED_DIR <- cpdir # from setup.R
 
   vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
   init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
