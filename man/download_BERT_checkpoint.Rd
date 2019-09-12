@@ -30,7 +30,8 @@ home directory, by default) if not already present.
 }
 \examples{
 \dontrun{
- download_BERT_checkpoint("bert_base_uncased", destination = "/shared/")
- download_BERT_checkpoint("bert_large_uncased", destination = "/shared/")
+ temp_dir <- tempdir()
+ download_BERT_checkpoint("bert_base_uncased", destination = temp_dir)
+ download_BERT_checkpoint("bert_large_uncased", destination = temp_dir)
 }
 }
