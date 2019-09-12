@@ -677,6 +677,10 @@ get_actual_index <- function(index,
 #' @examples
 #' input_ex <- make_examples_simple(c("Here are some words.",
 #'                                    "Here are some more words."))
+#' input_ex2 <- make_examples_simple(list(c("First example, first sequence.",
+#'                                          "First example, second sequence."),
+#'                                        c("Second example, first sequence.",
+#'                                          "Second example, second sequence."))
 make_examples_simple <- function(seq_list) {
   if (any(purrr::map_int(seq_list, length) > 2)) {
     warning("Examples must contain at most two distinct sequences. ",

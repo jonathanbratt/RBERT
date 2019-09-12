@@ -22,4 +22,8 @@ length-2 sublists or vectors, those examples will be two-sequence examples.
 \examples{
 input_ex <- make_examples_simple(c("Here are some words.",
                                    "Here are some more words."))
+input_ex2 <- make_examples_simple(list(c("First example, first sequence.",
+                                         "First example, second sequence."),
+                                       c("Second example, first sequence.",
+                                         "Second example, second sequence."))
 }
