@@ -7,16 +7,24 @@
 make_examples_simple(seq_list)
 }
 \arguments{
-\item{seq_list}{Character vector; text to turn into examples.}
+\item{seq_list}{Character vector or list; text to turn into examples.}
 }
 \value{
 A list of \code{InputExample_EF} objects.
 }
 \description{
 A simple wrapper function to turn a list of text sequences (as a character
-vector) into a list of examples suitible for use with RBERT.
+vector or list) into a list of examples suitable for use with RBERT. If the
+input is a flat list or vector of characters, the examples will be
+single-sequence, with NULL for the second sequence. If the input contains
+length-2 sublists or vectors, those examples will be two-sequence examples,
+e.g. for doing sentence-pair classification.
 }
 \examples{
 input_ex <- make_examples_simple(c("Here are some words.",
                                    "Here are some more words."))
+input_ex2 <- make_examples_simple(list(c("First example, first sequence.",
+                                         "First example, second sequence."),
+                                       c("Second example, first sequence.",
+                                        "Second example, second sequence.")))
 }
