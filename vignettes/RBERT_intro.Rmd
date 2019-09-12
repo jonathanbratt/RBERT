@@ -84,8 +84,8 @@ text_to_process2 <- list(c("Impulse is equal to the change in momentum.",
                          c("An impulse is like a push.",
                            "Impulse is force times time."))
 
-BERT_feats <- RBERT::extract_features(
-  examples = RBERT::make_examples_simple(text_to_process2),
+BERT_feats <- extract_features(
+  examples = make_examples_simple(text_to_process2),
   vocab_file = vocab_file,
   bert_config_file = bert_config_file,
   init_checkpoint = init_checkpoint,
