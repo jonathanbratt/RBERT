@@ -664,9 +664,12 @@ get_actual_index <- function(index,
 #' Easily make examples for BERT
 #'
 #' A simple wrapper function to turn a list of text sequences (as a character
-#' vector) into a list of examples suitible for use with RBERT.
+#' vector or list) into a list of examples suitible for use with RBERT. If the
+#' input is a flat list or vector of characters, the examples will be
+#' single-sequence, with NULL for the second sequence. If the input contains
+#' length-2 sublists or vectors, those examples will be two-sequence examples.
 #'
-#' @param seq_list Character vector; text to turn into examples.
+#' @param seq_list Character vector or list; text to turn into examples.
 #'
 #' @return A list of \code{InputExample_EF} objects.
 #' @export
@@ -675,10 +678,19 @@ get_actual_index <- function(index,
 #' input_ex <- make_examples_simple(c("Here are some words.",
 #'                                    "Here are some more words."))
 make_examples_simple <- function(seq_list) {
+  if (any(purrr::map_int(seq_list, length) > 2)) {
+    warning("Examples must contain at most two distinct sequences. ",
+            "Sequences beyond the second will be ignored.")
+  }
   seq_nums <- seq_along(seq_list)
   purrr::map(seq_nums, function(sn) {
+    first_sequence <- seq_list[[sn]][[1]]
+    second_sequence <- NULL
+    if (length(seq_list[[sn]]) > 1) {
+      second_sequence <- seq_list[[sn]][[2]]
+    }
     RBERT::InputExample_EF(unique_id = sn,
-                           text_a = seq_list[[sn]],
-                           text_b = NULL)
+                           text_a = first_sequence,
+                           text_b = second_sequence)
   })
 }

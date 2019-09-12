@@ -78,12 +78,18 @@ text_to_process <- c("Impulse is equal to the change in momentum.",
                      "An impulse is like a push.",
                      "Impulse is force times time.")
 
+# Or make two-sequence examples:
+text_to_process2 <- list(c("Impulse is equal to the change in momentum.",
+                           "Changing momentum requires an impulse."),
+                         c("An impulse is like a push.",
+                           "Impulse is force times time."))
+
 BERT_feats <- RBERT::extract_features(
-  examples = RBERT::make_examples_simple(text_to_process),
+  examples = RBERT::make_examples_simple(text_to_process2),
   vocab_file = vocab_file,
   bert_config_file = bert_config_file,
   init_checkpoint = init_checkpoint,
-  layer_indexes = as.list(1:12),
+  layer_indexes = 1:12,
   batch_size = 2L
 )
 

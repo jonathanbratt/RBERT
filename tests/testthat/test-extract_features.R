@@ -108,4 +108,26 @@ test_that("make_examples_simple works", {
             "Here are some more words.")
   input_ex <- make_examples_simple(text)
   testthat::expect_s3_class(input_ex[[1]], "InputExample_EF")
+
+  testthat::expect_identical(input_ex[[1]]$text_a, text[[1]])
+  testthat::expect_null(input_ex[[1]]$text_b)
+  testthat::expect_identical(input_ex[[2]]$text_a, text[[2]])
+  testthat::expect_null(input_ex[[2]]$text_b)
+})
+
+test_that("make_examples_simple works for two-sequence examples", {
+  text <- list(c("First example, first sequence.",
+                 "First example, second sequence."),
+               c("Second example, first sequence.",
+                 "Second example, second sequence.",
+                 "Second example, EXTRA sequence."),
+               "Third example, only one sequence.")
+  testthat::expect_warning(input_ex <- make_examples_simple(text),
+                           "ignored")
+  testthat::expect_identical(input_ex[[1]]$text_a, text[[1]][[1]])
+  testthat::expect_identical(input_ex[[1]]$text_b, text[[1]][[2]])
+  testthat::expect_identical(input_ex[[2]]$text_a, text[[2]][[1]])
+  testthat::expect_identical(input_ex[[2]]$text_b, text[[2]][[2]])
+  testthat::expect_identical(input_ex[[3]]$text_a, text[[3]])
+  testthat::expect_null(input_ex[[3]]$text_b)
 })
