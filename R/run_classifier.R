@@ -517,7 +517,8 @@ create_model <- function(bert_config,
 #'                             num_attention_heads = 12L,
 #'                             intermediate_size = 3072L)
 #'
-#'        init_checkpoint <- file.path("/shared",
+#'        temp_dir <- tempdir()
+#'        init_checkpoint <- file.path(temp_dir,
 #'                                     "BERT_checkpoints",
 #'                                     "uncased_L-12_H-768_A-12",
 #'                                     "bert_model.ckpt")

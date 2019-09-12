@@ -31,8 +31,9 @@
 #'
 #' @examples
 #' \dontrun{
-#'  download_BERT_checkpoint("bert_base_uncased", destination = "/shared/")
-#'  download_BERT_checkpoint("bert_large_uncased", destination = "/shared/")
+#'  temp_dir <- tempdir()
+#'  download_BERT_checkpoint("bert_base_uncased", destination = temp_dir)
+#'  download_BERT_checkpoint("bert_large_uncased", destination = temp_dir)
 #' }
 download_BERT_checkpoint <- function(model = c("bert_base_uncased",
                                                "bert_base_cased",

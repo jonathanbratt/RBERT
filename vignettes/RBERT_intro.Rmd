@@ -60,13 +60,13 @@ straightforward.
 
 ```{r eval = FALSE}
 library(RBERT)
-
+temp_dir <- tempdir()
 # Download pre-trained BERT model.
-# RBERT::download_BERT_checkpoint(model = "bert_base_uncased",
-#                                 destination = "/shared")
+RBERT::download_BERT_checkpoint(model = "bert_base_uncased",
+                                destination = temp_dir)
 
 # path to downloaded BERT checkpoint
-BERT_PRETRAINED_DIR <- file.path("/shared",
+BERT_PRETRAINED_DIR <- file.path(temp_dir,
                                  "BERT_checkpoints", 
                                  "uncased_L-12_H-768_A-12")
 vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
@@ -98,6 +98,9 @@ output_vector1 <- BERT_feats$layer_outputs$example_1$features$token_1$layers$lay
 output_vectors <- purrr::map(BERT_feats$layer_outputs, function(sentence) {
   sentence$features$token_1$layers$layer_output_12$values
 })
+
+# Clean up.
+unlink(temp_dir, recursive = TRUE)
 ```
 
 # Future work

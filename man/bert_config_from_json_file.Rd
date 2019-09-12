@@ -18,7 +18,8 @@ appropriate values.
 }
 \examples{
 \dontrun{
-json_file <- file.path("/shared",
+temp_dir <- tempdir()
+json_file <- file.path(temp_dir,
                        "BERT_checkpoints",
                        "uncased_L-12_H-768_A-12",
                        "bert_config.json")

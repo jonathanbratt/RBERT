@@ -47,7 +47,8 @@ potentially be used as features in downstream tasks.)
 }
 \examples{
 \dontrun{
-BERT_PRETRAINED_DIR <- file.path("/shared",
+temp_dir <- tempdir()
+BERT_PRETRAINED_DIR <- file.path(temp_dir,
                                  "BERT_checkpoints",
                                  "uncased_L-12_H-768_A-12")
 vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
