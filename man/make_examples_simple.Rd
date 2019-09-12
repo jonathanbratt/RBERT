@@ -18,7 +18,7 @@ vector or list) into a list of examples suitable for use with RBERT. If the
 input is a flat list or vector of characters, the examples will be
 single-sequence, with NULL for the second sequence. If the input contains
 length-2 sublists or vectors, those examples will be two-sequence examples,
-e.g. for doing sentence pair classification.
+e.g. for doing sentence-pair classification.
 }
 \examples{
 input_ex <- make_examples_simple(c("Here are some words.",
