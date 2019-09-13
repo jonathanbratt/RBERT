@@ -115,13 +115,13 @@ test_that("make_examples_simple works", {
   testthat::expect_null(input_ex[[2]]$text_b)
 })
 
-test_that("make_examples_simple works for two-sequence examples", {
-  text <- list(c("First example, first sequence.",
-                 "First example, second sequence."),
-               c("Second example, first sequence.",
-                 "Second example, second sequence.",
-                 "Second example, EXTRA sequence."),
-               "Third example, only one sequence.")
+test_that("make_examples_simple works for two-segment examples", {
+  text <- list(c("First sequence, first segment.",
+                 "First sequence, second segment."),
+               c("Second sequence, first segment.",
+                 "Second sequence, second segment.",
+                 "Second sequence, EXTRA segment."),
+               "Third sequence, only one segment.")
   testthat::expect_warning(input_ex <- make_examples_simple(text),
                            "ignored")
   testthat::expect_identical(input_ex[[1]]$text_a, text[[1]][[1]])

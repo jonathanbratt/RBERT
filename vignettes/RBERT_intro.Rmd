@@ -78,7 +78,7 @@ text_to_process <- c("Impulse is equal to the change in momentum.",
                      "An impulse is like a push.",
                      "Impulse is force times time.")
 
-# Or make two-sequence examples:
+# Or make two-segment examples:
 text_to_process2 <- list(c("Impulse is equal to the change in momentum.",
                            "Changing momentum requires an impulse."),
                          c("An impulse is like a push.",

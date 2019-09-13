@@ -663,11 +663,11 @@ get_actual_index <- function(index,
 
 #' Easily make examples for BERT
 #'
-#' A simple wrapper function to turn a list of text sequences (as a character
+#' A simple wrapper function to turn a list of text (as a character
 #' vector or list) into a list of examples suitable for use with RBERT. If the
 #' input is a flat list or vector of characters, the examples will be
-#' single-sequence, with NULL for the second sequence. If the input contains
-#' length-2 sublists or vectors, those examples will be two-sequence examples,
+#' single-segment, with NULL for the second segment. If the input contains
+#' length-2 sublists or vectors, those examples will be two-segment sequences,
 #' e.g. for doing sentence-pair classification.
 #'
 #' @param seq_list Character vector or list; text to turn into examples.
@@ -678,24 +678,24 @@ get_actual_index <- function(index,
 #' @examples
 #' input_ex <- make_examples_simple(c("Here are some words.",
 #'                                    "Here are some more words."))
-#' input_ex2 <- make_examples_simple(list(c("First example, first sequence.",
-#'                                          "First example, second sequence."),
-#'                                        c("Second example, first sequence.",
-#'                                         "Second example, second sequence.")))
+#' input_ex2 <- make_examples_simple(list(c("First sequence, first segment.",
+#'                                          "First sequence, second segment."),
+#'                                        c("Second sequence, first segment.",
+#'                                         "Second sequence, second segment.")))
 make_examples_simple <- function(seq_list) {
   if (any(purrr::map_int(seq_list, length) > 2)) {
-    warning("Examples must contain at most two distinct sequences. ",
-            "Sequences beyond the second will be ignored.")
+    warning("Examples must contain at most two distinct segments. ",
+            "Segments beyond the second will be ignored.")
   }
   seq_nums <- seq_along(seq_list)
   purrr::map(seq_nums, function(sn) {
-    first_sequence <- seq_list[[sn]][[1]]
-    second_sequence <- NULL
+    first_segment <- seq_list[[sn]][[1]]
+    second_segment <- NULL
     if (length(seq_list[[sn]]) > 1) {
-      second_sequence <- seq_list[[sn]][[2]]
+      second_segment <- seq_list[[sn]][[2]]
     }
     InputExample_EF(unique_id = sn,
-                           text_a = first_sequence,
-                           text_b = second_sequence)
+                           text_a = first_segment,
+                           text_b = second_segment)
   })
 }
