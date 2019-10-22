@@ -31,3 +31,33 @@ test_that("download_checkpoint works", {
   testthat::expect_true(
     file.exists(file.path(cpdir, "bert_model.ckpt.data-00000-of-00001")))
 })
+
+test_that("dir chooser works.", {
+  expect_identical(
+    .choose_BERT_dir("fake"), "fake"
+  )
+  temp_dir <- tempdir()
+  test_dir <- paste0(temp_dir, "/testing")
+  old_dir <- set_BERT_dir(test_dir)
+  expect_identical(
+    normalizePath(getOption("BERT.dir"), mustWork = FALSE),
+    normalizePath(test_dir, mustWork = FALSE)
+  )
+
+  # If I don't send it a dir, first it should try the option.
+  expect_identical(
+    .choose_BERT_dir(NULL),
+    normalizePath(test_dir, mustWork = FALSE)
+  )
+
+  # If I don't have an option or a dir, it should use the default.
+  options(BERT.dir = NULL)
+  default_dir <- rappdirs::user_cache_dir("RBERT")
+  expect_identical(
+    .choose_BERT_dir(NULL),
+    default_dir
+  )
+
+  # Go back to the existing setting.
+  options(BERT.dir = old_dir$BERT.dir)
+})

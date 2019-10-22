@@ -111,7 +111,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 .choose_BERT_dir <- function(dir) {
   return(
     dir %||%
-      getOption("RBERT.dir") %||%
+      getOption("BERT.dir") %||%
       rappdirs::user_cache_dir(appname = "RBERT")
   )
 }
@@ -272,6 +272,7 @@ set_BERT_dir <- function(dir) {
   if (!file.exists(dir)) {
     dir.create(dir) # nocov
   }
+  dir <- normalizePath(dir)
   options(BERT.dir = dir)
 }
 
