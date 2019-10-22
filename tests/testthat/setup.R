@@ -14,8 +14,8 @@
 
 check_download <- FALSE
 
-# Uncomment this to check downloads.
-# check_download <- TRUE
+# Comment this for faster tests. Be sure to uncomment before submitting a PR.
+check_download <- TRUE
 
 checkpoint_main_dir <- NULL
 
