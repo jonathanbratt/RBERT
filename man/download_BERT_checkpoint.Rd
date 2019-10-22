@@ -7,31 +7,40 @@
 download_BERT_checkpoint(model = c("bert_base_uncased",
   "bert_base_cased", "bert_large_uncased", "bert_large_cased",
   "bert_large_uncased_wwm", "bert_large_cased_wwm",
-  "bert_base_multilingual_cased", "bert_base_chinese"),
-  destination = "~", url = NULL, overwrite = TRUE)
+  "bert_base_multilingual_cased", "bert_base_chinese"), dir = NULL,
+  url = NULL, force = FALSE, keep_zip = FALSE)
 }
 \arguments{
-\item{model}{Character vector; which model checkpoint to download.}
+\item{model}{Character vector. Which model checkpoint to download.}
 
-\item{destination}{Character vector; destination directory for checkpoint.}
+\item{dir}{Character vector. Destination directory for checkpoint. Leave
+`NULL` to allow `RBERT` to automatically choose a directory. The path is
+determined from the `dir` parameter if supplied, followed by the
+`RBERT.dir` option (set using \link{set_BERT_dir}), followed by an "RBERT"
+folder in the user cache directory (determined using
+\code{\link[rappdirs]{user_cache_dir()}}). If you provide a `dir`, the
+`RBERT.dir` option will be updated to that location.}
 
-\item{url}{Character vector; a url from which to download a checkpoint.
-Overrides \code{model} parameter if not NULL.}
+\item{url}{Character vector. An optional url from which to download a
+checkpoint. Overrides \code{model} parameter if not NULL.}
 
-\item{overwrite}{Logical; parameter passed along to \code{utils::unzip}.}
+\item{force}{Logical. Download even if the checkpoint already exists in the
+specified directory? Default \code{FALSE}.}
+
+\item{keep_zip}{Logical. Keep the zip file? Leave as \code{FALSE} to save
+space.}
 }
 \value{
 If successful, returns the path to the downloaded checkpoint.
 }
 \description{
 Downloads the specified BERT checkpoint from the Google Research collection.
-Will create a "BERT_checkpoints" directory in the specified location (user's
-home directory, by default) if not already present.
 }
 \examples{
 \dontrun{
+ download_BERT_checkpoint("bert_base_uncased")
+ download_BERT_checkpoint("bert_large_uncased")
  temp_dir <- tempdir()
- download_BERT_checkpoint("bert_base_uncased", destination = temp_dir)
- download_BERT_checkpoint("bert_large_uncased", destination = temp_dir)
+ download_BERT_checkpoint("bert_base_uncased", dir = temp_dir)
 }
 }

@@ -14,7 +14,12 @@
 
 
 test_that("download_checkpoint works", {
-# checkpoint was downloaded in setup.R
+  # checkpoint was downloaded in setup.R
+  # Redownloading the checkpoint should occur without incident.
+  new_cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
+                                         dir = checkpoint_main_dir)
+  expect_identical(new_cpdir, cpdir)
+
   testthat::expect_true(
     file.exists(file.path(cpdir, "vocab.txt")))
   testthat::expect_true(

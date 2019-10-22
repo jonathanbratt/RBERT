@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-# BertConfig --------------------------------------------------------------------
+# BertConfig -------------------------------------------------------------------
 
 #' Construct objects of BertConfig class
 #'
