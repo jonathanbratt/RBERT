@@ -276,14 +276,8 @@ set_BERT_dir <- function(dir) {
 }
 
 
-#' Default value for NULL
-#'
-#' Copied from `rlang` to avoid importing that package.
-#'
-#' @param x, y If x is NULL, will return y; otherwise returns x.
-#'
-#' @return x or y.
-#' @keywords internal
+# Copied from `rlang` to avoid importing that package. Roxygen doesn't like it
+# and I'm not sure how to fix that, so install I'm not documenting.
 `%||%` <- function (x, y) {
   if (is.null(x))
     y
