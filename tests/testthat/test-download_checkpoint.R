@@ -61,3 +61,55 @@ test_that("dir chooser works.", {
   # Go back to the existing setting.
   options(BERT.dir = old_dir$BERT.dir)
 })
+
+test_that("Can download a cp by url.", {
+  # The auto-generated target dir will be different from the one we saved in, so
+  # move the one we downloaded, attempt to DL without forcing, then move it
+  # back. That should make sure everything is working as expected.
+  target_dir <- file.path(
+    checkpoint_main_dir, "uncased_L-12_H-768_A-12"
+  )
+
+  # Explicitly create the dir so file.copy can copy recursively.
+  dir.create(target_dir)
+
+  file.copy(
+    cpdir,
+    target_dir,
+    recursive = TRUE
+  )
+
+  google_base_url <- "https://storage.googleapis.com/bert_models/"
+  bert_base_uncased_url <- paste0(
+    google_base_url,
+    "2018_10_18/uncased_L-12_H-768_A-12.zip"
+  )
+
+  expect_warning(
+    expect_identical(
+      download_BERT_checkpoint(
+        url = bert_base_uncased_url
+      ),
+      normalizePath(target_dir)
+    ),
+    NA
+  )
+
+  unlink(target_dir, recursive = TRUE)
+
+  # We also need to test one that has tar-gz. Eventually we should set up fake
+  # checkpoints that have all the right files but muuuuch smaller, to speed this
+  # up.
+  scibert_url <- paste0(
+    "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/",
+    "tensorflow_models/scibert_scivocab_uncased.tar.gz"
+  )
+  expect_warning(
+    scibert_path <- download_BERT_checkpoint(
+      url = scibert_url, dir = checkpoint_main_dir
+    ),
+    NA
+  )
+
+  unlink(scibert_path, recursive = TRUE)
+})

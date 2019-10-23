@@ -4,19 +4,16 @@
 \alias{.get_model_url}
 \title{Get url of a BERT checkpoint}
 \usage{
-.get_model_url(model = c("bert_base_uncased", "bert_base_cased",
-  "bert_large_uncased", "bert_large_cased", "bert_large_uncased_wwm",
-  "bert_large_cased_wwm", "bert_base_multilingual_cased",
-  "bert_base_chinese"))
+.get_model_url(model)
 }
 \arguments{
 \item{model}{Character vector. Which model checkpoint to download.}
 }
 \value{
-The url to the specified Google Research BERT model.
+The url to the specified BERT model.
 }
 \description{
 Returns the url of the specified BERT checkpoint from the Google Research
-collection.
+collection or other repository.
 }
 \keyword{internal}

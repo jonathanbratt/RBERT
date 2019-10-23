@@ -3,23 +3,31 @@
 \name{download_BERT_checkpoint}
 \alias{download_BERT_checkpoint}
 \title{Download a BERT checkpoint}
+\source{
+\url{https://github.com/google-research/bert}
+  \url{https://github.com/allenai/scibert}
+}
 \usage{
 download_BERT_checkpoint(model = c("bert_base_uncased",
   "bert_base_cased", "bert_large_uncased", "bert_large_cased",
   "bert_large_uncased_wwm", "bert_large_cased_wwm",
-  "bert_base_multilingual_cased", "bert_base_chinese"), dir = NULL,
-  url = NULL, force = FALSE, keep_zip = FALSE)
+  "bert_base_multilingual_cased", "bert_base_chinese",
+  "scibert_scivocab_uncased", "scibert_scivocab_cased",
+  "scibert_basevocab_uncased", "scibert_basevocab_cased"), dir = NULL,
+  url = NULL, force = FALSE, keep_archive = FALSE,
+  archive_type = NULL)
 }
 \arguments{
 \item{model}{Character vector. Which model checkpoint to download.}
 
-\item{dir}{Character vector. Destination directory for checkpoint. Leave
+\item{dir}{Character vector. Destination directory for checkpoints. Leave
 `NULL` to allow `RBERT` to automatically choose a directory. The path is
 determined from the `dir` parameter if supplied, followed by the
 `RBERT.dir` option (set using \link{set_BERT_dir}), followed by an "RBERT"
 folder in the user cache directory (determined using
-\code{\link[rappdirs]{user_cache_dir()}}). If you provide a `dir`, the
-`RBERT.dir` option will be updated to that location.}
+\code{\link[rappdirs]{user_cache_dir}}). If you provide a `dir`, the
+`RBERT.dir` option will be updated to that location. Note that the
+checkpoint will create a subdirectory inside this `dir`.}
 
 \item{url}{Character vector. An optional url from which to download a
 checkpoint. Overrides \code{model} parameter if not NULL.}
@@ -27,15 +35,38 @@ checkpoint. Overrides \code{model} parameter if not NULL.}
 \item{force}{Logical. Download even if the checkpoint already exists in the
 specified directory? Default \code{FALSE}.}
 
-\item{keep_zip}{Logical. Keep the zip file? Leave as \code{FALSE} to save
-space.}
+\item{keep_archive}{Logical. Keep the zip (or other archive) file? Leave as
+\code{FALSE} to save space.}
+
+\item{archive_type}{How is the checkpoint archived? We currently support
+"zip" and "tar-gzip". Leave NULL to infer from the `url`.}
 }
 \value{
 If successful, returns the path to the downloaded checkpoint.
 }
 \description{
-Downloads the specified BERT checkpoint from the Google Research collection.
+Downloads the specified BERT checkpoint from the Google Research collection
+or other repositories.
 }
+\section{Checkpoints}{
+ `download_BERT_checkpoint` knows about several
+  pre-trained BERT checkpoints. You can specify these checkpoints using the
+  `model` parameter. Alternatively, you can supply a direct `url` to any BERT
+  tensorflow checkpoint.
+
+  \tabular{rccccl}{ model \tab layers \tab hidden \tab heads \tab parameters
+  \tab special\cr bert_base_* \tab 12 \tab 768 \tab 12 \tab 110M\cr
+  bert_large_* \tab 24 \tab 1024 \tab 16 \tab 340M\cr bert_large_*_wwm \tab
+  24 \tab 1024 \tab 16 \tab 340M \tab whole word masking\cr
+  bert_base_multilingual_cased \tab 12 \tab 768 \tab 12 \tab 110M \tab 104
+  languages\cr bert_base_chinese \tab 12 \tab 768 \tab 12 \tab 110M \tab
+  Chinese Simplified and Traditional\cr scibert_scivocab_* \tab 12 \tab 768
+  \tab 12 \tab 110M \tab Trained using the full text of 1.14M scientific
+  papers (18\% computer science, 82\% biomedical), with a science-specific
+  vocabulary.\cr scibert_basevocab_uncased \tab 12 \tab 768 \tab 12 \tab 110M
+  \tab As scibert_scivocab_*, but using the original BERT vocabulary. }
+}
+
 \examples{
 \dontrun{
  download_BERT_checkpoint("bert_base_uncased")

@@ -4,22 +4,21 @@
 \alias{.process_BERT_checkpoint}
 \title{Unzip and check a BERT checkpoint zip}
 \usage{
-.process_BERT_checkpoint(dir, checkpoint_zip_path, keep_zip)
+.process_BERT_checkpoint(dir, checkpoint_archive_path, checkpoint_subdir,
+  archive_type)
 }
 \arguments{
-\item{dir}{Character vector. Destination directory for checkpoint. Leave
+\item{dir}{Character vector. Destination directory for checkpoints. Leave
 `NULL` to allow `RBERT` to automatically choose a directory. The path is
 determined from the `dir` parameter if supplied, followed by the
 `RBERT.dir` option (set using \link{set_BERT_dir}), followed by an "RBERT"
 folder in the user cache directory (determined using
-\code{\link[rappdirs]{user_cache_dir()}}). If you provide a `dir`, the
-`RBERT.dir` option will be updated to that location.}
+\code{\link[rappdirs]{user_cache_dir}}). If you provide a `dir`, the
+`RBERT.dir` option will be updated to that location. Note that the
+checkpoint will create a subdirectory inside this `dir`.}
 
-\item{checkpoint_zip_path}{The path to which the checkpoint zip should be
-downloaded.}
-
-\item{keep_zip}{Logical. Keep the zip file? Leave as \code{FALSE} to save
-space.}
+\item{archive_type}{How is the checkpoint archived? We currently support
+"zip" and "tar-gzip". Leave NULL to infer from the `url`.}
 }
 \value{
 `TRUE` invisibly.
