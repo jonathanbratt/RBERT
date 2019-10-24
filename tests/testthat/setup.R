@@ -15,7 +15,7 @@
 check_download <- FALSE
 
 # Comment this for faster tests. Be sure to uncomment before submitting a PR.
-check_download <- TRUE
+# check_download <- TRUE
 
 checkpoint_main_dir <- NULL
 
@@ -30,6 +30,3 @@ clean_up_cp <- !.has_checkpoint("bert_base_uncased", dir = checkpoint_main_dir)
 # here.
 cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
                                   dir = checkpoint_main_dir)
-
-
-
