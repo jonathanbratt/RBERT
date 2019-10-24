@@ -12,5 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-unlink(temp_checkpoint_dir, recursive = TRUE)
+if (clean_up_cp) unlink(cpdir, recursive = TRUE)

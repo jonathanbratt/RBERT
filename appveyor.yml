@@ -3,6 +3,7 @@
 environment:
   global:
     USE_RTOOLS: true
+    R_REMOTES_STANDALONE: true
   matrix:
     - TF_VERSION: 1.12.0
     - TF_VERSION: 1.13.1
@@ -28,7 +29,7 @@ build_script:
   - travis-tool.sh install_deps
   - R CMD INSTALL .
   - R -e "install.packages('devtools', repos = 'http://cran.rstudio.com'); devtools::install_github('rstudio/reticulate')"
-  - R -e "tensorflow::install_tensorflow(version = Sys.getenv('TF_VERSION'), extra_packages = 'IPython', envname = 'r-reticulate')"
+  - R -e "tensorflow::install_tensorflow(method = 'conda', version = Sys.getenv('TF_VERSION'), extra_packages = 'IPython', envname = 'r-reticulate')"
 
 test_script:
   - travis-tool.sh run_tests

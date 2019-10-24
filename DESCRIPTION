@@ -1,7 +1,7 @@
 Package: RBERT
 Type: Package
 Title: R Implementation of BERT
-Version: 0.1.5
+Version: 0.1.6
 Authors@R: c(
     person("Jonathan", "Bratt", email = "jonathan.bratt@macmillan.com", 
            role = c("aut", "cre")
@@ -23,6 +23,7 @@ RoxygenNote: 6.1.1
 Imports:
     jsonlite (>= 1.6),
     purrr (>= 0.3.0),
+    rappdirs (>= 0.3.1),
     reticulate (>= 1.12),
     stringi (>= 1.2.4),
     stringr (>= 1.4.0),

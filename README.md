@@ -25,7 +25,6 @@ You can install RBERT from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-# Set up a GITHUB_PAT with Sys.setenv(GITHUB_PAT = "YOURPATHERE")
 devtools::install_github(
   "jonathanbratt/RBERT", 
   build_vignettes = TRUE
@@ -44,10 +43,10 @@ tensorflow::install_tensorflow(version = "1.13.1")
 
 ### Windows
 
-The current CRAN version of reticulate (1.13) evidently causes some
-issues with the tensorflow installation. Rebooting your machine after
-installing Anaconda seems to fix this issue, or upgrade to the
-development version of reticulate.
+The current CRAN version of reticulate (1.13) causes some issues with
+the tensorflow installation. Rebooting your machine after installing
+Anaconda seems to fix this issue, or upgrade to the development version
+of reticulate.
 
 ``` r
 devtools::install_github("rstudio/reticulate")
