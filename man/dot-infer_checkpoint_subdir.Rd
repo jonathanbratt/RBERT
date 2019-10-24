@@ -11,17 +11,17 @@
 checkpoint. Overrides \code{model} parameter if not NULL.}
 
 \item{dir}{Character vector. Destination directory for checkpoints. Leave
-`NULL` to allow `RBERT` to automatically choose a directory. The path is
-determined from the `dir` parameter if supplied, followed by the
+\code{NULL} to allow RBERT to automatically choose a directory. The path is
+determined from the \code{dir} parameter if supplied, followed by the
 `RBERT.dir` option (set using \link{set_BERT_dir}), followed by an "RBERT"
 folder in the user cache directory (determined using
-\code{\link[rappdirs]{user_cache_dir}}). If you provide a `dir`, the
+\code{\link[rappdirs]{user_cache_dir}}). If you provide a \code{dir}, the
 `RBERT.dir` option will be updated to that location. Note that the
-checkpoint will create a subdirectory inside this `dir`.}
+checkpoint will create a subdirectory inside this \code{dir}.}
 }
 \value{
 A character vector file path, reflecting the "name" part of a
-  checkpoint `url`, placed within `dir`.
+  checkpoint \code{url}, placed within \code{dir}.
 }
 \description{
 Infer the subdir for a BERT checkpoint

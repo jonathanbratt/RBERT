@@ -14,7 +14,7 @@ checkpoint. Overrides \code{model} parameter if not NULL.}
 downloaded.}
 }
 \value{
-`TRUE` invisibly.
+\code{TRUE} invisibly.
 }
 \description{
 Download a checkpoint zip file

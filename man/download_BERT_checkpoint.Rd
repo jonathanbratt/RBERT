@@ -5,7 +5,8 @@
 \title{Download a BERT checkpoint}
 \source{
 \url{https://github.com/google-research/bert}
-  \url{https://github.com/allenai/scibert}
+
+\url{https://github.com/allenai/scibert}
 }
 \usage{
 download_BERT_checkpoint(model = c("bert_base_uncased",
@@ -21,13 +22,13 @@ download_BERT_checkpoint(model = c("bert_base_uncased",
 \item{model}{Character vector. Which model checkpoint to download.}
 
 \item{dir}{Character vector. Destination directory for checkpoints. Leave
-`NULL` to allow `RBERT` to automatically choose a directory. The path is
-determined from the `dir` parameter if supplied, followed by the
+\code{NULL} to allow RBERT to automatically choose a directory. The path is
+determined from the \code{dir} parameter if supplied, followed by the
 `RBERT.dir` option (set using \link{set_BERT_dir}), followed by an "RBERT"
 folder in the user cache directory (determined using
-\code{\link[rappdirs]{user_cache_dir}}). If you provide a `dir`, the
+\code{\link[rappdirs]{user_cache_dir}}). If you provide a \code{dir}, the
 `RBERT.dir` option will be updated to that location. Note that the
-checkpoint will create a subdirectory inside this `dir`.}
+checkpoint will create a subdirectory inside this \code{dir}.}
 
 \item{url}{Character vector. An optional url from which to download a
 checkpoint. Overrides \code{model} parameter if not NULL.}
@@ -39,7 +40,7 @@ specified directory? Default \code{FALSE}.}
 \code{FALSE} to save space.}
 
 \item{archive_type}{How is the checkpoint archived? We currently support
-"zip" and "tar-gzip". Leave NULL to infer from the `url`.}
+"zip" and "tar-gzip". Leave NULL to infer from the \code{url}.}
 }
 \value{
 If successful, returns the path to the downloaded checkpoint.
@@ -49,10 +50,10 @@ Downloads the specified BERT checkpoint from the Google Research collection
 or other repositories.
 }
 \section{Checkpoints}{
- `download_BERT_checkpoint` knows about several
+ \code{download_BERT_checkpoint} knows about several
   pre-trained BERT checkpoints. You can specify these checkpoints using the
-  `model` parameter. Alternatively, you can supply a direct `url` to any BERT
-  tensorflow checkpoint.
+  \code{model} parameter. Alternatively, you can supply a direct \code{url}
+  to any BERT tensorflow checkpoint.
 
   \tabular{rccccl}{ model \tab layers \tab hidden \tab heads \tab parameters
   \tab special\cr bert_base_* \tab 12 \tab 768 \tab 12 \tab 110M\cr

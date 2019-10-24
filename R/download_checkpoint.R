@@ -19,10 +19,10 @@
 #' Downloads the specified BERT checkpoint from the Google Research collection
 #' or other repositories.
 #'
-#' @section Checkpoints: `download_BERT_checkpoint` knows about several
+#' @section Checkpoints: \code{download_BERT_checkpoint} knows about several
 #'   pre-trained BERT checkpoints. You can specify these checkpoints using the
-#'   `model` parameter. Alternatively, you can supply a direct `url` to any BERT
-#'   tensorflow checkpoint.
+#'   \code{model} parameter. Alternatively, you can supply a direct \code{url}
+#'   to any BERT tensorflow checkpoint.
 #'
 #'   \tabular{rccccl}{ model \tab layers \tab hidden \tab heads \tab parameters
 #'   \tab special\cr bert_base_* \tab 12 \tab 768 \tab 12 \tab 110M\cr
@@ -38,13 +38,13 @@
 #'
 #' @param model Character vector. Which model checkpoint to download.
 #' @param dir Character vector. Destination directory for checkpoints. Leave
-#'   `NULL` to allow `RBERT` to automatically choose a directory. The path is
-#'   determined from the `dir` parameter if supplied, followed by the
+#'   \code{NULL} to allow RBERT to automatically choose a directory. The path is
+#'   determined from the \code{dir} parameter if supplied, followed by the
 #'   `RBERT.dir` option (set using \link{set_BERT_dir}), followed by an "RBERT"
 #'   folder in the user cache directory (determined using
-#'   \code{\link[rappdirs]{user_cache_dir}}). If you provide a `dir`, the
+#'   \code{\link[rappdirs]{user_cache_dir}}). If you provide a \code{dir}, the
 #'   `RBERT.dir` option will be updated to that location. Note that the
-#'   checkpoint will create a subdirectory inside this `dir`.
+#'   checkpoint will create a subdirectory inside this \code{dir}.
 #' @param url Character vector. An optional url from which to download a
 #'   checkpoint. Overrides \code{model} parameter if not NULL.
 #' @param force Logical. Download even if the checkpoint already exists in the
@@ -52,13 +52,13 @@
 #' @param keep_archive Logical. Keep the zip (or other archive) file? Leave as
 #'   \code{FALSE} to save space.
 #' @param archive_type How is the checkpoint archived? We currently support
-#'   "zip" and "tar-gzip". Leave NULL to infer from the `url`.
+#'   "zip" and "tar-gzip". Leave NULL to infer from the \code{url}.
 #'
 #' @return If successful, returns the path to the downloaded checkpoint.
 #' @export
 #'
 #' @source \url{https://github.com/google-research/bert}
-#'   \url{https://github.com/allenai/scibert}
+#' @source \url{https://github.com/allenai/scibert}
 #'
 #' @examples
 #' \dontrun{
@@ -137,9 +137,9 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 
 #' Choose a directory for BERT checkpoints
 #'
-#' If `dir` is not NULL, this function simply returns `dir`. Otherwise it checks
-#' the `RBERT.dir` param, and then uses \code{\link[rappdirs]{user_cache_dir}}
-#' to choose a directory if necessary.
+#' If \code{dir} is not NULL, this function simply returns \code{dir}. Otherwise
+#' it checks the `RBERT.dir` param, and then uses
+#' \code{\link[rappdirs]{user_cache_dir}} to choose a directory if necessary.
 #'
 #' @inheritParams download_BERT_checkpoint
 #'
@@ -190,7 +190,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @param checkpoint_zip_path The path to which the checkpoint zip should be
 #'   downloaded.
 #'
-#' @return `TRUE` invisibly.
+#' @return \code{TRUE} invisibly.
 #' @keywords internal
 .download_BERT_checkpoint <- function(url, checkpoint_zip_path) {
   status <- utils::download.file(
@@ -209,7 +209,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @inheritParams download_BERT_checkpoint
 #' @inheritParams .download_BERT_checkpoint
 #'
-#' @return `TRUE` invisibly.
+#' @return \code{TRUE} invisibly.
 #' @keywords internal
 .process_BERT_checkpoint <- function(dir,
                                      checkpoint_archive_path,
@@ -364,7 +364,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @inheritParams download_BERT_checkpoint
 #'
 #' @return A character vector file path, reflecting the "name" part of a
-#'   checkpoint `url`, placed within `dir`.
+#'   checkpoint \code{url}, placed within \code{dir}.
 #' @keywords internal
 .infer_checkpoint_subdir <- function(url, dir) {
   return(
@@ -407,8 +407,8 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 
 #' Set the directory for BERT checkpoints
 #'
-#' Set a given `dir` as the default BERT checkpoint directory for this session,
-#' and create it if it does not exist.
+#' Set a given \code{dir} as the default BERT checkpoint directory for this
+#' session, and create it if it does not exist.
 #'
 #' @inheritParams download_BERT_checkpoint
 #'
@@ -428,7 +428,7 @@ set_BERT_dir <- function(dir) {
 }
 
 # Copied from `rlang` to avoid importing that package. Roxygen doesn't like it
-# and I'm not sure how to fix that, so install I'm not documenting.
+# and I'm not sure how to fix that, so instead I'm not documenting.
 `%||%` <- function (x, y) {
   if (is.null(x))
     y
