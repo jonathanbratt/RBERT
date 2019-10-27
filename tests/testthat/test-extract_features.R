@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 test_that("features and examples routines work", {
   examples <- list(InputExample_EF(unique_id = 1,
                                    text_a = "I saw the branch on the bank.",
                                    text_b = "A second sequence of words."),
                    InputExample_EF(unique_id = 2,
                                    text_a = "I saw the branch of the bank."))
-  tokenizer <- FullTokenizer("vocab.txt")
-  feat_in <- convert_single_example_EF(ex_index = 6L,
+  # tokenizer <- FullTokenizer("vocab.txt")
+  # saveRDS(tokenizer, here::here("tests", "testthat", "tokenizer.rds"))
+  tokenizer <- readRDS(here::here("tests", "testthat", "tokenizer.rds"))
+  # tokenizer <- readRDS("tokenizer.rds")
+  feat_in <- .convert_single_example_EF(ex_index = 6L,
                                     example = examples[[2]],
                                     seq_length = 5L,
                                     tokenizer = tokenizer)
@@ -46,10 +48,62 @@ test_that("features and examples routines work", {
                             bert_config_file = bert_config_file,
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L)
-  testthat::expect_equal(length(feats$layer_outputs$example_1$features), 17L)
 
-  # There may be some minor numerical differences across different systems.
-  # Need to do a comparison along the lines of dplyr::near.
+  # Each token should be repeated 4 times (once for each of the 4 layers
+  # requested by default). I'm sure there's a better way to do this, but this
+  # works for these sentences.
+  tokens <- unlist(
+    c(
+      "[CLS]",
+      tolower(stringr::str_extract_all(
+        examples[[1]]$text_a,
+        "\\b[^\\s]+\\b",
+        simplify = TRUE
+      )),
+      ".",
+      "[SEP]",
+      tolower(stringr::str_extract_all(
+        examples[[1]]$text_b,
+        "\\b[^\\s]+\\b",
+        simplify = TRUE
+      )),
+      ".",
+      "[SEP]",
+      "[CLS]",
+      tolower(stringr::str_extract_all(
+        examples[[1]]$text_a,
+        "\\b[^\\s]+\\b",
+        simplify = TRUE
+      )),
+      ".",
+      "[SEP]"
+    )
+  )
+
+  expect_equal(
+    sort(unique(feats$layer_outputs$token)),
+    sort(unique(tokens))
+  )
+
+  # By default we fetch the last 4 layers.
+  expect_equal(nrow(feats$layer_outputs), length(tokens) * 4)
+  expect_equal(
+    ncol(feats$layer_outputs),
+    5L + 768L
+  )
+
+  # Make sure we can grab layer 0 when we want to.
+  feats <- extract_features(examples = examples,
+                            vocab_file = vocab_file,
+                            bert_config_file = bert_config_file,
+                            init_checkpoint = init_checkpoint,
+                            batch_size = 2L,
+                            layer_indexes = -4:0)
+
+  # There may be some minor numerical differences across different systems. Need
+  # to do a comparison along the lines of dplyr::near. Needed to update these
+  # tests for the new format, because some of the layer/token index repeats went
+  # away, and thus the sum changed. I tibbled the expected feats and resaved.
   test_feats_flat <- suppressWarnings(as.numeric(unlist(feats$layer_outputs)))
 
   expected_feats <- readRDS("sample_feats.rds")
@@ -91,16 +145,16 @@ test_that("features and examples routines work", {
 })
 
 
-test_that("get_actual_index works", {
-  testthat::expect_error(get_actual_index(index = 0, length = 10),
+test_that(".get_actual_index works", {
+  testthat::expect_error(.get_actual_index(index = 0, length = 10),
                          "Ambiguous")
 
-  testthat::expect_error(get_actual_index(index = 11, length = 10),
+  testthat::expect_error(.get_actual_index(index = 11, length = 10),
                          "out of range")
 
-  testthat::expect_identical(get_actual_index(index = -2, length = 10), 9L)
+  testthat::expect_identical(.get_actual_index(index = -2, length = 10), 9L)
 
-  testthat::expect_identical(get_actual_index(index = 9, length = 10), 9L)
+  testthat::expect_identical(.get_actual_index(index = 9, length = 10), 9L)
 })
 
 test_that("make_examples_simple works", {
