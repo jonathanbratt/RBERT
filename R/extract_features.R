@@ -363,20 +363,6 @@ input_fn_builder_EF <- function(features,
     stop("input_ids, input_mask, or input_type_ids are wrong length.") # nocov
   }
 
-  # Print out the first few examples being processed,
-  # so we can see that it's doing something. -JDB
-  # if (ex_index <= 5) {
-  #   print("*** Example ***")
-  #   print(paste("unique_id:", example$unique_id))
-  #   print("tokens:")
-  #   print(paste(tokens, collapse=" "))
-  #   print("input_ids:")
-  #   print(paste(input_ids, collapse=" "))
-  #   print("input_mask:")
-  #   print(paste(input_mask, collapse=" "))
-  #   print("input_type_ids:")
-  #   print(paste(input_type_ids, collapse=" "))
-  # }
   feature <- .InputFeatures_EF(unique_id = example$unique_id,
                               tokens = tokens,
                               input_ids = input_ids,
@@ -636,7 +622,7 @@ extract_features <- function(examples,
 
   # Tidy everything
   if (wants_output) {
-    big_output <- .extract_vectors_df(big_output)
+    big_output <- .extract_output_df(big_output)
     if (!include_zeroth) {
       big_output <- dplyr::filter(big_output, layer_index != 0)
     }
@@ -738,7 +724,7 @@ make_examples_simple <- function(seq_list) {
 #' @return The embedding vector components as a tbl_df, for all tokens and all
 #'   layers.
 #' @keywords internal
-.extract_values <- function(layer_outputs) {
+.extract_output_values <- function(layer_outputs) {
   vec_len <- length(
     layer_outputs$example_1$features$token_1$layers[[1]]$values
   )
@@ -771,7 +757,7 @@ make_examples_simple <- function(seq_list) {
 #' @return The embedding vector components as a tbl_df, for all tokens and all
 #'   layers.
 #' @keywords internal
-.extract_labels <- function(layer_outputs) {
+.extract_output_labels <- function(layer_outputs) {
   lab_df <- purrr::map_dfr(
     layer_outputs,
     function(ex_data) {
@@ -824,8 +810,8 @@ make_examples_simple <- function(seq_list) {
 #' @return The embedding vector components as a tbl_df, for all tokens and all
 #'   layers.
 #' @keywords internal
-.extract_vectors_df <- function(layer_outputs) {
-  vals <- .extract_values(layer_outputs)
-  labs <- .extract_labels(layer_outputs)
+.extract_output_df <- function(layer_outputs) {
+  vals <- .extract_output_values(layer_outputs)
+  labs <- .extract_output_labels(layer_outputs)
   return(dplyr::bind_cols(labs, vals))
 }
