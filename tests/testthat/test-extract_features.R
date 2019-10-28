@@ -20,8 +20,8 @@ test_that("features and examples routines work", {
                                    text_a = "I saw the branch of the bank."))
   # tokenizer <- FullTokenizer("vocab.txt")
   # saveRDS(tokenizer, here::here("tests", "testthat", "tokenizer.rds"))
-  tokenizer <- readRDS(here::here("tests", "testthat", "tokenizer.rds"))
-  # tokenizer <- readRDS("tokenizer.rds")
+  # tokenizer <- readRDS(here::here("tests", "testthat", "tokenizer.rds"))
+  tokenizer <- readRDS("tokenizer.rds")
   feat_in <- .convert_single_example_EF(ex_index = 6L,
                                     example = examples[[2]],
                                     seq_length = 5L,
@@ -106,6 +106,9 @@ test_that("features and examples routines work", {
   # away, and thus the sum changed. I tibbled the expected feats and resaved.
   test_feats_flat <- suppressWarnings(as.numeric(unlist(feats$layer_outputs)))
 
+  # expected_feats <- readRDS(
+  #   here::here("tests", "testthat", "sample_feats.rds")
+  # )
   expected_feats <- readRDS("sample_feats.rds")
   expected_feats_flat <- suppressWarnings(as.numeric(unlist(expected_feats)))
 
@@ -125,10 +128,23 @@ test_that("features and examples routines work", {
 
   testthat::expect_lte(mean_relative_difference, tol)
 
-  test_attn_flat <- suppressWarnings(as.numeric(unlist(feats$attention_probs)))
+  test_attn_flat <- suppressWarnings(
+    as.numeric(unlist(feats$attention_probs$attention_weight))
+  )
 
+  # expected_attn <- readRDS(
+  #   here::here("tests", "testthat", "attention_probs.rds")
+  # )
   expected_attn <- readRDS("attention_probs.rds")
   expected_attn_flat <- suppressWarnings(as.numeric(unlist(expected_attn)))
+  expected_attn_flat <- expected_attn_flat[!is.na(expected_attn_flat)]
+
+  # The original expected value has rotated matrices relative to the tidy
+  # tibble. However, it's unlikely that they'd work out to have sum and mean
+  # below within tolerance if they were actually different, so I'm sorting to
+  # get a "good enough" evaluation.
+  expected_attn_flat <- sort(expected_attn_flat)
+  test_attn_flat <- sort(test_attn_flat)
 
   rel_diff_sum <- abs(sum(test_attn_flat, na.rm = TRUE) -
                         sum(expected_attn_flat, na.rm = TRUE)) /
@@ -142,8 +158,38 @@ test_that("features and examples routines work", {
                                    na.rm = TRUE)
 
   testthat::expect_lte(mean_relative_difference, tol)
-})
 
+  feats <- extract_features(examples = examples,
+                            vocab_file = vocab_file,
+                            bert_config_file = bert_config_file,
+                            init_checkpoint = init_checkpoint,
+                            batch_size = 2L,
+                            features = "output")
+  expect_is(feats, "tbl_df")
+  expect_equal(
+    colnames(feats),
+    c(
+      "sequence_index", "segment_index", "token_index", "token", "layer_index",
+      paste0("V", 1:768)
+    )
+  )
+
+  feats <- extract_features(examples = examples,
+                            vocab_file = vocab_file,
+                            bert_config_file = bert_config_file,
+                            init_checkpoint = init_checkpoint,
+                            batch_size = 2L,
+                            features = "attention")
+  expect_is(feats, "tbl_df")
+  expect_equal(
+    colnames(feats),
+    c(
+      "sequence_index", "token_index", "segment_index", "token",
+      "layer_index", "head_index", "attention_token_index", "attention_segment_index",
+      "attention_token", "attention_weight"
+    )
+  )
+})
 
 test_that(".get_actual_index works", {
   testthat::expect_error(.get_actual_index(index = 0, length = 10),

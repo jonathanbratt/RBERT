@@ -17,6 +17,6 @@ The embedding vector components as a tbl_df, for all tokens and all
 Extract the embedding vector values from output for
 \code{\link{extract_features}}. The columns identifying example sequence,
 segment, token, and row are extracted separately, by
-\code{\link{.extract_labels}}.
+\code{\link{.extract_output_labels}}.
 }
 \keyword{internal}

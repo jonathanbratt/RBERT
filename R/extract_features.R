@@ -554,6 +554,7 @@ extract_features <- function(examples,
     unique_id <- as.integer(result$unique_id)
     feature <- unique_id_to_feature[[unique_id]]
     num_tokens <- length(feature$tokens)
+    output_str <- paste0("example_", unique_id)
 
     if (wants_output) {
       output_list <- list()
@@ -591,7 +592,6 @@ extract_features <- function(examples,
         out_filename <- paste0(output_file, unique_id, ".rds") # nocov start
         saveRDS(output_list, out_filename)                     # nocov end
       }
-      output_str <- paste0("example_", unique_id)
       big_output[[output_str]] <- output_list
     }
 
@@ -626,6 +626,9 @@ extract_features <- function(examples,
     if (!include_zeroth) {
       big_output <- dplyr::filter(big_output, layer_index != 0)
     }
+  }
+  if (wants_attention) {
+    big_attention <- .extract_attention_df(big_attention)
   }
 
   if (wants_output) {
@@ -712,12 +715,15 @@ make_examples_simple <- function(seq_list) {
   })
 }
 
+
+# tidy features -----------------------------------------------------------
+
 #' Extract Embeddings
 #'
 #' Extract the embedding vector values from output for
 #' \code{\link{extract_features}}. The columns identifying example sequence,
 #' segment, token, and row are extracted separately, by
-#' \code{\link{.extract_labels}}.
+#' \code{\link{.extract_output_labels}}.
 #'
 #' @param layer_outputs The \code{layer_outputs} component.
 #'
@@ -761,6 +767,8 @@ make_examples_simple <- function(seq_list) {
   lab_df <- purrr::map_dfr(
     layer_outputs,
     function(ex_data) {
+      # Note: Don't use imap to "simplify" this, because they have names, and we
+      # want the index, not the name.
       purrr::map_dfr(
         seq_along(ex_data$features),
         function(tok_index) {
@@ -772,9 +780,9 @@ make_examples_simple <- function(seq_list) {
               ex_index <- ex_data$linex_index
               tok_str <- tok_data$token
               tib <- dplyr::tibble(sequence_index = ex_index,
-                                    token_index = tok_index,
-                                    token = tok_str,
-                                    layer_index = layer_index)
+                                   token_index = tok_index,
+                                   token = tok_str,
+                                   layer_index = layer_index)
             })
         })
     })
@@ -783,16 +791,22 @@ make_examples_simple <- function(seq_list) {
   # point in the process, the only way to identify tokens in the second
   # segment is the rule that every token after the first [SEP] token is in the
   # second segment.
-  lab_df <- lab_df %>%
-    dplyr::mutate(is_sep = token == "[SEP]") %>%
-    dplyr::group_by(sequence_index, layer_index) %>%
-    dplyr::mutate(segment_index = cumsum(is_sep) - is_sep + 1) %>%
-    dplyr::select(sequence_index,
-                  segment_index,
-                  token_index,
-                  token,
-                  layer_index) %>%
-    dplyr::ungroup()
+  lab_df <- dplyr::ungroup(
+    dplyr::select(
+      dplyr::mutate(
+        dplyr::group_by(
+          dplyr::mutate(lab_df, is_sep = token == "[SEP]"),
+          sequence_index, layer_index
+        ),
+        segment_index = cumsum(is_sep) - is_sep + 1
+      ),
+      sequence_index,
+      segment_index,
+      token_index,
+      token,
+      layer_index
+    )
+  )
   return(lab_df)
 }
 
@@ -815,3 +829,159 @@ make_examples_simple <- function(seq_list) {
   labs <- .extract_output_labels(layer_outputs)
   return(dplyr::bind_cols(labs, vals))
 }
+
+#' Tidy Attention Probabilities
+#'
+#' @param attention_probs Raw attention probabilities.
+#'
+#' @return A tibble of attention weights.
+#' @keywords internal
+.extract_attention_df <- function(attention_probs) {
+  # The result of this function should be a tibble with these columns:
+  # * sequence_index
+  # * segment_index
+  # * token_index
+  # * token
+  # * attention_token_index
+  # * attention_segment_index
+  # * attention_token
+  # * layer_index
+  # * head_index
+  # * weight
+  # The first 4 of those are identical to the layer_outputs df, but getting
+  # there will be slightly different.
+  attention_labels <- .extract_attention_labels(attention_probs)
+  attention_weights <- .extract_attention_weights(attention_probs)
+  layer_map <- .extract_attention_layer_names(attention_probs)
+
+  return(
+    tibble::as_tibble(
+      dplyr::select(
+        dplyr::left_join(
+          dplyr::left_join(
+            dplyr::left_join(
+              attention_weights,
+              attention_labels,
+              by = c("sequence_index", "token_index")
+            ),
+            attention_labels,
+            by = c("sequence_index", "attention_token_index" = "token_index"),
+            suffix = c("", "_attention")
+          ),
+          layer_map,
+          by = "fake_layer_index"
+        ),
+        sequence_index,
+        token_index,
+        segment_index,
+        token,
+        layer_index,
+        head_index,
+        attention_token_index,
+        attention_segment_index = segment_index_attention,
+        attention_token = token_attention,
+        attention_weight
+      )
+    )
+  )
+}
+
+#' Tidy Attention Weights
+#'
+#' @inheritParams .extract_attention_df
+#'
+#' @return A tibble of attention weights
+#' @keywords internal
+.extract_attention_weights <- function(attention_probs) {
+  return(
+    dplyr::mutate_at(
+      purrr::map_dfr(
+        unname(attention_probs),
+        function(ex_data) {
+          ex_data$sequence <- NULL
+          purrr::map_dfr(
+            unname(ex_data),
+            function(layer_data) {
+              purrr::map_dfr(
+                purrr::array_tree(layer_data),
+                function(this_head) {
+                  purrr::map_dfr(this_head, function(this_token) {
+                    data.frame(
+                      attention_token_index = seq_along(this_token),
+                      attention_weight = unlist(this_token)
+                    )
+                  },
+                  .id = "token_index"
+                  )
+                },
+                .id = "head_index"
+              )
+            },
+            .id = "fake_layer_index"
+          )
+        },
+        .id = "sequence_index"
+      ),
+      c("sequence_index", "fake_layer_index", "head_index", "token_index"),
+      as.integer
+    )
+  )
+}
+
+#' Tidy Attention Layer Names
+#'
+#' @inheritParams .extract_attention_df
+#'
+#' @return A tibble of attention layer indexes and fake indexes (a temporary
+#'   index based on this layer's position in the list).
+#' @keywords internal
+.extract_attention_layer_names <- function(attention_probs) {
+  layers <- names(attention_probs[[1]])
+  layers <- layers[layers != "sequence"]
+  return(
+    data.frame(
+      fake_layer_index = seq_along(layers),
+      layer_index = as.integer(
+        stringr::str_extract(
+          layers,
+          "\\d+$"
+        )
+      )
+    )
+  )
+}
+
+#' Tidy Token Labels, Etc
+#'
+#' @inheritParams .extract_attention_df
+#'
+#' @return A tibble with token_index, token, sequence_index, and segment_index.
+#' @keywords internal
+.extract_attention_labels <- function(attention_probs) {
+  return(
+    dplyr::select(
+      dplyr::ungroup(
+        dplyr::mutate(
+          dplyr::group_by(
+            dplyr::mutate(
+              tidyr::unnest_longer(
+                tibble::enframe(
+                  purrr::map(unname(attention_probs), "sequence"),
+                  name = "sequence_index"
+                ),
+                value,
+                indices_to = "token_index",
+                values_to = "token"
+              ),
+              is_sep = token == "[SEP]"
+            ),
+            sequence_index
+          ),
+          segment_index = cumsum(is_sep) - is_sep + 1L
+        )
+      ),
+      -is_sep
+    )
+  )
+}
+
