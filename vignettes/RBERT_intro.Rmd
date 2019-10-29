@@ -62,6 +62,7 @@ straightforward.
 
 ```{r eval = FALSE}
 library(RBERT)
+library(dplyr)
 
 # Download pre-trained BERT model. This will go to an appropriate cache
 # directory by default.
@@ -95,15 +96,23 @@ BERT_feats <- extract_features(
 
 # Extract the final layer output vector for the "[CLS]" token of the first
 # sentence. 
-output_vector1 <- BERT_feats$layer_outputs$example_1$features$token_1$layers$layer_output_12$values
+output_vector1 <- BERT_feats$output %>%
+  dplyr::filter(
+    sequence_index == 1, 
+    token == "[CLS]", 
+    layer_index == 12
+  ) %>% 
+  dplyr::select(dplyr::starts_with("V")) %>% 
+  unlist()
+output_vector1
 
 # Extract output vectors for all sentences...
 # These vectors can be used as input features for downstream models.
 # Convenience functions for doing this extraction will be added to the
 # package in the near future.
-output_vectors <- purrr::map(BERT_feats$layer_outputs, function(sentence) {
-  sentence$features$token_1$layers$layer_output_12$values
-})
+output_vectors <- BERT_feats$output %>% 
+  dplyr::filter(token_index == 1, layer_index == 12)
+output_vectors
 
 # Clean up.
 unlink(temp_dir, recursive = TRUE)
