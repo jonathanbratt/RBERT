@@ -195,6 +195,30 @@ test_that("features and examples routines work", {
       "attention_segment_index", "attention_token", "attention_weight"
     )
   )
+
+  feats <- extract_features(examples = examples,
+                            vocab_file = vocab_file,
+                            bert_config_file = bert_config_file,
+                            init_checkpoint = init_checkpoint,
+                            batch_size = 2L,
+                            features = "attention_arrays")
+
+  test_attn_flat <- suppressWarnings(
+    as.numeric(unlist(feats$attention_arrays))
+  )
+  test_attn_flat <- test_attn_flat[!is.na(test_attn_flat)]
+  test_attn_flat <- sort(test_attn_flat)
+
+  rel_diff_sum <- abs(sum(test_attn_flat, na.rm = TRUE) -
+                        sum(expected_attn_flat, na.rm = TRUE)) /
+    (tol + abs(sum(test_attn_flat, na.rm = TRUE) +
+                 sum(expected_attn_flat, na.rm = TRUE)))
+  testthat::expect_lte(rel_diff_sum, tol)
+
+  mean_relative_difference <- mean(abs(test_attn_flat - expected_attn_flat) /
+                                     (tol + abs(test_attn_flat +
+                                                  expected_attn_flat)),
+                                   na.rm = TRUE)
 })
 
 test_that(".get_actual_index works", {

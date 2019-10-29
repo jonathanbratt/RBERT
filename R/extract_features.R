@@ -440,10 +440,11 @@ input_fn_builder_EF <- function(features,
 #'   or tf.embedding_lookup() for the word embeddings.
 #' @param batch_size Integer; how many examples to process per batch.
 #' @param features Character; whether to return "output" (layer outputs, the
-#'   default), "attention" (attention probabilities), or both.
+#'   default), "attention" (attention probabilities), "attention_arrays", or a
+#'   combination thereof.
 #'
 #' @return A list with elements "output" (the layer outputs as a tibble),
-#'   "attention" (the attention weights as a tibble), or both.
+#'   "attention" (the attention weights as a tibble), and/or "attention_arrays".
 #' @export
 #'
 #' @examples
@@ -471,7 +472,9 @@ extract_features <- function(examples,
                              layer_indexes = -4:-1,
                              use_one_hot_embeddings = FALSE,
                              batch_size = 2L,
-                             features = c("output", "attention")) {
+                             features = c("output",
+                                          "attention",
+                                          "attention_arrays")) {
   if (missing(features)) {
     features <- "output"
   }
@@ -527,12 +530,16 @@ extract_features <- function(examples,
 
 
   # Set up the needed lists. They'll be filled in the while below.
+  big_output <- NULL
+  attention_arrays <- NULL
+  attention_tibble <- NULL
   wants_output <- "output" %in% features
   wants_attention <- "attention" %in% features
+  wants_attention_arrays <- "attention_arrays" %in% features
   if (wants_output) {
     big_output <- list()
   }
-  if (wants_attention) {
+  if (wants_attention | wants_attention_arrays) {
     big_attention <- list()
   }
 
@@ -598,7 +605,7 @@ extract_features <- function(examples,
       big_output[[output_str]] <- output_list
     }
 
-    if (wants_attention) {
+    if (wants_attention | wants_attention_arrays) {
       # ATTN: modified below to extract attention data
       this_seq_attn <- list()
       for (j in seq_along(layer_indexes)) {
@@ -631,19 +638,21 @@ extract_features <- function(examples,
     }
   }
   if (wants_attention) {
-    big_attention <- .extract_attention_df(big_attention)
+    attention_tibble <- .extract_attention_df(big_attention)
+  }
+  if (wants_attention_arrays) {
+    attention_arrays <- big_attention
   }
 
-  if (wants_output) {
-    if (wants_attention) {
-      return(list("output" = big_output,
-                  "attention" = big_attention))
-    } else {
-      return(list("output" = big_output))
-    }
-  } else {
-    return(list("attention" = big_attention))
-  }
+  # I do it this way so, if they're NULL, that value won't appear in the list,
+  # rather than appearing there as "NULL" like it would if I set this up in one
+  # step.
+  to_return <- list()
+  to_return$output <- big_output
+  to_return$attention <- attention_tibble
+  to_return$attention_arrays <- attention_arrays
+
+  return(to_return)
 }
 
 # .get_actual_index ---------------------------------------------------

@@ -7,7 +7,7 @@
 extract_features(examples, vocab_file, bert_config_file, init_checkpoint,
   output_file = NULL, max_seq_length = 128L, layer_indexes = -4:-1,
   use_one_hot_embeddings = FALSE, batch_size = 2L,
-  features = c("output", "attention"))
+  features = c("output", "attention", "attention_arrays"))
 }
 \arguments{
 \item{examples}{List of \code{InputExample_EF}s to convert.}
@@ -39,11 +39,12 @@ or tf.embedding_lookup() for the word embeddings.}
 \item{batch_size}{Integer; how many examples to process per batch.}
 
 \item{features}{Character; whether to return "output" (layer outputs, the
-default), "attention" (attention probabilities), or both.}
+default), "attention" (attention probabilities), "attention_arrays", or a
+combination thereof.}
 }
 \value{
 A list with elements "output" (the layer outputs as a tibble),
-  "attention" (the attention weights as a tibble), or both.
+  "attention" (the attention weights as a tibble), and/or "attention_arrays".
 }
 \description{
 Given example sentences (as a list of \code{InputExample_EF}s), apply an
