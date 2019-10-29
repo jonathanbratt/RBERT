@@ -187,8 +187,7 @@ input_fn_builder_EF <- function(features,
                              init_checkpoint,
                              layer_indexes,
                              use_tpu,
-                             use_one_hot_embeddings,
-                             include_zeroth) {
+                             use_one_hot_embeddings) {
   # The `model_fn` for TPUEstimator.
   model_fn <- function(features, labels, mode, params) {
     unique_ids <- features$unique_ids

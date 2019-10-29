@@ -810,11 +810,6 @@ convert_examples_to_features <- function(examples,
     examples,
     function(ex_index, example,
              label_list, max_seq_length, tokenizer) {
-      # if (ex_index %% 10000 == 1) {
-      #   # Print out every 10K starting with the first
-      #   print(paste("Converting example", ex_index,
-      #               "of", num_examples ))
-      # }
       convert_single_example(ex_index = ex_index,
                              example = example,
                              label_list = label_list,
