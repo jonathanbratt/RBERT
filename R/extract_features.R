@@ -439,10 +439,11 @@ input_fn_builder_EF <- function(features,
 #' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
 #'   or tf.embedding_lookup() for the word embeddings.
 #' @param batch_size Integer; how many examples to process per batch.
-#' @param features Character; whether to return "output" (layer outputs),
-#'   "attention" (attention probabilities), or both.
+#' @param features Character; whether to return "output" (layer outputs, the
+#'   default), "attention" (attention probabilities), or both.
 #'
-#' @return A list containing output features for the input examples.
+#' @return A list with elements "output" (the layer outputs as a tibble),
+#'   "attention" (the attention weights as a tibble), or both.
 #' @export
 #'
 #' @examples
@@ -471,6 +472,9 @@ extract_features <- function(examples,
                              use_one_hot_embeddings = FALSE,
                              batch_size = 2L,
                              features = c("output", "attention")) {
+  if (missing(features)) {
+    features <- "output"
+  }
   features <- match.arg(features, several.ok = TRUE)
   include_zeroth <- FALSE
   if (0 %in% layer_indexes) {
@@ -632,13 +636,13 @@ extract_features <- function(examples,
 
   if (wants_output) {
     if (wants_attention) {
-      return(list("layer_outputs" = big_output,
-                  "attention_probs" = big_attention))
+      return(list("output" = big_output,
+                  "attention" = big_attention))
     } else {
-      return(big_output)
+      return(list("output" = big_output))
     }
   } else {
-    return(big_attention)
+    return(list("attention" = big_attention))
   }
 }
 

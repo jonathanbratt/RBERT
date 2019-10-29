@@ -81,16 +81,17 @@ test_that("features and examples routines work", {
   )
 
   expect_equal(
-    sort(unique(feats$layer_outputs$token)),
+    sort(unique(feats$output$token)),
     sort(unique(tokens))
   )
 
   # By default we fetch the last 4 layers.
-  expect_equal(nrow(feats$layer_outputs), length(tokens) * 4)
+  expect_equal(nrow(feats$output), length(tokens) * 4)
   expect_equal(
-    ncol(feats$layer_outputs),
+    ncol(feats$output),
     5L + 768L
   )
+  expect_length(feats, 1)
 
   # Make sure we can grab layer 0 when we want to.
   feats <- extract_features(examples = examples,
@@ -98,13 +99,16 @@ test_that("features and examples routines work", {
                             bert_config_file = bert_config_file,
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L,
-                            layer_indexes = -4:0)
+                            layer_indexes = -4:0,
+                            features = c("output", "attention"))
+
+  expect_length(feats, 2)
 
   # There may be some minor numerical differences across different systems. Need
   # to do a comparison along the lines of dplyr::near. Needed to update these
   # tests for the new format, because some of the layer/token index repeats went
   # away, and thus the sum changed. I tibbled the expected feats and resaved.
-  test_feats_flat <- suppressWarnings(as.numeric(unlist(feats$layer_outputs)))
+  test_feats_flat <- suppressWarnings(as.numeric(unlist(feats$output)))
 
   # expected_feats <- readRDS(
   #   here::here("tests", "testthat", "sample_feats.rds")
@@ -129,7 +133,7 @@ test_that("features and examples routines work", {
   testthat::expect_lte(mean_relative_difference, tol)
 
   test_attn_flat <- suppressWarnings(
-    as.numeric(unlist(feats$attention_probs$attention_weight))
+    as.numeric(unlist(feats$attention$attention_weight))
   )
 
   # expected_attn <- readRDS(
@@ -165,9 +169,10 @@ test_that("features and examples routines work", {
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L,
                             features = "output")
-  expect_is(feats, "tbl_df")
+  expect_length(feats, 1)
+  expect_is(feats$output, "tbl_df")
   expect_equal(
-    colnames(feats),
+    colnames(feats$output),
     c(
       "sequence_index", "segment_index", "token_index", "token", "layer_index",
       paste0("V", 1:768)
@@ -180,13 +185,14 @@ test_that("features and examples routines work", {
                             init_checkpoint = init_checkpoint,
                             batch_size = 2L,
                             features = "attention")
-  expect_is(feats, "tbl_df")
+  expect_length(feats, 1)
+  expect_is(feats$attention, "tbl_df")
   expect_equal(
-    colnames(feats),
+    colnames(feats$attention),
     c(
       "sequence_index", "token_index", "segment_index", "token",
-      "layer_index", "head_index", "attention_token_index", "attention_segment_index",
-      "attention_token", "attention_weight"
+      "layer_index", "head_index", "attention_token_index",
+      "attention_segment_index", "attention_token", "attention_weight"
     )
   )
 })

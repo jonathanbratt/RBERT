@@ -38,11 +38,12 @@ or tf.embedding_lookup() for the word embeddings.}
 
 \item{batch_size}{Integer; how many examples to process per batch.}
 
-\item{features}{Character; whether to return "output" (layer outputs),
-"attention" (attention probabilities), or both.}
+\item{features}{Character; whether to return "output" (layer outputs, the
+default), "attention" (attention probabilities), or both.}
 }
 \value{
-A list containing output features for the input examples.
+A list with elements "output" (the layer outputs as a tibble),
+  "attention" (the attention weights as a tibble), or both.
 }
 \description{
 Given example sentences (as a list of \code{InputExample_EF}s), apply an
