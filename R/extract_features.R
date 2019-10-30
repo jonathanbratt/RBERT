@@ -64,7 +64,7 @@ InputExample_EF <- function(unique_id,
 #'
 #' @return An object of class \code{InputFeatures_FE}.
 #' @keywords internal
-InputFeatures_EF <- function(unique_id,
+.InputFeatures_EF <- function(unique_id,
                              tokens,
                              input_ids,
                              input_mask,
@@ -149,7 +149,7 @@ input_fn_builder_EF <- function(features,
   }
   return(input_fn)
 }
-# model_fn_builder_EF -----------------------------------------------------
+# .model_fn_builder_EF -----------------------------------------------------
 
 #' Define \code{model_fn} closure for \code{TPUEstimator}
 #'
@@ -159,17 +159,12 @@ input_fn_builder_EF <- function(features,
 #'
 #' The \code{model_fn} function takes four parameters: \describe{
 #' \item{features}{A list (or similar structure) that contains objects such as
-#'  \code{input_ids}, \code{input_mask}, \code{tokens},  and
-#'  \code{input_type_ids}. These objects will be inputs to the
-#'  \code{create_model}
-#'  function.}
-#' \item{labels}{Not used in this function, but presumably we need to
-#'  keep this slot here.}
-#' \item{mode}{Character; value such as "train", "infer",
-#'  or "eval".}
-#' \item{params}{Not used in this function, but presumably we need
-#'  to keep this slot here.}
-#'  }
+#' \code{input_ids}, \code{input_mask}, \code{tokens},  and
+#' \code{input_type_ids}. These objects will be inputs to the
+#' \code{create_model} function.} \item{labels}{Not used in this function, but
+#' presumably we need to keep this slot here.} \item{mode}{Character; value such
+#' as "train", "infer", or "eval".} \item{params}{Not used in this function, but
+#' presumably we need to keep this slot here.} }
 #'
 #' The output of \code{model_fn} is the result of a
 #' \code{tf$contrib$tpu$TPUEstimatorSpec} call.
@@ -188,7 +183,7 @@ input_fn_builder_EF <- function(features,
 #'
 #' @return \code{model_fn} closure for \code{TPUEstimator}.
 #' @keywords internal
-model_fn_builder_EF <- function(bert_config,
+.model_fn_builder_EF <- function(bert_config,
                              init_checkpoint,
                              layer_indexes,
                              use_tpu,
@@ -231,17 +226,6 @@ model_fn_builder_EF <- function(bert_config,
                                                 assignment_map)
     }
 
-    print("*** Trainable Variables ***")
-    for (var in tvars) {
-      init_string <- ""
-      if (var$name %in% names(initialized_variable_names)) {
-        init_string <- ", *INIT_FROM_CKPT*"
-      }
-      print(paste0("  name = ", var$name,
-                   ", shape = ", var$shape,
-                   init_string))
-    }
-
     all_layers <- model$all_encoder_layers
 
     # ATTN: modified below to get attention_data from model
@@ -251,14 +235,15 @@ model_fn_builder_EF <- function(bert_config,
     predictions <- list()
     predictions[["unique_id"]] <-  unique_ids
 
-    # for now, always include raw embeddings as the zeroth layer "output"
+    # Always include raw embeddings as the zeroth layer "output". We'll filter
+    # them back out if we don't want them.
     predictions[["layer_output_0"]] <- model$embedding_output
 
     for (i in seq_along(layer_indexes)) {
       layer_index <- layer_indexes[[i]]
       # Accomodate both positive and negative indices.
       # Note that `all_layers` is 1-indexed!
-      actual_index <- get_actual_index(layer_index, length(all_layers))
+      actual_index <- .get_actual_index(layer_index, length(all_layers))
       # For clarity, always use actual index to label outputs.
       key_str <- paste0("layer_output_", actual_index)
       predictions[[key_str]] <- all_layers[[actual_index]]
@@ -280,7 +265,7 @@ model_fn_builder_EF <- function(bert_config,
 
 
 
-# convert_single_example_EF -----------------------------------------------
+# .convert_single_example_EF -----------------------------------------------
 
 #' Convert a single \code{InputExample_EF} into a single \code{InputFeatures_EF}
 #'
@@ -299,7 +284,7 @@ model_fn_builder_EF <- function(bert_config,
 #'
 #' @return An object of class \code{InputFeatures_EF}.
 #' @keywords internal
-convert_single_example_EF <- function(ex_index,
+.convert_single_example_EF <- function(ex_index,
                                       example,
                                       seq_length,
                                       tokenizer) {
@@ -377,21 +362,7 @@ convert_single_example_EF <- function(ex_index,
     stop("input_ids, input_mask, or input_type_ids are wrong length.") # nocov
   }
 
-  # Print out the first few examples being processed,
-  # so we can see that it's doing something. -JDB
-  if (ex_index <= 5) {
-    print("*** Example ***")
-    print(paste("unique_id:", example$unique_id))
-    print("tokens:")
-    print(paste(tokens, collapse=" "))
-    print("input_ids:")
-    print(paste(input_ids, collapse=" "))
-    print("input_mask:")
-    print(paste(input_mask, collapse=" "))
-    print("input_type_ids:")
-    print(paste(input_type_ids, collapse=" "))
-  }
-  feature <- InputFeatures_EF(unique_id = example$unique_id,
+  feature <- .InputFeatures_EF(unique_id = example$unique_id,
                               tokens = tokens,
                               input_ids = input_ids,
                               input_mask = input_mask,
@@ -400,7 +371,7 @@ convert_single_example_EF <- function(ex_index,
   return(feature)
 }
 
-# convert_examples_to_features_EF -----------------------------------------
+# .convert_examples_to_features_EF -----------------------------------------
 
 #' Convert \code{InputExample_EF}s to \code{InputFeatures_EF}
 #'
@@ -416,7 +387,7 @@ convert_single_example_EF <- function(ex_index,
 #'
 #' @return A list of \code{InputFeatures}.
 #' @keywords internal
-convert_examples_to_features_EF <- function(examples,
+.convert_examples_to_features_EF <- function(examples,
                                             seq_length,
                                             tokenizer) {
   # I have no idea why they had to rename the elements of examples/features
@@ -430,7 +401,7 @@ convert_examples_to_features_EF <- function(examples,
     function(ex_index, example,
              seq_length, tokenizer) {
 
-      convert_single_example_EF(ex_index = ex_index,
+      .convert_single_example_EF(ex_index = ex_index,
                                 example = example,
                                 seq_length = seq_length,
                                 tokenizer = tokenizer)
@@ -463,21 +434,22 @@ convert_examples_to_features_EF <- function(examples,
 #'   considered together.
 #' @param layer_indexes Integer vector; indexes (positive, or negative counting
 #'   back from the end) indicating which layers to extract as "output features".
-#'   The "zeroth" layer embeddings (input embedding vectors to first layer) are
-#'   always included.
+#'   The "zeroth" layer embeddings are the input embeddings vectors to the first
+#'   layer.
 #' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
 #'   or tf.embedding_lookup() for the word embeddings.
 #' @param batch_size Integer; how many examples to process per batch.
+#' @param features Character; whether to return "output" (layer outputs, the
+#'   default), "attention" (attention probabilities), "attention_arrays", or a
+#'   combination thereof.
 #'
-#' @return A list containing output features for the input examples.
+#' @return A list with elements "output" (the layer outputs as a tibble),
+#'   "attention" (the attention weights as a tibble), and/or "attention_arrays".
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' temp_dir <- tempdir()
-#' BERT_PRETRAINED_DIR <- file.path(temp_dir,
-#'                                  "BERT_checkpoints",
-#'                                  "uncased_L-12_H-768_A-12")
+#' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
 #' vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
 #' init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
 #' bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
@@ -491,7 +463,7 @@ convert_examples_to_features_EF <- function(examples,
 #'                           init_checkpoint = init_checkpoint,
 #'                           batch_size = 2L)
 #' }
-extract_features <- function(examples, # list of InputExamples_EF
+extract_features <- function(examples,
                              vocab_file,
                              bert_config_file,
                              init_checkpoint,
@@ -499,52 +471,80 @@ extract_features <- function(examples, # list of InputExamples_EF
                              max_seq_length = 128L,
                              layer_indexes = -4:-1,
                              use_one_hot_embeddings = FALSE,
-                             batch_size = 2L) {
+                             batch_size = 2L,
+                             features = c("output",
+                                          "attention",
+                                          "attention_arrays")) {
+  if (missing(features)) {
+    features <- "output"
+  }
+  features <- match.arg(features, several.ok = TRUE)
+  include_zeroth <- FALSE
+  if (0 %in% layer_indexes) {
+    include_zeroth <- TRUE
+    layer_indexes <- layer_indexes[layer_indexes != 0]
+  }
+
   layer_indexes <- as.list(layer_indexes)
   bert_config <-  bert_config_from_json_file(bert_config_file)
   n_layers <- bert_config$num_hidden_layers
   tokenizer <- FullTokenizer(vocab_file = vocab_file,
-                                    do_lower_case = TRUE)
+                             do_lower_case = TRUE)
   is_per_host <- tensorflow::tf$contrib$tpu$InputPipelineConfig$PER_HOST_V2
 
   run_config <- tensorflow::tf$contrib$tpu$RunConfig(
     master = NULL, # assume for now *not* for TPU
     tpu_config = tensorflow::tf$contrib$tpu$TPUConfig(
       num_shards = 8L,
-      per_host_input_for_training = is_per_host))
+      per_host_input_for_training = is_per_host)
+  )
 
-  features <-  convert_examples_to_features_EF(examples = examples,
-                                               seq_length = max_seq_length,
-                                               tokenizer = tokenizer)
+  raw_features <-  .convert_examples_to_features_EF(examples = examples,
+                                                seq_length = max_seq_length,
+                                                tokenizer = tokenizer)
   unique_id_to_feature <- list()
-  for (feature in features) {
+  for (feature in raw_features) {
     unique_id_to_feature[[feature$unique_id]] <- feature
   }
 
-  model_fn <- model_fn_builder_EF(
+  model_fn <- .model_fn_builder_EF(
     bert_config = bert_config,
     init_checkpoint = init_checkpoint,
     layer_indexes = unlist(layer_indexes),
     use_tpu = FALSE,
-    use_one_hot_embeddings = use_one_hot_embeddings)
+    use_one_hot_embeddings = use_one_hot_embeddings
+  )
 
   estimator <- tensorflow::tf$contrib$tpu$TPUEstimator(
-    use_tpu=FALSE, # no tpu for now
+    use_tpu = FALSE, # no tpu support for now
     model_fn = reticulate::py_func(model_fn),
     config = run_config,
-    predict_batch_size = batch_size)
+    predict_batch_size = batch_size
+  )
 
-  input_fn <- input_fn_builder_EF(features = features,
+  input_fn <- input_fn_builder_EF(features = raw_features,
                                   seq_length = max_seq_length)
 
   result_iterator <- estimator$predict(reticulate::py_func(input_fn),
                                        yield_single_examples = TRUE)
 
+
+  # Set up the needed lists. They'll be filled in the while below.
+  big_output <- NULL
+  attention_arrays <- NULL
+  attention_tibble <- NULL
+  wants_output <- "output" %in% features
+  wants_attention <- "attention" %in% features
+  wants_attention_arrays <- "attention_arrays" %in% features
+  if (wants_output) {
+    big_output <- list()
+  }
+  if (wants_attention | wants_attention_arrays) {
+    big_attention <- list()
+  }
+
   # "...it is normal to keep running the iterator’s `next` operation till
   # Tensorflow’s tf.errors.OutOfRangeError exception is occurred."
-
-  big_output <- list()
-  big_attention <- list()
   while (TRUE) {
     result <- tryCatch({
       if ("next" %in% names(result_iterator)) {
@@ -564,71 +564,98 @@ extract_features <- function(examples, # list of InputExamples_EF
     unique_id <- as.integer(result$unique_id)
     feature <- unique_id_to_feature[[unique_id]]
     num_tokens <- length(feature$tokens)
-    output_list <- list()
-    output_list$linex_index <- unique_id
-    all_features <- list()
-    for (i in seq_len(num_tokens)) {
-      token <- feature$tokens[[i]]
-      all_layers <- list()
-      # Always include "zeroth" layer (fixed embeddings) for now
-      zeroth_layer <- list("index" = 0,
-                           "values" = result[["layer_output_0"]][i, ])
-      all_layers[["layer_output_0"]] <- zeroth_layer
+    output_str <- paste0("example_", unique_id)
+
+    if (wants_output) {
+      output_list <- list()
+      output_list$linex_index <- unique_id
+      all_features <- list()
+      for (i in seq_len(num_tokens)) {
+        token <- feature$tokens[[i]]
+        all_layers <- list()
+        # Always include "zeroth" layer (fixed embeddings) for now
+        zeroth_layer <- list("index" = 0,
+                             "values" = result[["layer_output_0"]][i, ])
+        all_layers[["layer_output_0"]] <- zeroth_layer
+        for (j in seq_along(layer_indexes)) {
+          layer_index <- layer_indexes[[j]]
+          # Accomodate both positive and negative indices.
+          # Note that `all_layers` is 1-indexed!
+          actual_index <- .get_actual_index(layer_index, n_layers)
+          # For clarity, always use actual index to label outputs.
+          key_str <- paste0("layer_output_", actual_index)
+          layer_output <- result[[key_str]]
+
+          layers <- list()
+          layers$index <- actual_index
+          layers$values <- layer_output[i, ]
+          all_layers[[key_str]] <- layers
+        }
+        raw_features <- list()
+        raw_features$token <- token
+        raw_features$layers <- all_layers
+        feat_str <- paste0("token_", i)
+        all_features[[feat_str]] <- raw_features
+      }
+      output_list$features <- all_features
+      if (!is.null(output_file)) {
+        out_filename <- paste0(output_file, unique_id, ".rds") # nocov start
+        saveRDS(output_list, out_filename)                     # nocov end
+      }
+      big_output[[output_str]] <- output_list
+    }
+
+    if (wants_attention | wants_attention_arrays) {
+      # ATTN: modified below to extract attention data
+      this_seq_attn <- list()
       for (j in seq_along(layer_indexes)) {
         layer_index <- layer_indexes[[j]]
         # Accomodate both positive and negative indices.
         # Note that `all_layers` is 1-indexed!
-        actual_index <- get_actual_index(layer_index, n_layers)
+        actual_index <- .get_actual_index(layer_index, n_layers)
         # For clarity, always use actual index to label outputs.
-        key_str <- paste0("layer_output_", actual_index)
-        layer_output <- result[[key_str]]
+        key_str <- paste0("layer_attention_", actual_index)
+        layer_attention <- result[[key_str]]
 
-        layers <- list()
-        layers$index <- actual_index
-        layers$values <- layer_output[i, ]
-        all_layers[[key_str]] <- layers
+        # Save space by keeping only the relevant parts of each matrix
+        layer_attention <- layer_attention[ ,
+                                            seq_len(num_tokens),
+                                            seq_len(num_tokens)]
+        # Just return matrix as-is for now.
+        this_seq_attn[[key_str]] <- layer_attention
       }
-      features <- list()
-      features$token <- token
-      features$layers <- all_layers
-      feat_str <- paste0("token_", i)
-      all_features[[feat_str]] <- features
+      this_seq_attn[["sequence"]] <- feature$tokens
+      big_attention[[output_str]] <- this_seq_attn
+      # ATTN: modified above to extract attention data
     }
-    output_list$features <- all_features
-    if (!is.null(output_file)) {
-      out_filename <- paste0(output_file, unique_id, ".rds") # nocov start
-      saveRDS(output_list, out_filename)                     # nocov end
-    }
-    output_str <- paste0("example_", unique_id)
-    big_output[[output_str]] <- output_list
-
-    # ATTN: modified below to extract attention data
-    this_seq_attn <- list()
-    for (j in seq_along(layer_indexes)) {
-      layer_index <- layer_indexes[[j]]
-      # Accomodate both positive and negative indices.
-      # Note that `all_layers` is 1-indexed!
-      actual_index <- get_actual_index(layer_index, n_layers)
-      # For clarity, always use actual index to label outputs.
-      key_str <- paste0("layer_attention_", actual_index)
-      layer_attention <- result[[key_str]]
-
-      # Save space by keeping only the relevant parts of each matrix
-      layer_attention <- layer_attention[ ,
-                                          seq_len(num_tokens),
-                                          seq_len(num_tokens)]
-      # Just return matrix as-is for now.
-      this_seq_attn[[key_str]] <- layer_attention
-    }
-    this_seq_attn[["sequence"]] <- feature$tokens
-    big_attention[[output_str]] <- this_seq_attn
-    # ATTN: modified above to extract attention data
   }
-  invisible(list("layer_outputs" = big_output,
-                 "attention_probs" = big_attention))
+
+  # Tidy everything
+  if (wants_output) {
+    big_output <- .extract_output_df(big_output)
+    if (!include_zeroth) {
+      big_output <- dplyr::filter(big_output, layer_index != 0)
+    }
+  }
+  if (wants_attention) {
+    attention_tibble <- .extract_attention_df(big_attention)
+  }
+  if (wants_attention_arrays) {
+    attention_arrays <- big_attention
+  }
+
+  # I do it this way so, if they're NULL, that value won't appear in the list,
+  # rather than appearing there as "NULL" like it would if I set this up in one
+  # step.
+  to_return <- list()
+  to_return$output <- big_output
+  to_return$attention <- attention_tibble
+  to_return$attention_arrays <- attention_arrays
+
+  return(to_return)
 }
 
-# get_actual_index ---------------------------------------------------
+# .get_actual_index ---------------------------------------------------
 
 #' Standardize Indices
 #'
@@ -643,7 +670,7 @@ extract_features <- function(examples, # list of InputExamples_EF
 #'
 #' @return The "actual" integer index, between 1 and \code{length}, inclusive.
 #' @keywords internal
-get_actual_index <- function(index,
+.get_actual_index <- function(index,
                              length) {
   index <- as.integer(index)
   if (abs(index) > length) {
@@ -699,3 +726,274 @@ make_examples_simple <- function(seq_list) {
                            text_b = second_segment)
   })
 }
+
+
+# tidy features -----------------------------------------------------------
+
+#' Extract Embeddings
+#'
+#' Extract the embedding vector values from output for
+#' \code{\link{extract_features}}. The columns identifying example sequence,
+#' segment, token, and row are extracted separately, by
+#' \code{\link{.extract_output_labels}}.
+#'
+#' @param layer_outputs The \code{layer_outputs} component.
+#'
+#' @return The embedding vector components as a tbl_df, for all tokens and all
+#'   layers.
+#' @keywords internal
+.extract_output_values <- function(layer_outputs) {
+  vec_len <- length(
+    layer_outputs$example_1$features$token_1$layers[[1]]$values
+  )
+  tmat <- purrr::map(
+    layer_outputs,
+    function(seq_data) {
+      tmat2 <- purrr::map(
+        seq_along(seq_data$features),
+        function(tok_index) {
+          tok_data <- seq_data$features[[tok_index]]
+          t(vapply(
+            tok_data$layers,
+            function(layer_data) {layer_data$values},
+            FUN.VALUE = numeric(vec_len) ))
+        })
+      do.call(rbind, tmat2)
+    })
+  tmat <- do.call(rbind, tmat)
+  colnames(tmat) <- paste0("V", seq_len(vec_len))
+  return(tibble::as_tibble(tmat))
+}
+
+#' Extract Labels for Embeddings
+#'
+#' Extract the label columns for embedding vector values for output of
+#' \code{\link{extract_features}}.
+#'
+#' @param layer_outputs The \code{layer_outputs} component.
+#'
+#' @return The embedding vector components as a tbl_df, for all tokens and all
+#'   layers.
+#' @keywords internal
+.extract_output_labels <- function(layer_outputs) {
+  lab_df <- purrr::map_dfr(
+    layer_outputs,
+    function(ex_data) {
+      # Note: Don't use imap to "simplify" this, because they have names, and we
+      # want the index, not the name.
+      purrr::map_dfr(
+        seq_along(ex_data$features),
+        function(tok_index) {
+          tok_data <- ex_data$features[[tok_index]]
+          purrr::map_dfr(
+            tok_data$layers,
+            function(layer_data) {
+              layer_index <- layer_data$index
+              ex_index <- ex_data$linex_index
+              tok_str <- tok_data$token
+              tib <- dplyr::tibble(sequence_index = ex_index,
+                                   token_index = tok_index,
+                                   token = tok_str,
+                                   layer_index = layer_index)
+            })
+        })
+    })
+  # We want to add a column to index which segment (within each example
+  # sequence; either 1 or 2) each token belongs to. By the time we get to this
+  # point in the process, the only way to identify tokens in the second
+  # segment is the rule that every token after the first [SEP] token is in the
+  # second segment.
+  lab_df <- dplyr::ungroup(
+    dplyr::select(
+      dplyr::mutate(
+        dplyr::group_by(
+          dplyr::mutate(lab_df, is_sep = token == "[SEP]"),
+          sequence_index, layer_index
+        ),
+        segment_index = cumsum(is_sep) - is_sep + 1
+      ),
+      sequence_index,
+      segment_index,
+      token_index,
+      token,
+      layer_index
+    )
+  )
+  return(lab_df)
+}
+
+
+#' Extract Embedding Vectors
+#'
+#' Extract the embedding vector values for output of
+#' \code{\link{extract_features}}. The resulting tbl_df will typically have a
+#' large number of columns (> 768), so it will be rather slow to
+#' \code{\link{View}}. Consider using \code{\link[dplyr]{glimpse}} if you just
+#' want to peek at the values.
+#'
+#' @param layer_outputs The \code{layer_outputs} component.
+#'
+#' @return The embedding vector components as a tbl_df, for all tokens and all
+#'   layers.
+#' @keywords internal
+.extract_output_df <- function(layer_outputs) {
+  vals <- .extract_output_values(layer_outputs)
+  labs <- .extract_output_labels(layer_outputs)
+  return(dplyr::bind_cols(labs, vals))
+}
+
+#' Tidy Attention Probabilities
+#'
+#' @param attention_probs Raw attention probabilities.
+#'
+#' @return A tibble of attention weights.
+#' @keywords internal
+.extract_attention_df <- function(attention_probs) {
+  # The result of this function should be a tibble with these columns:
+  # * sequence_index
+  # * segment_index
+  # * token_index
+  # * token
+  # * attention_token_index
+  # * attention_segment_index
+  # * attention_token
+  # * layer_index
+  # * head_index
+  # * weight
+  # The first 4 of those are identical to the layer_outputs df, but getting
+  # there will be slightly different.
+  attention_labels <- .extract_attention_labels(attention_probs)
+  attention_weights <- .extract_attention_weights(attention_probs)
+  layer_map <- .extract_attention_layer_names(attention_probs)
+
+  return(
+    tibble::as_tibble(
+      dplyr::select(
+        dplyr::left_join(
+          dplyr::left_join(
+            dplyr::left_join(
+              attention_weights,
+              attention_labels,
+              by = c("sequence_index", "token_index")
+            ),
+            attention_labels,
+            by = c("sequence_index", "attention_token_index" = "token_index"),
+            suffix = c("", "_attention")
+          ),
+          layer_map,
+          by = "fake_layer_index"
+        ),
+        sequence_index,
+        token_index,
+        segment_index,
+        token,
+        layer_index,
+        head_index,
+        attention_token_index,
+        attention_segment_index = segment_index_attention,
+        attention_token = token_attention,
+        attention_weight
+      )
+    )
+  )
+}
+
+#' Tidy Attention Weights
+#'
+#' @inheritParams .extract_attention_df
+#'
+#' @return A tibble of attention weights
+#' @keywords internal
+.extract_attention_weights <- function(attention_probs) {
+  return(
+    dplyr::mutate_at(
+      purrr::map_dfr(
+        unname(attention_probs),
+        function(ex_data) {
+          ex_data$sequence <- NULL
+          purrr::map_dfr(
+            unname(ex_data),
+            function(layer_data) {
+              purrr::map_dfr(
+                purrr::array_tree(layer_data),
+                function(this_head) {
+                  purrr::map_dfr(this_head, function(this_token) {
+                    data.frame(
+                      attention_token_index = seq_along(this_token),
+                      attention_weight = unlist(this_token)
+                    )
+                  },
+                  .id = "token_index"
+                  )
+                },
+                .id = "head_index"
+              )
+            },
+            .id = "fake_layer_index"
+          )
+        },
+        .id = "sequence_index"
+      ),
+      c("sequence_index", "fake_layer_index", "head_index", "token_index"),
+      as.integer
+    )
+  )
+}
+
+#' Tidy Attention Layer Names
+#'
+#' @inheritParams .extract_attention_df
+#'
+#' @return A tibble of attention layer indexes and fake indexes (a temporary
+#'   index based on this layer's position in the list).
+#' @keywords internal
+.extract_attention_layer_names <- function(attention_probs) {
+  layers <- names(attention_probs[[1]])
+  layers <- layers[layers != "sequence"]
+  return(
+    data.frame(
+      fake_layer_index = seq_along(layers),
+      layer_index = as.integer(
+        stringr::str_extract(
+          layers,
+          "\\d+$"
+        )
+      )
+    )
+  )
+}
+
+#' Tidy Token Labels, Etc
+#'
+#' @inheritParams .extract_attention_df
+#'
+#' @return A tibble with token_index, token, sequence_index, and segment_index.
+#' @keywords internal
+.extract_attention_labels <- function(attention_probs) {
+  return(
+    dplyr::select(
+      dplyr::ungroup(
+        dplyr::mutate(
+          dplyr::group_by(
+            dplyr::mutate(
+              tidyr::unnest_longer(
+                tibble::enframe(
+                  purrr::map(unname(attention_probs), "sequence"),
+                  name = "sequence_index"
+                ),
+                value,
+                indices_to = "token_index",
+                values_to = "token"
+              ),
+              is_sep = token == "[SEP]"
+            ),
+            sequence_index
+          ),
+          segment_index = cumsum(is_sep) - is_sep + 1L
+        )
+      ),
+      -is_sep
+    )
+  )
+}
+

@@ -217,22 +217,6 @@ convert_single_example <- function(ex_index,
 
   label_id <- label_map[[example$label]]
 
-  # Print out the first few examples being processed,
-  # so we can see that it's doing something. -JDB
-  if (ex_index <= 5) {
-    print("*** Example ***")
-    print(paste("guid:", example$guid))
-    print("tokens:")
-    print(paste(tokens, collapse=" "))
-    print("input_ids:")
-    print(paste(input_ids, collapse=" "))
-    print("input_mask:")
-    print(paste(input_mask, collapse=" "))
-    print("segment_ids:")
-    print(paste(segment_ids, collapse=" "))
-    print(paste("label:", example$label,
-                "; id: ", label_id))
-  }
   feature <- InputFeatures(input_ids = input_ids,
                            input_mask = input_mask,
                            segment_ids = segment_ids,
@@ -826,11 +810,6 @@ convert_examples_to_features <- function(examples,
     examples,
     function(ex_index, example,
              label_list, max_seq_length, tokenizer) {
-      if (ex_index %% 10000 == 1) {
-        # Print out every 10K starting with the first
-        print(paste("Converting example", ex_index,
-                    "of", num_examples ))
-      }
       convert_single_example(ex_index = ex_index,
                              example = example,
                              label_list = label_list,

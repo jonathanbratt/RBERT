@@ -30,6 +30,3 @@ clean_up_cp <- !.has_checkpoint("bert_base_uncased", dir = checkpoint_main_dir)
 # here.
 cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
                                   dir = checkpoint_main_dir)
-
-
-

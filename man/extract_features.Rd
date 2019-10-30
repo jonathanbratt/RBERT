@@ -6,7 +6,8 @@
 \usage{
 extract_features(examples, vocab_file, bert_config_file, init_checkpoint,
   output_file = NULL, max_seq_length = 128L, layer_indexes = -4:-1,
-  use_one_hot_embeddings = FALSE, batch_size = 2L)
+  use_one_hot_embeddings = FALSE, batch_size = 2L,
+  features = c("output", "attention", "attention_arrays"))
 }
 \arguments{
 \item{examples}{List of \code{InputExample_EF}s to convert.}
@@ -29,16 +30,21 @@ considered together.}
 
 \item{layer_indexes}{Integer vector; indexes (positive, or negative counting
 back from the end) indicating which layers to extract as "output features".
-The "zeroth" layer embeddings (input embedding vectors to first layer) are
-always included.}
+The "zeroth" layer embeddings are the input embeddings vectors to the first
+layer.}
 
 \item{use_one_hot_embeddings}{Logical; whether to use one-hot word embeddings
 or tf.embedding_lookup() for the word embeddings.}
 
 \item{batch_size}{Integer; how many examples to process per batch.}
+
+\item{features}{Character; whether to return "output" (layer outputs, the
+default), "attention" (attention probabilities), "attention_arrays", or a
+combination thereof.}
 }
 \value{
-A list containing output features for the input examples.
+A list with elements "output" (the layer outputs as a tibble),
+  "attention" (the attention weights as a tibble), and/or "attention_arrays".
 }
 \description{
 Given example sentences (as a list of \code{InputExample_EF}s), apply an
@@ -47,10 +53,7 @@ potentially be used as features in downstream tasks.)
 }
 \examples{
 \dontrun{
-temp_dir <- tempdir()
-BERT_PRETRAINED_DIR <- file.path(temp_dir,
-                                 "BERT_checkpoints",
-                                 "uncased_L-12_H-768_A-12")
+BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
 vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
 init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
 bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')

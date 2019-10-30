@@ -63,6 +63,8 @@ test_that("dir chooser works.", {
 })
 
 test_that("Can download a cp by url.", {
+  testthat::skip_if_not(check_download, "Check downloads")
+
   # The auto-generated target dir will be different from the one we saved in, so
   # move the one we downloaded, attempt to DL without forcing, then move it
   # back. That should make sure everything is working as expected.
