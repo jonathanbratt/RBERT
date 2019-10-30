@@ -192,8 +192,9 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #'
 #' @return \code{TRUE} invisibly.
 #' @keywords internal
+#' @importFrom utils download.file
 .download_BERT_checkpoint <- function(url, checkpoint_zip_path) {
-  status <- utils::download.file(
+  status <- download.file(
     url = url,
     destfile = checkpoint_zip_path,
     method = "libcurl"
