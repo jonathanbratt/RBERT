@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if (clean_up_cp) unlink(cpdir, recursive = TRUE)
+unlink(cpdir, recursive = TRUE)

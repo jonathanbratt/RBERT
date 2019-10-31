@@ -12,21 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-check_download <- FALSE
+checkpoint_main_dir <- tempdir()
 
-# Comment this for faster tests. Be sure to uncomment before submitting a PR.
-# check_download <- TRUE
+# We need the checkpoint to be available for the other tests, so "download" it
+# here. We use a mock function for the part that does the actual downloading,
+# and instead copy from tests/testthat/test_checkpoints.
+dont_download_checkpoint <- function(url, checkpoint_zip_path) {
+  root_dir <- "test_checkpoints"
 
-checkpoint_main_dir <- NULL
+  from_file <- switch(
+    url,
+    "https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip" = "bert_base_uncased.zip",
+    "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/tensorflow_models/scibert_scivocab_uncased.tar.gz" = "test_checkpoint.tar.gz"
+  )
 
-if (check_download) {
-  checkpoint_main_dir <- tempdir()
-  print(paste0("setting up checkpoint dir: ", checkpoint_main_dir))
+  from_path <- file.path(root_dir, from_file)
+
+  file.copy(
+    from = from_path,
+    to = checkpoint_zip_path,
+    overwrite = TRUE
+  )
+
+  invisible(TRUE)
 }
 
-clean_up_cp <- !.has_checkpoint("bert_base_uncased", dir = checkpoint_main_dir)
+mockery::stub(
+  where = download_BERT_checkpoint,
+  what = ".download_BERT_checkpoint",
+  how = dont_download_checkpoint
+)
 
-# We need the checkpoint to be available for the other tests, so download it
-# here.
+print("Setting up test checkpoint.")
 cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
                                   dir = checkpoint_main_dir)

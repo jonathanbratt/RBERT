@@ -37,17 +37,17 @@ test_that("dir chooser works.", {
     .choose_BERT_dir("fake"), "fake"
   )
   temp_dir <- tempdir()
-  test_dir <- paste0(temp_dir, "/testing")
-  old_dir <- set_BERT_dir(test_dir)
+  testing_dir <- paste0(temp_dir, "/testing")
+  old_dir <- set_BERT_dir(testing_dir)
   expect_identical(
     normalizePath(getOption("BERT.dir"), mustWork = FALSE),
-    normalizePath(test_dir, mustWork = FALSE)
+    normalizePath(testing_dir, mustWork = FALSE)
   )
 
   # If I don't send it a dir, first it should try the option.
   expect_identical(
     .choose_BERT_dir(NULL),
-    normalizePath(test_dir, mustWork = FALSE)
+    normalizePath(testing_dir, mustWork = FALSE)
   )
 
   # If I don't have an option or a dir, it should use the default.
@@ -60,11 +60,12 @@ test_that("dir chooser works.", {
 
   # Go back to the existing setting.
   options(BERT.dir = old_dir$BERT.dir)
+
+  # Get rid of the empty dir.
+  unlink(normalizePath(testing_dir), recursive = TRUE)
 })
 
 test_that("Can download a cp by url.", {
-  testthat::skip_if_not(check_download, "Check downloads")
-
   # The auto-generated target dir will be different from the one we saved in, so
   # move the one we downloaded, attempt to DL without forcing, then move it
   # back. That should make sure everything is working as expected.
@@ -99,9 +100,7 @@ test_that("Can download a cp by url.", {
 
   unlink(target_dir, recursive = TRUE)
 
-  # We also need to test one that has tar-gz. Eventually we should set up fake
-  # checkpoints that have all the right files but muuuuch smaller, to speed this
-  # up.
+  # We also need to test one that has tar-gz.
   scibert_url <- paste0(
     "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/",
     "tensorflow_models/scibert_scivocab_uncased.tar.gz"
@@ -114,4 +113,13 @@ test_that("Can download a cp by url.", {
   )
 
   unlink(scibert_path, recursive = TRUE)
+})
+
+test_that(".has_checkpoint works as expected.", {
+  # We don't use this in the "easy" mode anymore, but I want to keep the extra
+  # option around (inferring the subdir) until I'm *sure* we don't need it.
+  expect_error(
+    expect_true(.has_checkpoint(model = "bert_base_uncased")),
+    NA
+  )
 })
