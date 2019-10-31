@@ -41,7 +41,7 @@ dont_download_checkpoint <- function(url, checkpoint_zip_path) {
   from_file <- switch(
     url,
     "https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip" = "bert_base_uncased.zip",
-    "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/tensorflow_models/scibert_scivocab_uncased.tar.gz" = "test_checkpoint.tar.gz"
+    "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/tensorflow_models/scibert_scivocab_uncased.tar.gz" = "testing_checkpoint.tar.gz"
   )
 
   from_path <- file.path(root_dir, from_file)

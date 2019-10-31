@@ -64,6 +64,14 @@ in downstream tasks.
 See the “Introduction to RBERT” vignette included with the package for
 more specific examples.
 
+## Running Tests
+
+The first time you run the test suite, the 388.8MB
+bert\_base\_uncased.zip file will download in your
+`tests/testthat/test_checkpoints` directory. Subsequent test runs will
+use that download. This was our best compromise to allow for relatively
+rapid testing without bloating the repository.
+
 ## Disclaimer
 
 This is not an officially supported Macmillan Learning product.
