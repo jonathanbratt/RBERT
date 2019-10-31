@@ -17,6 +17,23 @@ checkpoint_main_dir <- tempdir()
 # We need the checkpoint to be available for the other tests, so "download" it
 # here. We use a mock function for the part that does the actual downloading,
 # and instead copy from tests/testthat/test_checkpoints.
+
+# First we need to check if the user has bert_base_uncased.zip. If they don't, they still have to download that one.
+
+print("Setting up test checkpoint.")
+if (!file.exists("tests/testthat/test_checkpoints/bert_base_uncased.zip")) {
+  destfile <- normalizePath(
+    "tests/testthat/test_checkpoints/bert_base_uncased.zip",
+    mustWork = FALSE
+  )
+
+  status <- utils::download.file(
+    url = "https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip",
+    destfile = destfile,
+    method = "libcurl"
+  )
+}
+
 dont_download_checkpoint <- function(url, checkpoint_zip_path) {
   root_dir <- "test_checkpoints"
 
@@ -43,6 +60,5 @@ mockery::stub(
   how = dont_download_checkpoint
 )
 
-print("Setting up test checkpoint.")
 cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
                                   dir = checkpoint_main_dir)
