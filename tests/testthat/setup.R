@@ -18,12 +18,13 @@ checkpoint_main_dir <- tempdir()
 # here. We use a mock function for the part that does the actual downloading,
 # and instead copy from tests/testthat/test_checkpoints.
 
-# First we need to check if the user has bert_base_uncased.zip. If they don't, they still have to download that one.
+# First we need to check if the user has bert_base_uncased.zip. If they don't,
+# they still have to download that one.
 
 print("Setting up test checkpoint.")
-if (!file.exists("tests/testthat/test_checkpoints/bert_base_uncased.zip")) {
+if (!file.exists("test_checkpoints/bert_base_uncased.zip")) {
   destfile <- normalizePath(
-    "tests/testthat/test_checkpoints/bert_base_uncased.zip",
+    "test_checkpoints/bert_base_uncased.zip",
     mustWork = FALSE
   )
 
