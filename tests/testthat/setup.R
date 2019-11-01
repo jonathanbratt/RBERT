@@ -12,21 +12,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-check_download <- FALSE
+checkpoint_main_dir <- tempdir()
 
-# Comment this for faster tests. Be sure to uncomment before submitting a PR.
-check_download <- TRUE
+# We need the checkpoint to be available for the other tests, so "download" it
+# here. We use a mock function for the part that does the actual downloading,
+# and instead copy from tests/testthat/test_checkpoints.
 
-checkpoint_main_dir <- NULL
+# First we need to check if the user has bert_base_uncased.zip. If they don't,
+# they still have to download that one.
 
-if (check_download) {
-  checkpoint_main_dir <- tempdir()
-  print(paste0("setting up checkpoint dir: ", checkpoint_main_dir))
+print("Setting up test checkpoint.")
+if (!file.exists("test_checkpoints/bert_base_uncased.zip")) {
+  destfile <- normalizePath(
+    "test_checkpoints/bert_base_uncased.zip",
+    mustWork = FALSE
+  )
+
+  status <- utils::download.file(
+    url = "https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip",
+    destfile = destfile,
+    method = "libcurl"
+  )
 }
 
-clean_up_cp <- !.has_checkpoint("bert_base_uncased", dir = checkpoint_main_dir)
+dont_download_checkpoint <- function(url, checkpoint_zip_path) {
+  root_dir <- "test_checkpoints"
 
-# We need the checkpoint to be available for the other tests, so download it
-# here.
+  from_file <- switch(
+    url,
+    "https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip" = "bert_base_uncased.zip",
+    "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/tensorflow_models/scibert_scivocab_uncased.tar.gz" = "testing_checkpoint.tar.gz"
+  )
+
+  from_path <- file.path(root_dir, from_file)
+
+  file.copy(
+    from = from_path,
+    to = checkpoint_zip_path,
+    overwrite = TRUE
+  )
+
+  invisible(TRUE)
+}
+
+mockery::stub(
+  where = download_BERT_checkpoint,
+  what = ".download_BERT_checkpoint",
+  how = dont_download_checkpoint
+)
+
 cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
                                   dir = checkpoint_main_dir)

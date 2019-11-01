@@ -193,6 +193,9 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @return \code{TRUE} invisibly.
 #' @keywords internal
 .download_BERT_checkpoint <- function(url, checkpoint_zip_path) {
+  # This function is stubbed for testing, so tests don't see it. Test manually
+  # from time to time, but it's really straightforward.
+  # nocov start
   status <- utils::download.file(
     url = url,
     destfile = checkpoint_zip_path,
@@ -202,6 +205,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
     stop("Checkpoint download failed.")  # nocovr
   }
   invisible(TRUE)
+  # nocov end
 }
 
 #' Unzip and check a BERT checkpoint zip
