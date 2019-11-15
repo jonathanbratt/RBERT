@@ -1,0 +1,84 @@
+# Copyright 2019 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# .update_list -------------------------------------------------------------
+
+
+#' Update a List
+#'
+#' Updates the first list with matching named elements from the second list.
+#' Returns the updated list. Elements in the second list that don't match
+#' (names of) elements in the first list are ignored.
+#'
+#' @param list1 Named list to update.
+#' @param list2 Named list to update with.
+#'
+#' @return The updated list.
+#'
+#' @keywords internal
+.update_list <- function(list1, list2) {
+  return(utils::modifyList(list1, list2)[names(list1)])
+}
+
+# .create_attention_mask ---------------------------------------------------
+
+#' Create an Attention Mask
+#'
+#' Creates a 3D attention mask.
+#'
+#' Attention masks are used to control which words can pay attention to which.
+#' This function just sets up the structure of the mask (a matrix of dimensions
+#' From x To for each incoming example in the batch), and populates it with
+#' ones.
+#'
+#' @param from_shape List or integer vector. First two elements should be
+#' \code{batch_size} and \code{from_seq_len}.
+#' @param input_mask Tensor with dimensions \code{[batch_size, seq_len]}.
+#'
+#' @return A tensor of ones with dimensions \code{[batch_size, from_seq_len,
+#'   seq_len]}.
+#'
+#' @keywords internal
+.create_attention_mask <- function(from_shape, input_mask) {
+  mask <- tensorflow::tf$cast(
+    tensorflow::tf$expand_dims(input_mask, axis = 1L),
+    tensorflow::tf$float32
+  ) # [B, 1, T]
+
+  ones <- tensorflow::tf$expand_dims(
+    tensorflow::tf$ones(shape = from_shape[1:2],
+                        dtype = tensorflow::tf$float32),
+    axis = -1L
+  )  # [B, F, 1]
+  mask <- ones * mask  # broadcast
+
+  return(mask)  # [B, F, T]
+}
+
+
+# .tf2 ------------------------------------------------------------
+
+#' Check for TensorFlow 2
+#'
+#' Returns \code{TRUE} iff TensorFlow installation is version 2.x.
+#'
+#' @return \code{TRUE} iff TensorFlow installation is version 2.x.
+#'
+#' @keywords internal
+.tf2 <- function() {
+  return(grepl(pattern = "^2\\.",
+               x = as.character(tensorflow::tf_version())))
+}
+
