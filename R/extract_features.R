@@ -421,6 +421,9 @@ input_fn_builder_EF <- function(features,
 #' potentially be used as features in downstream tasks.)
 #'
 #' @param examples List of \code{InputExample_EF}s to convert.
+#' @param ckpt_dir Character; path to checkpoint directory. If specified,
+#'   \code{vocab_file}, \code{bert_config_file}, and \code{init_checkpoint}
+#'   default to standard filenames within \code{ckpt_dir}.
 #' @param vocab_file path to vocabulary file. File is assumed to be a text file,
 #'   with one token per line, with the line number corresponding to the index of
 #'   that token in the vocabulary.
@@ -461,11 +464,16 @@ input_fn_builder_EF <- function(features,
 #'                           bert_config_file = bert_config_file,
 #'                           init_checkpoint = init_checkpoint,
 #'                           batch_size = 2L)
+#' # can just specify checkpoint directory
+#' feats <- extract_features(examples = examples,
+#'                           ckpt_dir = BERT_PRETRAINED_DIR,
+#'                           batch_size = 2L)
 #' }
 extract_features <- function(examples,
-                             vocab_file,
-                             bert_config_file,
-                             init_checkpoint,
+                             ckpt_dir = NULL,
+                             vocab_file = .find_vocab(ckpt_dir),
+                             bert_config_file = .find_config(ckpt_dir),
+                             init_checkpoint = .find_ckpt(ckpt_dir),
                              output_file = NULL,
                              max_seq_length = 128L,
                              layer_indexes = -4:-1,
@@ -473,6 +481,13 @@ extract_features <- function(examples,
                              batch_size = 2L,
                              features = c("output",
                                           "attention")) {
+  if ((missing(vocab_file) |
+       missing(bert_config_file) |
+       missing(init_checkpoint)) &
+      is.null(ckpt_dir)) {
+    stop("If ckpt_dir is not given, then vocab_file, bert_config_file, and ",
+         "init_checkpoint must be specified.")
+  }
   if (missing(features)) {
     features <- "output"
   }
@@ -626,7 +641,7 @@ extract_features <- function(examples,
     # The only way to tell we've reached the end is to get an error. :-/
   })
   if (!identical(result, FALSE)) {
-    stop("More results returned than sequences.")
+    stop("More results returned than sequences.") # nocov
   }
 
   # Clean up features.
