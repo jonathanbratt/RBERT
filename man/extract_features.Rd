@@ -6,7 +6,6 @@
 \usage{
 extract_features(
   examples,
-  ckpt_dir = NULL,
   vocab_file = .find_vocab(ckpt_dir),
   bert_config_file = .find_config(ckpt_dir),
   init_checkpoint = .find_ckpt(ckpt_dir),
@@ -15,15 +14,12 @@ extract_features(
   layer_indexes = -4:-1,
   use_one_hot_embeddings = FALSE,
   batch_size = 2L,
-  features = c("output", "attention")
+  features = c("output", "attention"),
+  ckpt_dir = NULL
 )
 }
 \arguments{
 \item{examples}{List of \code{InputExample_EF}s to convert.}
-
-\item{ckpt_dir}{Character; path to checkpoint directory. If specified,
-\code{vocab_file}, \code{bert_config_file}, and \code{init_checkpoint}
-default to standard filenames within \code{ckpt_dir}.}
 
 \item{vocab_file}{path to vocabulary file. File is assumed to be a text file,
 with one token per line, with the line number corresponding to the index of
@@ -53,6 +49,10 @@ or tf.embedding_lookup() for the word embeddings.}
 
 \item{features}{Character; whether to return "output" (layer outputs, the
 default), "attention" (attention probabilities), or both.}
+
+\item{ckpt_dir}{Character; path to checkpoint directory. If specified,
+\code{vocab_file}, \code{bert_config_file}, and \code{init_checkpoint}
+default to standard filenames within \code{ckpt_dir}.}
 }
 \value{
 A list with elements "output" (the layer outputs as a tibble) and/or
