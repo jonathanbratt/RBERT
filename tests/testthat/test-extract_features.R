@@ -33,7 +33,7 @@ test_that("features and examples routines work", {
   # Run these tests only if checkpoint is found.
   BERT_PRETRAINED_DIR <- cpdir # from setup.R
 
-  # Test the ckpt_dir argument here...
+  # Test the ckpt_dir argument here. (Expect no error.)
   feats <- extract_features(examples = examples,
                             ckpt_dir = BERT_PRETRAINED_DIR,
                             batch_size = 2L)
