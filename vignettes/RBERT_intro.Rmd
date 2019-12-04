@@ -70,10 +70,6 @@ BERT_PRETRAINED_DIR <- RBERT::download_BERT_checkpoint(
   model = "bert_base_uncased"
 )
 
-vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
-init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
-bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
-
 text_to_process <- c("Impulse is equal to the change in momentum.",
                      "Changing momentum requires an impulse.",
                      "An impulse is like a push.",
@@ -87,9 +83,7 @@ text_to_process2 <- list(c("Impulse is equal to the change in momentum.",
 
 BERT_feats <- extract_features(
   examples = make_examples_simple(text_to_process2),
-  vocab_file = vocab_file,
-  bert_config_file = bert_config_file,
-  init_checkpoint = init_checkpoint,
+  ckpt_dir = BERT_PRETRAINED_DIR,
   layer_indexes = 1:12,
   batch_size = 2L
 )
@@ -114,8 +108,6 @@ output_vectors <- BERT_feats$output %>%
   dplyr::filter(token_index == 1, layer_index == 12)
 output_vectors
 
-# Clean up.
-unlink(temp_dir, recursive = TRUE)
 ```
 
 # Future work
