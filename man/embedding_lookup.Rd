@@ -4,9 +4,14 @@
 \alias{embedding_lookup}
 \title{Look up words embeddings for id tensor}
 \usage{
-embedding_lookup(input_ids, vocab_size, embedding_size = 128L,
-  initializer_range = 0.02, word_embedding_name = "word_embeddings",
-  use_one_hot_embeddings = FALSE)
+embedding_lookup(
+  input_ids,
+  vocab_size,
+  embedding_size = 128L,
+  initializer_range = 0.02,
+  word_embedding_name = "word_embeddings",
+  use_one_hot_embeddings = FALSE
+)
 }
 \arguments{
 \item{input_ids}{Integer Tensor of shape [batch_size, seq_length] containing

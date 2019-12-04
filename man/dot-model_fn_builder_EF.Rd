@@ -4,8 +4,13 @@
 \alias{.model_fn_builder_EF}
 \title{Define \code{model_fn} closure for \code{TPUEstimator}}
 \usage{
-.model_fn_builder_EF(bert_config, init_checkpoint, layer_indexes, use_tpu,
-  use_one_hot_embeddings)
+.model_fn_builder_EF(
+  bert_config,
+  init_checkpoint,
+  layer_indexes,
+  use_tpu,
+  use_one_hot_embeddings
+)
 }
 \arguments{
 \item{bert_config}{\code{BertConfig} instance.}

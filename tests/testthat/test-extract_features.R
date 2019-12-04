@@ -30,8 +30,19 @@ test_that("features and examples routines work", {
   testthat::expect_identical(feat_in, expected_feat_in)
 
 
-  # Run these test only if checkpoint is found.
+  # Run these tests only if checkpoint is found.
   BERT_PRETRAINED_DIR <- cpdir # from setup.R
+
+  # Test the ckpt_dir argument here...
+  feats <- extract_features(examples = examples,
+                            ckpt_dir = BERT_PRETRAINED_DIR,
+                            batch_size = 2L)
+
+  testthat::expect_error(
+    extract_features(examples = examples,
+                     batch_size = 2L),
+    "ckpt_dir"
+  )
 
   vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
   init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
@@ -42,12 +53,6 @@ test_that("features and examples routines work", {
                         message = "Checkpoint index not found; skipping test.")
 
   bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
-
-  feats <- extract_features(examples = examples,
-                            vocab_file = vocab_file,
-                            bert_config_file = bert_config_file,
-                            init_checkpoint = init_checkpoint,
-                            batch_size = 2L)
 
   # Each token should be repeated 4 times (once for each of the 4 layers
   # requested by default). I'm sure there's a better way to do this, but this

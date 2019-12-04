@@ -4,8 +4,13 @@
 \alias{convert_single_example}
 \title{Convert a single \code{InputExample} into a single \code{InputFeatures}}
 \usage{
-convert_single_example(ex_index, example, label_list, max_seq_length,
-  tokenizer)
+convert_single_example(
+  ex_index,
+  example,
+  label_list,
+  max_seq_length,
+  tokenizer
+)
 }
 \arguments{
 \item{ex_index}{Integer; the index of this example. This is used to determine

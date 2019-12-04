@@ -4,8 +4,7 @@
 \alias{convert_examples_to_features}
 \title{Convert \code{InputExample}s to \code{InputFeatures}}
 \usage{
-convert_examples_to_features(examples, label_list, max_seq_length,
-  tokenizer)
+convert_examples_to_features(examples, label_list, max_seq_length, tokenizer)
 }
 \arguments{
 \item{examples}{List of \code{InputExample}s to convert.}

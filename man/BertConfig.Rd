@@ -4,11 +4,19 @@
 \alias{BertConfig}
 \title{Construct objects of BertConfig class}
 \usage{
-BertConfig(vocab_size, hidden_size = 768L, num_hidden_layers = 12L,
-  num_attention_heads = 12L, intermediate_size = 3072L,
-  hidden_act = "gelu", hidden_dropout_prob = 0.1,
-  attention_probs_dropout_prob = 0.1, max_position_embeddings = 512L,
-  type_vocab_size = 16L, initializer_range = 0.02)
+BertConfig(
+  vocab_size,
+  hidden_size = 768L,
+  num_hidden_layers = 12L,
+  num_attention_heads = 12L,
+  intermediate_size = 3072L,
+  hidden_act = "gelu",
+  hidden_dropout_prob = 0.1,
+  attention_probs_dropout_prob = 0.1,
+  max_position_embeddings = 512L,
+  type_vocab_size = 16L,
+  initializer_range = 0.02
+)
 }
 \arguments{
 \item{vocab_size}{Integer; vocabulary size of \code{inputs_ids} in
