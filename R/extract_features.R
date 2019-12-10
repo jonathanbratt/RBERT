@@ -470,17 +470,17 @@ input_fn_builder_EF <- function(features,
 #'                           batch_size = 2L)
 #' }
 extract_features <- function(examples,
-                             vocab_file = .find_vocab(ckpt_dir),
-                             bert_config_file = .find_config(ckpt_dir),
-                             init_checkpoint = .find_ckpt(ckpt_dir),
+                             ckpt_dir = NULL,
+                             vocab_file = find_vocab(ckpt_dir),
+                             bert_config_file = find_config(ckpt_dir),
+                             init_checkpoint = find_ckpt(ckpt_dir),
                              output_file = NULL,
                              max_seq_length = 128L,
                              layer_indexes = -4:-1,
                              use_one_hot_embeddings = FALSE,
                              batch_size = 2L,
                              features = c("output",
-                                          "attention"),
-                             ckpt_dir = NULL) {
+                                          "attention")) {
   if ((missing(vocab_file) |
        missing(bert_config_file) |
        missing(init_checkpoint)) &

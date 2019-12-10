@@ -2,16 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{find_files}
 \alias{find_files}
-\alias{.find_vocab}
-\alias{.find_config}
-\alias{.find_ckpt}
+\alias{find_vocab}
+\alias{find_config}
+\alias{find_ckpt}
 \title{Find Checkpoint Files}
 \usage{
-.find_vocab(cp_dir)
+find_vocab(cp_dir)
 
-.find_config(cp_dir)
+find_config(cp_dir)
 
-.find_ckpt(cp_dir)
+find_ckpt(cp_dir)
 }
 \arguments{
 \item{cp_dir}{Character; the path to the checkpoint directory.}
@@ -22,12 +22,11 @@ in that directory.
 }
 \section{Functions}{
 \itemize{
-\item \code{.find_vocab}: Find the vocabulary file ('vocab.txt').
+\item \code{find_vocab}: Find the vocabulary file ('vocab.txt').
 
-\item \code{.find_config}: Find the config file ('bert_config.json').
+\item \code{find_config}: Find the config file ('bert_config.json').
 
-\item \code{.find_ckpt}: Find the checkpoint file stub (files begin with
+\item \code{find_ckpt}: Find the checkpoint file stub (files begin with
 'bert_model.ckpt').
 }}
 
-\keyword{internal}

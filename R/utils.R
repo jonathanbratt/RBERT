@@ -22,12 +22,11 @@
 #'
 #' @param cp_dir Character; the path to the checkpoint directory.
 #' @name find_files
-#' @keywords internal
 NULL
 
 #' @describeIn find_files Find the vocabulary file ('vocab.txt').
-#' @keywords internal
-.find_vocab <- function(cp_dir) {
+#' @export
+find_vocab <- function(cp_dir) {
   vocab_file <- file.path(cp_dir, 'vocab.txt')
   if (file.exists(vocab_file)) {
     return(vocab_file)
@@ -38,8 +37,8 @@ NULL
 
 
 #' @describeIn find_files Find the config file ('bert_config.json').
-#' @keywords internal
-.find_config <- function(cp_dir) {
+#' @export
+find_config <- function(cp_dir) {
   config_file <- file.path(cp_dir, 'bert_config.json')
   if (file.exists(config_file)) {
     return(config_file)
@@ -50,8 +49,8 @@ NULL
 
 #' @describeIn find_files Find the checkpoint file stub (files begin with
 #'   'bert_model.ckpt').
-#' @keywords internal
-.find_ckpt <- function(cp_dir) {
+#' @export
+find_ckpt <- function(cp_dir) {
   # The path we want to return here isn't an actual file, but a name stub for
   # files with suffixes '.index', '.meta', etc.
   ckpt_filestub <- file.path(cp_dir, 'bert_model.ckpt')
