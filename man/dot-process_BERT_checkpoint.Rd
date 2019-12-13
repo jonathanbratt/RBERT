@@ -4,8 +4,12 @@
 \alias{.process_BERT_checkpoint}
 \title{Unzip and check a BERT checkpoint zip}
 \usage{
-.process_BERT_checkpoint(dir, checkpoint_archive_path, checkpoint_subdir,
-  archive_type)
+.process_BERT_checkpoint(
+  dir,
+  checkpoint_archive_path,
+  checkpoint_subdir,
+  archive_type
+)
 }
 \arguments{
 \item{dir}{Character vector. Destination directory for checkpoints. Leave

@@ -4,8 +4,13 @@
 \alias{InputFeatures}
 \title{Construct objects of class \code{InputFeatures}}
 \usage{
-InputFeatures(input_ids, input_mask, segment_ids, label_id,
-  is_real_example = TRUE)
+InputFeatures(
+  input_ids,
+  input_mask,
+  segment_ids,
+  label_id,
+  is_real_example = TRUE
+)
 }
 \arguments{
 \item{input_ids}{Integer Tensor; the sequence of token ids in this example.}

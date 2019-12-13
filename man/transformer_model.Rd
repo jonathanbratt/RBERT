@@ -4,12 +4,19 @@
 \alias{transformer_model}
 \title{Build multi-head, multi-layer Transformer}
 \usage{
-transformer_model(input_tensor, attention_mask = NULL,
-  hidden_size = 768L, num_hidden_layers = 12L,
-  num_attention_heads = 12L, intermediate_size = 3072L,
-  intermediate_act_fn = gelu, hidden_dropout_prob = 0.1,
-  attention_probs_dropout_prob = 0.1, initializer_range = 0.02,
-  do_return_all_layers = FALSE)
+transformer_model(
+  input_tensor,
+  attention_mask = NULL,
+  hidden_size = 768L,
+  num_hidden_layers = 12L,
+  num_attention_heads = 12L,
+  intermediate_size = 3072L,
+  intermediate_act_fn = gelu,
+  hidden_dropout_prob = 0.1,
+  attention_probs_dropout_prob = 0.1,
+  initializer_range = 0.02,
+  do_return_all_layers = FALSE
+)
 }
 \arguments{
 \item{input_tensor}{Float Tensor of shape \code{[batch_size, seq_length,

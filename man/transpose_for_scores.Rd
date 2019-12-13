@@ -4,8 +4,13 @@
 \alias{transpose_for_scores}
 \title{Reshape and transpose tensor}
 \usage{
-transpose_for_scores(input_tensor, batch_size, num_attention_heads,
-  seq_length, width)
+transpose_for_scores(
+  input_tensor,
+  batch_size,
+  num_attention_heads,
+  seq_length,
+  width
+)
 }
 \arguments{
 \item{input_tensor}{Tensor to reshape and transpose.}

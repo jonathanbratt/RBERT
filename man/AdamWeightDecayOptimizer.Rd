@@ -4,9 +4,15 @@
 \alias{AdamWeightDecayOptimizer}
 \title{Constructor for objects of class AdamWeightDecayOptimizer}
 \usage{
-AdamWeightDecayOptimizer(learning_rate, weight_decay_rate = 0,
-  beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-06,
-  exclude_from_weight_decay = NULL, name = "AdamWeightDecayOptimizer")
+AdamWeightDecayOptimizer(
+  learning_rate,
+  weight_decay_rate = 0,
+  beta_1 = 0.9,
+  beta_2 = 0.999,
+  epsilon = 1e-06,
+  exclude_from_weight_decay = NULL,
+  name = "AdamWeightDecayOptimizer"
+)
 }
 \arguments{
 \item{learning_rate}{Numeric Tensor (single element?); learning rate.}

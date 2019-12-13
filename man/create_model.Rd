@@ -4,8 +4,16 @@
 \alias{create_model}
 \title{Create a classification model}
 \usage{
-create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
-  labels, num_labels, use_one_hot_embeddings)
+create_model(
+  bert_config,
+  is_training,
+  input_ids,
+  input_mask,
+  segment_ids,
+  labels,
+  num_labels,
+  use_one_hot_embeddings
+)
 }
 \arguments{
 \item{bert_config}{\code{BertConfig} instance.}

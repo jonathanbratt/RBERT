@@ -4,13 +4,26 @@
 \alias{extract_features}
 \title{Extract output features from BERT}
 \usage{
-extract_features(examples, vocab_file, bert_config_file, init_checkpoint,
-  output_file = NULL, max_seq_length = 128L, layer_indexes = -4:-1,
-  use_one_hot_embeddings = FALSE, batch_size = 2L,
-  features = c("output", "attention"))
+extract_features(
+  examples,
+  ckpt_dir = NULL,
+  vocab_file = find_vocab(ckpt_dir),
+  bert_config_file = find_config(ckpt_dir),
+  init_checkpoint = find_ckpt(ckpt_dir),
+  output_file = NULL,
+  max_seq_length = 128L,
+  layer_indexes = -4:-1,
+  use_one_hot_embeddings = FALSE,
+  batch_size = 2L,
+  features = c("output", "attention")
+)
 }
 \arguments{
 \item{examples}{List of \code{InputExample_EF}s to convert.}
+
+\item{ckpt_dir}{Character; path to checkpoint directory. If specified,
+\code{vocab_file}, \code{bert_config_file}, and \code{init_checkpoint}
+default to standard filenames within \code{ckpt_dir}.}
 
 \item{vocab_file}{path to vocabulary file. File is assumed to be a text file,
 with one token per line, with the line number corresponding to the index of
@@ -64,6 +77,10 @@ feats <- extract_features(examples = examples,
                           vocab_file = vocab_file,
                           bert_config_file = bert_config_file,
                           init_checkpoint = init_checkpoint,
+                          batch_size = 2L)
+# can just specify checkpoint directory
+feats <- extract_features(examples = examples,
+                          ckpt_dir = BERT_PRETRAINED_DIR,
                           batch_size = 2L)
 }
 }

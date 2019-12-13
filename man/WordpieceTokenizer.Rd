@@ -4,8 +4,7 @@
 \alias{WordpieceTokenizer}
 \title{Construct objects of WordpieceTokenizer class.}
 \usage{
-WordpieceTokenizer(vocab, unk_token = "[UNK]",
-  max_input_chars_per_word = 200)
+WordpieceTokenizer(vocab, unk_token = "[UNK]", max_input_chars_per_word = 200)
 }
 \arguments{
 \item{vocab}{Recognized vocabulary tokens, as a named integer vector. (Name

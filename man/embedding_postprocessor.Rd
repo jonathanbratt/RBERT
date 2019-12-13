@@ -4,13 +4,18 @@
 \alias{embedding_postprocessor}
 \title{Perform various post-processing on a word embedding tensor}
 \usage{
-embedding_postprocessor(input_tensor, use_token_type = FALSE,
-  token_type_ids = NULL, token_type_vocab_size = 16L,
+embedding_postprocessor(
+  input_tensor,
+  use_token_type = FALSE,
+  token_type_ids = NULL,
+  token_type_vocab_size = 16L,
   token_type_embedding_name = "token_type_embeddings",
   use_position_embeddings = TRUE,
   position_embedding_name = "position_embeddings",
-  initializer_range = 0.02, max_position_embeddings = 512L,
-  dropout_prob = 0.1)
+  initializer_range = 0.02,
+  max_position_embeddings = 512L,
+  dropout_prob = 0.1
+)
 }
 \arguments{
 \item{input_tensor}{Float Tensor of shape \code{[batch_size, seq_length,
