@@ -110,6 +110,28 @@ output_vectors
 
 ```
 
+# Other Functions
+
+RBERT exports a couple of functions that may be helpful when exploring BERT.
+
+```{r, eval = FALSE}
+# Both of the functions below require a vocabulary (or a checkpoint containing a
+# vocab.txt file) to be specified.
+BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
+
+# `tokenize_text` is a quick way to see the wordpiece tokenization of some text.
+tokens <- tokenize_text(text = "Who doesn't like tacos?",
+                        ckpt_dir = BERT_PRETRAINED_DIR)
+# [[1]]
+#  [1] "[CLS]" "who"   "doesn" "'"     "t"     "like"  "ta"    "##cos"
+#  [9] "?"     "[SEP]"
+
+# `check_vocab` checks whether the given words are found in the vocabulary.
+check_vocab(words = c("positron", "electron"), ckpt_dir = BERT_PRETRAINED_DIR)
+# [1] FALSE  TRUE
+```
+
+
 # Future work
 
 There's still a lot to do! Check out the 

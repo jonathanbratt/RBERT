@@ -16,5 +16,5 @@ Character vector of tokens.
 Run basic whitespace cleaning and splitting on a piece of text.
 }
 \examples{
-whitespace_tokenize(text = " some\\ttext \\n with  whitespace ")
+whitespace_tokenize(text = " some\ttext \n with  whitespace ")
 }

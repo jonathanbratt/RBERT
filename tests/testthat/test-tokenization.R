@@ -127,3 +127,17 @@ test_that("is_punctuation correctly classifies characters", {
   testthat::expect_false(is_punctuation("A"))
   testthat::expect_false(is_punctuation(" "))
 })
+
+
+test_that("tokenize_text works correctly", {
+  text <- c("Who doesn't like tacos?", "Not me!")
+  tokens <- tokenize_text(text = text, ckpt_dir = cpdir)
+  testthat::expect_identical(length(tokens[[1]]), 10L)
+  testthat::expect_identical(length(tokens[[2]]), 5L)
+})
+
+test_that("check_vocab works correctly", {
+  to_check <- c("apple", "appl")
+  vcheck <- check_vocab(words = to_check, ckpt_dir = cpdir)
+  testthat::expect_identical(vcheck, c(TRUE, FALSE))
+})
