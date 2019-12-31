@@ -61,6 +61,11 @@ test_that("Tokenizers handle edge cases correctly", {
   test_result <- tokenize(wp_tokenizer, text = "excessively long")
   expected_result <- c("[UNK]", "long")
   testthat::expect_identical(test_result, expected_result)
+
+  expect_identical(
+    load_vocab("vocab0.txt"),
+    integer(0)
+  )
 })
 
 

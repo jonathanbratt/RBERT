@@ -457,6 +457,10 @@ input_fn_builder_EF <- function(features,
 #' potentially be used as features in downstream tasks.)
 #'
 #' @param examples List of \code{InputExample_EF}s to convert.
+#' @param model Character; which model checkpoint to use. If specified,
+#'   \code{ckpt_dir}, code{vocab_file}, \code{bert_config_file}, and
+#'   \code{init_checkpoint} will be inferred. If you do not have this
+#'   checkpoint, you will be prompted to download it in interactive mode.
 #' @param ckpt_dir Character; path to checkpoint directory. If specified, any
 #'   other checkpoint files required by this function (\code{vocab_file},
 #'   \code{bert_config_file}, or \code{init_checkpoint}) will default to
@@ -506,14 +510,19 @@ input_fn_builder_EF <- function(features,
 #'   examples = examples,
 #'   vocab_file = vocab_file,
 #'   bert_config_file = bert_config_file,
-#'   init_checkpoint = init_checkpoint,
-#'   batch_size = 2L
+#'   init_checkpoint = init_checkpoint
 #' )
-#' # can just specify checkpoint directory
+#' # Can just specify checkpoint directory
 #' feats <- extract_features(
 #'   examples = examples,
-#'   ckpt_dir = BERT_PRETRAINED_DIR,
-#'   batch_size = 2L
+#'   ckpt_dir = BERT_PRETRAINED_DIR
+#' )
+#' # Can also just specify the model, if you have it downloaded.
+#' # In interactive mode, you'll be prompted to download the model if you do not
+#' # have it.
+#' feats <- extract_features(
+#'   examples = examples,
+#'   model = "bert_base_uncased"
 #' )
 #' }
 extract_features <- function(examples,
@@ -544,58 +553,13 @@ extract_features <- function(examples,
                                "output",
                                "attention"
                              )) {
-  # If they specify a ckpt_dir or all of the other files, use that info.
-  # Otherwise infer from model.
-  if ((missing(vocab_file) |
-    missing(bert_config_file) |
-    missing(init_checkpoint)) &
-    is.null(ckpt_dir)) {
-    if (missing(model)) {
-      stop(
-        "You must specify a model, a ckpt_dir, or the locations of ",
-        "vocab_file, bert_config_file, and init_checkpoint."
-      )
-    } else {
-      model <- match.arg(model)
-      dir <- .choose_BERT_dir(NULL)
-      ckpt_dir <- .get_model_subdir(model, dir)
-      has_checkpoint <- .has_checkpoint(
-        model = model,
-        dir = dir,
-        ckpt_dir = ckpt_dir
-      )
-      if (!has_checkpoint) {
-        if (interactive()) { # nocov start
-          do_download <- utils::menu(
-            c("Yes.", "No."),
-            title = paste(
-              "Model not found. Do you wish to download the model?",
-              "\nThis may take a long time and use a lot of disk space."
-            )
-          )
-          if (do_download == 1L) {
-            download_BERT_checkpoint(model, dir)
-          } else {
-            stop(
-              "Could not find the specified model. Specify ckpt_dir, or ",
-              "run download_BERT_checkpoint."
-            )
-          }
-          # nocov end
-        } else {
-          stop(
-            "Could not find the specified model. Specify ckpt_dir, or ",
-            "run download_BERT_checkpoint."
-          )
-        }
-      }
+  model_paths <- .infer_model_paths(
+    model, ckpt_dir, vocab_file, bert_config_file, init_checkpoint
+  )
 
-      # If we made it here, they have the model, so set the file locations.
-      vocab_file <- find_vocab(ckpt_dir)
-      bert_config_file <- find_config(ckpt_dir)
-      init_checkpoint <- find_ckpt(ckpt_dir)
-    }
-  }
+  vocab_file <- model_paths$vocab_file
+  bert_config_file <- model_paths$bert_config_file
+  init_checkpoint <- model_paths$init_checkpoint
 
   if (missing(features)) {
     features <- "output"

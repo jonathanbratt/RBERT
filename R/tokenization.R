@@ -33,7 +33,7 @@ convert_to_unicode <- function(text) {
     Encoding(text) <- "UTF-8"
     return(text)
   } else {
-    stop("Unsupported string type.")
+    stop("Unsupported string type.") # nocov
   }
 }
 

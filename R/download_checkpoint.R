@@ -443,3 +443,60 @@ set_BERT_dir <- function(dir) {
     x
   }
 }
+
+#' Find or Possibly Download a Checkpoint
+#'
+#' Verify that the user has a specified checkpoint, and prompt to download if
+#' they don't (in interactive mode).
+#'
+#' @inheritParams .has_checkpoint
+#' @return TRUE (invisibly)
+#' @keywords internal
+.maybe_download_checkpoint <- function(model = c(
+                                         "bert_base_uncased",
+                                         "bert_base_cased",
+                                         "bert_large_uncased",
+                                         "bert_large_cased",
+                                         "bert_large_uncased_wwm",
+                                         "bert_large_cased_wwm",
+                                         "bert_base_multilingual_cased",
+                                         "bert_base_chinese",
+                                         "scibert_scivocab_uncased",
+                                         "scibert_scivocab_cased",
+                                         "scibert_basevocab_uncased",
+                                         "scibert_basevocab_cased"
+                                       ),
+                                       dir = NULL,
+                                       ckpt_dir = NULL) {
+  has_checkpoint <- .has_checkpoint(
+    model = model,
+    dir = dir,
+    ckpt_dir = ckpt_dir
+  )
+  if (!has_checkpoint) {
+    if (interactive()) { # nocov start
+      do_download <- utils::menu(
+        c("Yes.", "No."),
+        title = paste(
+          "Model not found. Do you wish to download the model?",
+          "\nThis may take a long time and use a lot of disk space."
+        )
+      )
+      if (do_download == 1L) {
+        download_BERT_checkpoint(model, dir)
+      } else {
+        stop(
+          "Could not find the specified model. Specify ckpt_dir, or ",
+          "run download_BERT_checkpoint."
+        )
+      }
+      # nocov end
+    } else {
+      stop(
+        "Could not find the specified model. Specify ckpt_dir, or ",
+        "run download_BERT_checkpoint."
+      )
+    }
+  }
+  invisible(TRUE)
+}
