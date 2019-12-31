@@ -61,17 +61,19 @@ BertConfig <- function(vocab_size,
                        max_position_embeddings = 512L,
                        type_vocab_size = 16L,
                        initializer_range = 0.02) {
-  obj <- list("vocab_size" = vocab_size,
-              "hidden_size" = hidden_size,
-              "num_hidden_layers" = num_hidden_layers,
-              "num_attention_heads" = num_attention_heads,
-              "hidden_act" = hidden_act,
-              "intermediate_size" = intermediate_size,
-              "hidden_dropout_prob" = hidden_dropout_prob,
-              "attention_probs_dropout_prob" = attention_probs_dropout_prob,
-              "max_position_embeddings" = max_position_embeddings,
-              "type_vocab_size" = type_vocab_size,
-              "initializer_range" = initializer_range)
+  obj <- list(
+    "vocab_size" = vocab_size,
+    "hidden_size" = hidden_size,
+    "num_hidden_layers" = num_hidden_layers,
+    "num_attention_heads" = num_attention_heads,
+    "hidden_act" = hidden_act,
+    "intermediate_size" = intermediate_size,
+    "hidden_dropout_prob" = hidden_dropout_prob,
+    "attention_probs_dropout_prob" = attention_probs_dropout_prob,
+    "max_position_embeddings" = max_position_embeddings,
+    "type_vocab_size" = type_vocab_size,
+    "initializer_range" = initializer_range
+  )
   class(obj) <- "BertConfig"
   return(obj)
 }
@@ -93,10 +95,12 @@ BertConfig <- function(vocab_size,
 #' @examples
 #' \dontrun{
 #' temp_dir <- tempdir()
-#' json_file <- file.path(temp_dir,
-#'                        "BERT_checkpoints",
-#'                        "uncased_L-12_H-768_A-12",
-#'                        "bert_config.json")
+#' json_file <- file.path(
+#'   temp_dir,
+#'   "BERT_checkpoints",
+#'   "uncased_L-12_H-768_A-12",
+#'   "bert_config.json"
+#' )
 #' bert_config_from_json_file(json_file)
 #' }
 bert_config_from_json_file <- function(json_file) {
@@ -148,27 +152,36 @@ bert_config_from_json_file <- function(json_file) {
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        input_ids <- tensorflow::tf$constant(list(list(31L, 51L, 99L),
-#'                                                  list(15L, 5L, 0L)))
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   input_ids <- tensorflow::tf$constant(list(
+#'     list(31L, 51L, 99L),
+#'     list(15L, 5L, 0L)
+#'   ))
 #'
-#'        input_mask <- tensorflow::tf$constant(list(list(1L, 1L, 1L),
-#'                                                   list(1L, 1L, 0L)))
-#'        token_type_ids <- tensorflow::tf$constant(list(list(0L, 0L, 1L),
-#'                                                       list(0L, 2L, 0L)))
-#'        config <- BertConfig(vocab_size = 32000L,
-#'                             hidden_size = 768L,
-#'                             num_hidden_layers = 8L,
-#'                             num_attention_heads = 12L,
-#'                             intermediate_size = 1024L)
-#'        model <- BertModel(config = config,
-#'                          is_training = TRUE,
-#'                           input_ids = input_ids,
-#'                           input_mask = input_mask,
-#'                           token_type_ids = token_type_ids)
-#'      }
-#' )
+#'   input_mask <- tensorflow::tf$constant(list(
+#'     list(1L, 1L, 1L),
+#'     list(1L, 1L, 0L)
+#'   ))
+#'   token_type_ids <- tensorflow::tf$constant(list(
+#'     list(0L, 0L, 1L),
+#'     list(0L, 2L, 0L)
+#'   ))
+#'   config <- BertConfig(
+#'     vocab_size = 32000L,
+#'     hidden_size = 768L,
+#'     num_hidden_layers = 8L,
+#'     num_attention_heads = 12L,
+#'     intermediate_size = 1024L
+#'   )
+#'   model <- BertModel(
+#'     config = config,
+#'     is_training = TRUE,
+#'     input_ids = input_ids,
+#'     input_mask = input_mask,
+#'     token_type_ids = token_type_ids
+#'   )
+#' })
 #' }
 BertModel <- function(config,
                       is_training,
@@ -187,15 +200,17 @@ BertModel <- function(config,
   seq_length <- input_shape[[2]]
 
   if (is.null(input_mask)) {
-    input_mask  <- tensorflow::tf$ones(
+    input_mask <- tensorflow::tf$ones(
       shape = tensorflow::shape(batch_size, seq_length),
-      dtype = tensorflow::tf$int32)
+      dtype = tensorflow::tf$int32
+    )
   }
 
   if (is.null(token_type_ids)) {
     token_type_ids <- tensorflow::tf$zeros(
       shape = tensorflow::shape(batch_size, seq_length),
-      dtype = tensorflow::tf$int32)
+      dtype = tensorflow::tf$int32
+    )
   }
 
   with(tensorflow::tf$variable_scope(scope, default_name = "bert"), {
@@ -207,13 +222,14 @@ BertModel <- function(config,
         embedding_size = config$hidden_size,
         initializer_range = config$initializer_range,
         word_embedding_name = "word_embeddings",
-        use_one_hot_embeddings = use_one_hot_embeddings)
+        use_one_hot_embeddings = use_one_hot_embeddings
+      )
       embedding_output <- elup[[1]]
       embedding_table <- elup[[2]]
 
       # Add positional embeddings and token type embeddings, then layer
       # normalize and perform dropout.
-      embedding_output <-  embedding_postprocessor(
+      embedding_output <- embedding_postprocessor(
         input_tensor = embedding_output,
         use_token_type = TRUE,
         token_type_ids = token_type_ids,
@@ -223,15 +239,18 @@ BertModel <- function(config,
         position_embedding_name = "position_embeddings",
         initializer_range = config$initializer_range,
         max_position_embeddings = config$max_position_embeddings,
-        dropout_prob = config$hidden_dropout_prob)
+        dropout_prob = config$hidden_dropout_prob
+      )
     })
 
     with(tensorflow::tf$variable_scope("encoder"), {
       # This converts a 2D mask of shape [batch_size, seq_length] to a 3D
       # mask of shape [batch_size, seq_length, seq_length] which is used
       # for the attention scores.
-      attention_mask <- create_attention_mask_from_input_mask(input_ids,
-                                                              input_mask)
+      attention_mask <- create_attention_mask_from_input_mask(
+        input_ids,
+        input_mask
+      )
 
       # Run the stacked transformer.
       # `sequence_output` shape = [batch_size, seq_length, hidden_size].
@@ -246,7 +265,8 @@ BertModel <- function(config,
         hidden_dropout_prob = config$hidden_dropout_prob,
         attention_probs_dropout_prob = config$attention_probs_dropout_prob,
         initializer_range = config$initializer_range,
-        do_return_all_layers = TRUE)
+        do_return_all_layers = TRUE
+      )
     })
 
     # ATTN: modified below to separate out attention_data
@@ -280,17 +300,20 @@ BertModel <- function(config,
         first_token_tensor,
         config$hidden_size,
         activation = tensorflow::tf$tanh,
-        kernel_initializer = create_initializer(config$initializer_range))
+        kernel_initializer = create_initializer(config$initializer_range)
+      )
     })
   })
-  obj <- list("embedding_output" = embedding_output,
-              "embedding_table" = embedding_table,
-              "all_encoder_layers" = all_encoder_layers,
-              # ATTN: modified below to include attention_data in output
-              "attention_data" = attention_data,
-              # ATTN: modified above to include attention_data in output
-              "sequence_output" = sequence_output,
-              "pooled_output" = pooled_output)
+  obj <- list(
+    "embedding_output" = embedding_output,
+    "embedding_table" = embedding_table,
+    "all_encoder_layers" = all_encoder_layers,
+    # ATTN: modified below to include attention_data in output
+    "attention_data" = attention_data,
+    # ATTN: modified above to include attention_data in output
+    "sequence_output" = sequence_output,
+    "pooled_output" = pooled_output
+  )
   class(obj) <- "BertModel"
   return(obj)
 }
@@ -318,10 +341,11 @@ BertModel <- function(config,
 #' gelu(tfx)
 #' }
 gelu <- function(x) {
-  cdf <- 0.5*(1.0 + tensorflow::tf$tanh(
-    (sqrt(2/pi)*(x + 0.044715 * tensorflow::tf$pow(x, 3))))
+  cdf <- 0.5 * (1.0 + tensorflow::tf$tanh(
+    (sqrt(2 / pi) * (x + 0.044715 * tensorflow::tf$pow(x, 3)))
   )
-  return(x*cdf)
+  )
+  return(x * cdf)
 }
 
 
@@ -352,7 +376,7 @@ get_activation <- function(activation_string) {
     return(activation_string)
   }
   activation_string <- tolower(trimws(activation_string))
-  if (is.na(activation_string) | activation_string=="") {
+  if (is.na(activation_string) | activation_string == "") {
     return(NA)
   }
   # if we add dplyr to imports, change this to a case_when?
@@ -403,26 +427,27 @@ get_activation <- function(activation_string) {
 #' # Just for illustration: create a "model" with a couple variables
 #' # that overlap some variable names in the BERT checkpoint.
 #' with(tensorflow::tf$variable_scope("bert",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        test_ten1 <- tensorflow::tf$get_variable(
-#'          "encoder/layer_9/output/dense/bias",
-#'          shape = c(1L, 2L, 3L)
-#'        )
-#'        test_ten2 <- tensorflow::tf$get_variable(
-#'          "encoder/layer_9/output/dense/kernel",
-#'          shape = c(1L, 2L, 3L)
-#'        )
-#'      }
-#' )
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   test_ten1 <- tensorflow::tf$get_variable(
+#'     "encoder/layer_9/output/dense/bias",
+#'     shape = c(1L, 2L, 3L)
+#'   )
+#'   test_ten2 <- tensorflow::tf$get_variable(
+#'     "encoder/layer_9/output/dense/kernel",
+#'     shape = c(1L, 2L, 3L)
+#'   )
+#' })
 #' tvars <- tensorflow::tf$get_collection(
 #'   tensorflow::tf$GraphKeys$GLOBAL_VARIABLES
 #' )
 #' temp_dir <- tempdir()
-#' init_checkpoint <- file.path(temp_dir,
-#'                              "BERT_checkpoints",
-#'                              "uncased_L-12_H-768_A-12",
-#'                              "bert_model.ckpt")
+#' init_checkpoint <- file.path(
+#'   temp_dir,
+#'   "BERT_checkpoints",
+#'   "uncased_L-12_H-768_A-12",
+#'   "bert_model.ckpt"
+#' )
 #'
 #' amap <- get_assignment_map_from_checkpoint(tvars, init_checkpoint)
 #' }
@@ -453,13 +478,15 @@ get_assignment_map_from_checkpoint <- function(tvars, init_checkpoint) {
   for (x in init_vars) {
     name <- x[[1]]
     if (name %in% just_names) {
-      assignment_map[[name]] <- name #why?
+      assignment_map[[name]] <- name # why?
       initialized_variable_names[[name]] <- 1
       initialized_variable_names[[paste0(name, ":0")]] <- 1
     }
   }
-  return(list("assignment_map" = assignment_map,
-              "initialized_variable_names" = initialized_variable_names))
+  return(list(
+    "assignment_map" = assignment_map,
+    "initialized_variable_names" = initialized_variable_names
+  ))
 }
 
 # dropout --------------------------------------------------------------------
@@ -522,7 +549,8 @@ layer_norm <- function(input_tensor, name = NULL) {
     inputs = input_tensor,
     begin_norm_axis = -1L,
     begin_params_axis = -1L,
-    scope = name))
+    scope = name
+  ))
 }
 
 
@@ -594,13 +622,16 @@ create_initializer <- function(initializer_range = 0.02) {
 #'
 #' @examples
 #' \dontrun{
-#' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      ids <- tensorflow::tf$get_variable("x", dtype = "int32",
-#'                                         shape = tensorflow::shape(10, 20))
+#' with(
+#'   tensorflow::tf$variable_scope("examples",
+#'     reuse = tensorflow::tf$AUTO_REUSE
+#'   ),
+#'   ids <- tensorflow::tf$get_variable("x",
+#'     dtype = "int32",
+#'     shape = tensorflow::shape(10, 20)
+#'   )
 #' )
 #' embedding_lookup(ids, vocab_size = 100, word_embedding_name = "some_name")
-#'
 #' }
 embedding_lookup <- function(input_ids,
                              vocab_size,
@@ -619,10 +650,11 @@ embedding_lookup <- function(input_ids,
     stop("input_id tensor has incorrect shape.")
   }
 
-  embedding_table <-  tensorflow::tf$get_variable(
+  embedding_table <- tensorflow::tf$get_variable(
     name = word_embedding_name,
     shape = tensorflow::shape(vocab_size, embedding_size),
-    initializer = create_initializer(initializer_range))
+    initializer = create_initializer(initializer_range)
+  )
 
   # The shape argument can usually be a vector, but that fails if it's
   # a single-element vector. So use list in this case.
@@ -630,7 +662,8 @@ embedding_lookup <- function(input_ids,
 
   if (use_one_hot_embeddings) {
     one_hot_input_ids <- tensorflow::tf$one_hot(flat_input_ids,
-                                                depth = as.integer(vocab_size))
+      depth = as.integer(vocab_size)
+    )
     output <- tensorflow::tf$matmul(one_hot_input_ids, embedding_table)
   } else {
     output <- tensorflow::tf$gather(embedding_table, flat_input_ids)
@@ -640,10 +673,13 @@ embedding_lookup <- function(input_ids,
   num_dims <- length(input_shape)
   last_dim <- input_shape[num_dims][[1]]
   first_dims <- input_shape[-num_dims]
-  target_shape <- unlist(list(first_dims, last_dim*embedding_size),
-                         recursive = FALSE)
-  output <-  tensorflow::tf$reshape(output,
-                                    target_shape)
+  target_shape <- unlist(list(first_dims, last_dim * embedding_size),
+    recursive = FALSE
+  )
+  output <- tensorflow::tf$reshape(
+    output,
+    target_shape
+  )
 
   return(list(output, embedding_table))
 }
@@ -695,33 +731,36 @@ embedding_lookup <- function(input_ids,
 #' seq_length <- 512
 #' embedding_size <- 200
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        input_tensor <- tensorflow::tf$get_variable(
-#'          "input", dtype = "float",
-#'          shape = tensorflow::shape(batch_size, seq_length, embedding_size))
-#'        token_type_ids <- tensorflow::tf$get_variable(
-#'          "ids", dtype = "int32",
-#'          shape = tensorflow::shape(batch_size, seq_length))
-#'      }
-#' )
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   input_tensor <- tensorflow::tf$get_variable(
+#'     "input",
+#'     dtype = "float",
+#'     shape = tensorflow::shape(batch_size, seq_length, embedding_size)
+#'   )
+#'   token_type_ids <- tensorflow::tf$get_variable(
+#'     "ids",
+#'     dtype = "int32",
+#'     shape = tensorflow::shape(batch_size, seq_length)
+#'   )
+#' })
 #' embedding_postprocessor(input_tensor,
-#'                         use_token_type = TRUE,
-#'                         token_type_ids = token_type_ids)
+#'   use_token_type = TRUE,
+#'   token_type_ids = token_type_ids
+#' )
 #' }
 embedding_postprocessor <- function(
-  input_tensor,
-  use_token_type = FALSE,
-  token_type_ids = NULL,
-  token_type_vocab_size = 16L,
-  token_type_embedding_name = "token_type_embeddings",
-  use_position_embeddings = TRUE,
-  position_embedding_name = "position_embeddings",
-  initializer_range = 0.02,
-  max_position_embeddings = 512L,
-  dropout_prob = 0.1
-) {
-  input_shape <-  get_shape_list(input_tensor, expected_rank = 3L)
+                                    input_tensor,
+                                    use_token_type = FALSE,
+                                    token_type_ids = NULL,
+                                    token_type_vocab_size = 16L,
+                                    token_type_embedding_name = "token_type_embeddings",
+                                    use_position_embeddings = TRUE,
+                                    position_embedding_name = "position_embeddings",
+                                    initializer_range = 0.02,
+                                    max_position_embeddings = 512L,
+                                    dropout_prob = 0.1) {
+  input_shape <- get_shape_list(input_tensor, expected_rank = 3L)
   batch_size <- input_shape[[1]]
   seq_length <- input_shape[[2]]
   width <- input_shape[[3]] # a.k.a. embedding_size? -JDB
@@ -741,11 +780,15 @@ embedding_postprocessor <- function(
     # faster for a small vocabulary.
   }
   flat_token_type_ids <- tensorflow::tf$reshape(token_type_ids,
-                                                shape = list(-1L))
+    shape = list(-1L)
+  )
   one_hot_ids <- tensorflow::tf$one_hot(flat_token_type_ids,
-                                        depth = token_type_vocab_size)
-  token_type_embeddings <-  tensorflow::tf$matmul(one_hot_ids,
-                                                  token_type_table)
+    depth = token_type_vocab_size
+  )
+  token_type_embeddings <- tensorflow::tf$matmul(
+    one_hot_ids,
+    token_type_table
+  )
   token_type_embeddings <- tensorflow::tf$reshape(
     token_type_embeddings,
     shape = list(batch_size, seq_length, width)
@@ -753,10 +796,12 @@ embedding_postprocessor <- function(
   output <- output + token_type_embeddings
 
   if (use_position_embeddings) {
-    assert_op <- tensorflow::tf$assert_less_equal(seq_length,
-                                                  max_position_embeddings)
+    assert_op <- tensorflow::tf$assert_less_equal(
+      seq_length,
+      max_position_embeddings
+    )
     # Double check that list is necessary here.
-    with(tensorflow::tf$control_dependencies(list(assert_op)) , {
+    with(tensorflow::tf$control_dependencies(list(assert_op)), {
       # what follows runs only after `assert_op`; see:
       # https://devdocs.io/tensorflow~python/tf/graph#control_dependencies
 
@@ -780,14 +825,14 @@ embedding_postprocessor <- function(
       # of the full tensor to have a size of seq_length, rather than
       # max_position_embeddings. -JDB
 
-      position_embeddings <-  tensorflow::tf$slice(
+      position_embeddings <- tensorflow::tf$slice(
         full_position_embeddings,
         begin = tensorflow::shape(0, 0),
         size = tensorflow::shape(seq_length, -1)
       )
 
       # This will typically be just 3. -JDB
-      num_dims <-  length(output$shape$as_list())
+      num_dims <- length(output$shape$as_list())
 
       # Only the last two dimensions are relevant (`seq_length` and `width`), so
       # we broadcast among the first dimensions, which is typically just
@@ -802,8 +847,10 @@ embedding_postprocessor <- function(
         seq_length,
         width
       ))
-      position_embeddings <- tensorflow::tf$reshape(position_embeddings,
-                                                    position_broadcast_shape)
+      position_embeddings <- tensorflow::tf$reshape(
+        position_embeddings,
+        position_broadcast_shape
+      )
       output <- output + position_embeddings
     })
   }
@@ -829,18 +876,19 @@ embedding_postprocessor <- function(
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        from_tensor <- ids <- tensorflow::tf$get_variable("ften",
-#'                                          dtype = "float", shape = c(10, 20))
-#'        to_mask <- ids <- tensorflow::tf$get_variable("mask",
-#'                                          dtype = "int32", shape = c(10, 30))
-#'      }
-#' )
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   from_tensor <- ids <- tensorflow::tf$get_variable("ften",
+#'     dtype = "float", shape = c(10, 20)
+#'   )
+#'   to_mask <- ids <- tensorflow::tf$get_variable("mask",
+#'     dtype = "int32", shape = c(10, 30)
+#'   )
+#' })
 #' create_attention_mask_from_input_mask(from_tensor, to_mask)
 #' }
 create_attention_mask_from_input_mask <- function(from_tensor, to_mask) {
-  from_shape <- get_shape_list(from_tensor, expected_rank = list(2,3))
+  from_shape <- get_shape_list(from_tensor, expected_rank = list(2, 3))
   batch_size <- from_shape[[1]]
   from_seq_length <- from_shape[[2]]
 
@@ -849,8 +897,10 @@ create_attention_mask_from_input_mask <- function(from_tensor, to_mask) {
   to_seq_length <- to_shape[[2]]
 
   to_mask <- tensorflow::tf$cast(
-    tensorflow::tf$reshape(to_mask,
-                           list(batch_size, 1L, to_seq_length)),
+    tensorflow::tf$reshape(
+      to_mask,
+      list(batch_size, 1L, to_seq_length)
+    ),
     tensorflow::tf$float32
   )
 
@@ -865,7 +915,7 @@ create_attention_mask_from_input_mask <- function(from_tensor, to_mask) {
 
   # I checked, and this appears to handle the broadcast over tensorflow
   # tensors correctly in R. -JDB
-  mask <- broadcast_ones*to_mask
+  mask <- broadcast_ones * to_mask
   return(mask)
 }
 
@@ -892,19 +942,22 @@ transpose_for_scores <- function(input_tensor,
                                  num_attention_heads,
                                  seq_length,
                                  width) {
-  output_tensor <-  tensorflow::tf$reshape(
+  output_tensor <- tensorflow::tf$reshape(
     input_tensor,
     # We can't use shape() here, because batch_size is still undetermined
     # at this point. -JDB
-    list(batch_size,
-         as.integer(seq_length),
-         as.integer(num_attention_heads),
-         as.integer(width))
+    list(
+      batch_size,
+      as.integer(seq_length),
+      as.integer(num_attention_heads),
+      as.integer(width)
+    )
   )
   # The R tensorflow package indexes from 1 in some places,
   # but the perm parameter labels the dimensions using zero-indexing. *shrug*
   output_tensor <- tensorflow::tf$transpose(output_tensor,
-                                            perm = list(0L, 2L, 1L, 3L))
+    perm = list(0L, 2L, 1L, 3L)
+  )
   return(output_tensor)
 }
 
@@ -997,9 +1050,10 @@ attention_layer <- function(from_tensor,
   } else if (
     is.null(batch_size) | is.null(from_seq_length) | is.null(to_seq_length)
   ) {
-    stop(paste("When passing in rank 2 tensors to attention_layer, the values",
-               "for batch_size, from_seq_length, and to_seq_length",
-               "must all be specified."
+    stop(paste(
+      "When passing in rank 2 tensors to attention_layer, the values",
+      "for batch_size, from_seq_length, and to_seq_length",
+      "must all be specified."
     ))
   }
 
@@ -1024,7 +1078,7 @@ attention_layer <- function(from_tensor,
   # `key_layer` = [B*T, N*H]
   key_layer <- tensorflow::tf$layers$dense(
     to_tensor_2d,
-    num_attention_heads*size_per_head,
+    num_attention_heads * size_per_head,
     activation = key_act,
     name = "key",
     kernel_initializer = create_initializer(initializer_range)
@@ -1033,47 +1087,57 @@ attention_layer <- function(from_tensor,
   # `value_layer` = [B*T, N*H]
   value_layer <- tensorflow::tf$layers$dense(
     to_tensor_2d,
-    num_attention_heads*size_per_head,
+    num_attention_heads * size_per_head,
     activation = value_act,
     name = "value",
     kernel_initializer = create_initializer(initializer_range)
   )
 
   # `query_layer` = [B, N, F, H]
-  query_layer <- transpose_for_scores(query_layer,
-                                      batch_size,
-                                      num_attention_heads,
-                                      from_seq_length,
-                                      size_per_head)
+  query_layer <- transpose_for_scores(
+    query_layer,
+    batch_size,
+    num_attention_heads,
+    from_seq_length,
+    size_per_head
+  )
 
   # `key_layer` = [B, N, T, H]
-  key_layer <- transpose_for_scores(key_layer,
-                                    batch_size,
-                                    num_attention_heads,
-                                    to_seq_length,
-                                    size_per_head)
+  key_layer <- transpose_for_scores(
+    key_layer,
+    batch_size,
+    num_attention_heads,
+    to_seq_length,
+    size_per_head
+  )
 
   # Take the dot product between "query" and "key" to get the raw
   # attention scores.
   # `attention_scores` = [B, N, F, T]
   attention_scores <- tensorflow::tf$matmul(query_layer,
-                                            key_layer,
-                                            transpose_b = TRUE)
-  attention_scores  <- tensorflow::tf$multiply(attention_scores,
-                                               1.0/sqrt(size_per_head))
+    key_layer,
+    transpose_b = TRUE
+  )
+  attention_scores <- tensorflow::tf$multiply(
+    attention_scores,
+    1.0 / sqrt(size_per_head)
+  )
 
   if (!is.null(attention_mask)) {
     # `attention_mask` = [B, 1, F, T]
     # The axis argument is zero-indexed, so the expanded dimension is the
     # *second*, not the first.
     attention_mask <- tensorflow::tf$expand_dims(attention_mask,
-                                                 axis = list(1L))
+      axis = list(1L)
+    )
 
     # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
     # masked positions, this operation will create a tensor which is 0.0 for
     # positions we want to attend and -10000.0 for masked positions.
-    adder <- (1.0 - tensorflow::tf$cast(attention_mask,
-                                        tensorflow::tf$float32))*(-10000.0)
+    adder <- (1.0 - tensorflow::tf$cast(
+      attention_mask,
+      tensorflow::tf$float32
+    )) * (-10000.0)
 
     # Since we are adding it to the raw scores before the softmax, this is
     # effectively the same as removing these entirely.
@@ -1082,7 +1146,7 @@ attention_layer <- function(from_tensor,
 
   # Normalize the attention scores to probabilities.
   # `attention_probs` = [B, N, F, T]
-  attention_probs <-  tensorflow::tf$nn$softmax(attention_scores)
+  attention_probs <- tensorflow::tf$nn$softmax(attention_scores)
 
   # This is actually dropping out entire tokens to attend to, which might
   # seem a bit unusual, but is taken from the original Transformer paper.
@@ -1093,35 +1157,46 @@ attention_layer <- function(from_tensor,
   # Not sure why, because it seems that this is what it was written for. -JDB
 
   # `value_layer` = [B, N, T, H]
-  value_layer <- transpose_for_scores(input_tensor = value_layer,
-                                      batch_size = batch_size,
-                                      num_attention_heads = num_attention_heads,
-                                      seq_length = to_seq_length,
-                                      width = size_per_head)
+  value_layer <- transpose_for_scores(
+    input_tensor = value_layer,
+    batch_size = batch_size,
+    num_attention_heads = num_attention_heads,
+    seq_length = to_seq_length,
+    width = size_per_head
+  )
 
   # `context_layer` = [B, N, F, H]
   context_layer <- tensorflow::tf$matmul(attention_probs, value_layer)
 
   # `context_layer` = [B, F, N, H]
   context_layer <- tensorflow::tf$transpose(context_layer,
-                                            perm = list(0L, 2L, 1L, 3L))
+    perm = list(0L, 2L, 1L, 3L)
+  )
 
   if (do_return_2d_tensor) {
     context_layer <- tensorflow::tf$reshape(
       context_layer,
-      list(batch_size*from_seq_length,
-           as.integer(num_attention_heads*size_per_head)))
+      list(
+        batch_size * from_seq_length,
+        as.integer(num_attention_heads * size_per_head)
+      )
+    )
   } else {
     context_layer <- tensorflow::tf$reshape(
       context_layer,
-      list(batch_size,
-           as.integer(from_seq_length),
-           as.integer(num_attention_heads),
-           as.integer(size_per_head)))
+      list(
+        batch_size,
+        as.integer(from_seq_length),
+        as.integer(num_attention_heads),
+        as.integer(size_per_head)
+      )
+    )
   }
   # ATTN: modified below to include attention_data in return
-  to_return <- list("context_layer" = context_layer,
-                    "attention_data" = attention_probs)
+  to_return <- list(
+    "context_layer" = context_layer,
+    "attention_data" = attention_probs
+  )
   return(to_return)
   # return(context_layer)
   # ATTN: modified above to include attention_data in return
@@ -1175,17 +1250,21 @@ attention_layer <- function(from_tensor,
 #' hidden_size <- 120
 #'
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        input_tensor <- tensorflow::tf$get_variable("input",
-#'                                                    shape = c(batch_size,
-#'                                                              seq_length,
-#'                                                              hidden_size))
-#'      }
-#' )
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   input_tensor <- tensorflow::tf$get_variable("input",
+#'     shape = c(
+#'       batch_size,
+#'       seq_length,
+#'       hidden_size
+#'     )
+#'   )
+#' })
 #'
-#' model_t <- transformer_model(input_tensor = input_tensor,
-#'                              hidden_size = hidden_size)
+#' model_t <- transformer_model(
+#'   input_tensor = input_tensor,
+#'   hidden_size = hidden_size
+#' )
 #' }
 transformer_model <- function(input_tensor,
                               attention_mask = NULL,
@@ -1199,10 +1278,12 @@ transformer_model <- function(input_tensor,
                               initializer_range = 0.02,
                               do_return_all_layers = FALSE) {
   if (hidden_size %% num_attention_heads != 0) {
-    stop(paste("The hidden size:",
-               hidden_size,
-               "is not a multiple of the number of attention heads:",
-               num_attention_heads))
+    stop(paste(
+      "The hidden size:",
+      hidden_size,
+      "is not a multiple of the number of attention heads:",
+      num_attention_heads
+    ))
   }
 
   attention_head_size <- hidden_size %/% num_attention_heads
@@ -1214,10 +1295,12 @@ transformer_model <- function(input_tensor,
   # The Transformer performs sum residuals on all layers so the input needs
   # to be the same as the hidden size.
   if (input_width != hidden_size) {
-    stop(paste("The width of the input tensor:",
-               input_width,
-               "is not equal to the hidden size:",
-               hidden_size))
+    stop(paste(
+      "The width of the input tensor:",
+      input_width,
+      "is not equal to the hidden size:",
+      hidden_size
+    ))
   }
 
   # We keep the representation as a 2D tensor to avoid re-shaping it back and
@@ -1232,7 +1315,7 @@ transformer_model <- function(input_tensor,
 
   all_layer_outputs <- vector(mode = "list", length = num_hidden_layers)
   # probably want to refactor this loop later. For now, following python...
-  for (layer_idx in 1:num_hidden_layers) { #... but starting at 1 rather than 0.
+  for (layer_idx in 1:num_hidden_layers) { # ... but starting at 1 rather than 0.
     # !! To correctly load the checkpoint parameters, need to follow python
     # names exactly. !!
     python_index <- layer_idx - 1
@@ -1257,7 +1340,8 @@ transformer_model <- function(input_tensor,
             do_return_2d_tensor = TRUE,
             batch_size = batch_size,
             from_seq_length = seq_length,
-            to_seq_length = seq_length)
+            to_seq_length = seq_length
+          )
         })
         # ATTN: modified below to separate out attention_data
         attention_data <- attention_output$attention_data
@@ -1268,7 +1352,8 @@ transformer_model <- function(input_tensor,
           attention_output <- tensorflow::tf$layers$dense(
             attention_output,
             hidden_size,
-            kernel_initializer = create_initializer(initializer_range))
+            kernel_initializer = create_initializer(initializer_range)
+          )
           attention_output <- dropout(attention_output, hidden_dropout_prob)
           attention_output <- layer_norm(attention_output + layer_input)
         })
@@ -1279,14 +1364,16 @@ transformer_model <- function(input_tensor,
           attention_output,
           intermediate_size,
           activation = intermediate_act_fn,
-          kernel_initializer = create_initializer(initializer_range))
+          kernel_initializer = create_initializer(initializer_range)
+        )
       })
       # Down-project back to `hidden_size` then add the residual.
       with(tensorflow::tf$variable_scope("output"), {
         layer_output <- tensorflow::tf$layers$dense(
           intermediate_output,
           hidden_size,
-          kernel_initializer = create_initializer(initializer_range))
+          kernel_initializer = create_initializer(initializer_range)
+        )
         layer_output <- dropout(layer_output, hidden_dropout_prob)
         layer_output <- layer_norm(layer_output + attention_output)
         prev_output <- layer_output
@@ -1299,12 +1386,16 @@ transformer_model <- function(input_tensor,
     })
   }
   if (do_return_all_layers) {
-    final_outputs <- purrr::map(all_layer_outputs,
-                                reshape_from_matrix,
-                                input_shape)
+    final_outputs <- purrr::map(
+      all_layer_outputs,
+      reshape_from_matrix,
+      input_shape
+    )
     # ATTN: modified below to include all_attn_data in return
-    to_return <- list("final_outputs" = final_outputs,
-                      "attention_data" = all_attn_data)
+    to_return <- list(
+      "final_outputs" = final_outputs,
+      "attention_data" = all_attn_data
+    )
     return(to_return)
     # return(final_outputs)
     # ATTN: modified above to include all_attn_data in return
@@ -1341,15 +1432,14 @@ transformer_model <- function(input_tensor,
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'  {
-#'    phx <- tensorflow::tf$placeholder(tensorflow::tf$int32, shape = c(4))
-#'    get_shape_list(phx) # static
-#'    tfu <- tensorflow::tf$unique(phx)
-#'    tfy <- tfu$y
-#'    get_shape_list(tfy) # dynamic
-#'  }
-#' )
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   phx <- tensorflow::tf$placeholder(tensorflow::tf$int32, shape = c(4))
+#'   get_shape_list(phx) # static
+#'   tfu <- tensorflow::tf$unique(phx)
+#'   tfy <- tfu$y
+#'   get_shape_list(tfy) # dynamic
+#' })
 #' }
 get_shape_list <- function(tensor, expected_rank = NULL, name = NULL) {
   if (is.null(name)) {
@@ -1370,7 +1460,7 @@ get_shape_list <- function(tensor, expected_rank = NULL, name = NULL) {
 
   non_static_indexes <- c()
 
-  for (index in seq_along(shape) ) {
+  for (index in seq_along(shape)) {
     dim <- shape[index] # will now be "NULL" if dynamic dimension.
     if (dim == "NULL") {
       non_static_indexes <- c(non_static_indexes, index)
@@ -1406,10 +1496,14 @@ get_shape_list <- function(tensor, expected_rank = NULL, name = NULL) {
 #'
 #' @examples
 #' \dontrun{
-#' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      r3t <- tensorflow::tf$get_variable("r3t", dtype = "int32",
-#'                                         shape = c(10, 20, 3))
+#' with(
+#'   tensorflow::tf$variable_scope("examples",
+#'     reuse = tensorflow::tf$AUTO_REUSE
+#'   ),
+#'   r3t <- tensorflow::tf$get_variable("r3t",
+#'     dtype = "int32",
+#'     shape = c(10, 20, 3)
+#'   )
 #' )
 #' reshape_to_matrix(r3t)
 #' }
@@ -1420,8 +1514,10 @@ reshape_to_matrix <- function(input_tensor) {
   }
 
   if (ndims < 2) {
-    stop(paste("Input tensor must have at least rank 2. Shape =",
-               input_tensor$shape))
+    stop(paste(
+      "Input tensor must have at least rank 2. Shape =",
+      input_tensor$shape
+    ))
   }
 
   input_shape <- input_tensor$shape$as_list()
@@ -1446,12 +1542,16 @@ reshape_to_matrix <- function(input_tensor) {
 #'
 #' @examples
 #' \dontrun{
-#' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      r2t <- tensorflow::tf$get_variable("r2t", dtype = "int32",
-#'                                         shape = c(10, 20))
+#' with(
+#'   tensorflow::tf$variable_scope("examples",
+#'     reuse = tensorflow::tf$AUTO_REUSE
+#'   ),
+#'   r2t <- tensorflow::tf$get_variable("r2t",
+#'     dtype = "int32",
+#'     shape = c(10, 20)
+#'   )
 #' )
-#' reshape_from_matrix(r2t, orig_shape_list=c(5L, 2L, 20L))
+#' reshape_from_matrix(r2t, orig_shape_list = c(5L, 2L, 20L))
 #' }
 reshape_from_matrix <- function(output_tensor, orig_shape_list) {
   output_shape <- get_shape_list(output_tensor)
@@ -1470,8 +1570,10 @@ reshape_from_matrix <- function(output_tensor, orig_shape_list) {
   if (length(orig_shape_list) == 2) {
     return(output_tensor)
   }
-  return(tensorflow::tf$reshape(output_tensor,
-                                orig_shape_list))
+  return(tensorflow::tf$reshape(
+    output_tensor,
+    orig_shape_list
+  ))
 }
 
 # assert_rank ----------------------------------------------------------
@@ -1490,14 +1592,13 @@ reshape_from_matrix <- function(output_tensor, orig_shape_list) {
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                        reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        ids <- tensorflow::tf$get_variable("x", dtype = "int32", shape = 10L)
-#'        assert_rank(ids, 1)
-#'        assert_rank(ids, 1:2)
-#'        assert_rank(ids, 2)
-#'      }
-#' )
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   ids <- tensorflow::tf$get_variable("x", dtype = "int32", shape = 10L)
+#'   assert_rank(ids, 1)
+#'   assert_rank(ids, 1:2)
+#'   assert_rank(ids, 2)
+#' })
 #' }
 assert_rank <- function(tensor, expected_rank, name = NULL) {
   if (is.null(name)) {
@@ -1506,7 +1607,7 @@ assert_rank <- function(tensor, expected_rank, name = NULL) {
 
   actual_rank <- tensor$shape$ndims
 
-  if (! actual_rank %in% expected_rank) {
+  if (!actual_rank %in% expected_rank) {
     stop(paste0(
       "For the tensor ", name,
       ", the actual rank ", actual_rank,
@@ -1516,5 +1617,3 @@ assert_rank <- function(tensor, expected_rank, name = NULL) {
   }
   return(TRUE)
 }
-
-

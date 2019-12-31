@@ -32,14 +32,18 @@
 #' @export
 #'
 #' @examples
-#' input_ex <- InputExample_EF(unique_id = 1,
-#'                             text_a = "I work at the bank.")
+#' input_ex <- InputExample_EF(
+#'   unique_id = 1,
+#'   text_a = "I work at the bank."
+#' )
 InputExample_EF <- function(unique_id,
-                         text_a,
-                         text_b = NULL) {
-  obj <- list("unique_id" = unique_id,
-              "text_a" = text_a,
-              "text_b" = text_b)
+                            text_a,
+                            text_b = NULL) {
+  obj <- list(
+    "unique_id" = unique_id,
+    "text_a" = text_a,
+    "text_b" = text_b
+  )
   class(obj) <- "InputExample_EF"
   return(obj)
 }
@@ -65,15 +69,17 @@ InputExample_EF <- function(unique_id,
 #' @return An object of class \code{InputFeatures_FE}.
 #' @keywords internal
 .InputFeatures_EF <- function(unique_id,
-                             tokens,
-                             input_ids,
-                             input_mask,
-                             input_type_ids) {
-  obj <- list("unique_id" = unique_id,
-              "tokens" = tokens,
-              "input_ids" = input_ids,
-              "input_mask" = input_mask,
-              "input_type_ids" = input_type_ids)
+                              tokens,
+                              input_ids,
+                              input_mask,
+                              input_type_ids) {
+  obj <- list(
+    "unique_id" = unique_id,
+    "tokens" = tokens,
+    "input_ids" = input_ids,
+    "input_mask" = input_mask,
+    "input_type_ids" = input_type_ids
+  )
   class(obj) <- "InputFeatures"
   return(obj)
 }
@@ -97,15 +103,31 @@ InputExample_EF <- function(unique_id,
 #' @return An \code{input_fn} closure to be passed to TPUEstimator.
 #' @keywords internal
 input_fn_builder_EF <- function(features,
-                             seq_length) {
-  all_unique_ids <- purrr::map(features,
-                              function(f) { as.integer(f$unique_id) })
-  all_input_ids <- purrr::map(features,
-                               function(f) { as.integer(f$input_ids) })
-  all_input_mask <- purrr::map(features,
-                                function(f) { as.integer(f$input_mask) })
-  all_input_type_ids <- purrr::map(features,
-                              function(f) { as.integer(f$input_type_ids) })
+                                seq_length) {
+  all_unique_ids <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$unique_id)
+    }
+  )
+  all_input_ids <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$input_ids)
+    }
+  )
+  all_input_mask <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$input_mask)
+    }
+  )
+  all_input_type_ids <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$input_type_ids)
+    }
+  )
 
   input_fn <- function(params) {
     batch_size <- params$batch_size
@@ -143,9 +165,11 @@ input_fn_builder_EF <- function(features,
       )
     )
 
-    d <- d$batch(batch_size = batch_size,
-                 drop_remainder = FALSE)
-    return(d)  # return from `input_fn`
+    d <- d$batch(
+      batch_size = batch_size,
+      drop_remainder = FALSE
+    )
+    return(d) # return from `input_fn`
   }
   return(input_fn)
 }
@@ -184,10 +208,10 @@ input_fn_builder_EF <- function(features,
 #' @return \code{model_fn} closure for \code{TPUEstimator}.
 #' @keywords internal
 .model_fn_builder_EF <- function(bert_config,
-                             init_checkpoint,
-                             layer_indexes,
-                             use_tpu,
-                             use_one_hot_embeddings) {
+                                 init_checkpoint,
+                                 layer_indexes,
+                                 use_tpu,
+                                 use_one_hot_embeddings) {
   # The `model_fn` for TPUEstimator.
   model_fn <- function(features, labels, mode, params) {
     unique_ids <- features$unique_ids
@@ -196,15 +220,17 @@ input_fn_builder_EF <- function(features,
     input_type_ids <- features$input_type_ids
     input_shape <- get_shape_list(input_ids, expected_rank = 2L)
 
-    model <- BertModel(config = bert_config,
-                       is_training = FALSE,
-                       input_ids = input_ids,
-                       input_mask = input_mask,
-                       token_type_ids = input_type_ids,
-                       use_one_hot_embeddings = use_one_hot_embeddings)
+    model <- BertModel(
+      config = bert_config,
+      is_training = FALSE,
+      input_ids = input_ids,
+      input_mask = input_mask,
+      token_type_ids = input_type_ids,
+      use_one_hot_embeddings = use_one_hot_embeddings
+    )
 
     if (mode != tensorflow::tf$estimator$ModeKeys$PREDICT) {
-      stop("Only PREDICT modes are supported.")   # nocov
+      stop("Only PREDICT modes are supported.") # nocov
     }
 
     tvars <- tensorflow::tf$trainable_variables()
@@ -214,16 +240,20 @@ input_fn_builder_EF <- function(features,
     gamap <- get_assignment_map_from_checkpoint(tvars, init_checkpoint)
     assignment_map <- gamap$assignment_map
     initialized_variable_names <- gamap$initialized_variable_names
-    if (use_tpu) {                       # nocov start
+    if (use_tpu) { # nocov start
       tpu_scaffold <- function() {
-        tensorflow::tf$train$init_from_checkpoint(init_checkpoint,
-                                                  assignment_map)
+        tensorflow::tf$train$init_from_checkpoint(
+          init_checkpoint,
+          assignment_map
+        )
         return(tensorflow::tf$train$Scaffold())
       }
-      scaffold_fn <- tpu_scaffold        # nocov end
+      scaffold_fn <- tpu_scaffold # nocov end
     } else {
-      tensorflow::tf$train$init_from_checkpoint(init_checkpoint,
-                                                assignment_map)
+      tensorflow::tf$train$init_from_checkpoint(
+        init_checkpoint,
+        assignment_map
+      )
     }
 
     all_layers <- model$all_encoder_layers
@@ -233,7 +263,7 @@ input_fn_builder_EF <- function(features,
     # ATTN: modified above to get attention_data from model
 
     predictions <- list()
-    predictions[["unique_id"]] <-  unique_ids
+    predictions[["unique_id"]] <- unique_ids
 
     # Always include raw embeddings as the zeroth layer "output". We'll filter
     # them back out if we don't want them.
@@ -285,9 +315,9 @@ input_fn_builder_EF <- function(features,
 #' @return An object of class \code{InputFeatures_EF}.
 #' @keywords internal
 .convert_single_example_EF <- function(ex_index,
-                                      example,
-                                      seq_length,
-                                      tokenizer) {
+                                       example,
+                                       seq_length,
+                                       tokenizer) {
 
   # note use of S3 classes for dispatch, not methods.
   tokens_a <- tokenize(tokenizer, example$text_a)
@@ -299,8 +329,10 @@ input_fn_builder_EF <- function(features,
   if (!is.null(tokens_b)) {
     # Modifies `tokens_a` and `tokens_b` so that the total length is less than
     # the specified length. Account for [CLS], [SEP], [SEP] with "- 3"
-    truncated_seq <- truncate_seq_pair(tokens_a, tokens_b,
-                                       seq_length - 3)
+    truncated_seq <- truncate_seq_pair(
+      tokens_a, tokens_b,
+      seq_length - 3
+    )
     tokens_a <- truncated_seq$trunc_a
     tokens_b <- truncated_seq$trunc_b
   } else {
@@ -357,16 +389,18 @@ input_fn_builder_EF <- function(features,
 
   # Stop now if the lengths aren't right somehow. -JDB
   if (length(input_ids) != seq_length |
-      length(input_mask) != seq_length |
-      length(input_type_ids) != seq_length) {
+    length(input_mask) != seq_length |
+    length(input_type_ids) != seq_length) {
     stop("input_ids, input_mask, or input_type_ids are wrong length.") # nocov
   }
 
-  feature <- .InputFeatures_EF(unique_id = example$unique_id,
-                              tokens = tokens,
-                              input_ids = input_ids,
-                              input_mask = input_mask,
-                              input_type_ids = input_type_ids)
+  feature <- .InputFeatures_EF(
+    unique_id = example$unique_id,
+    tokens = tokens,
+    input_ids = input_ids,
+    input_mask = input_mask,
+    input_type_ids = input_type_ids
+  )
 
   return(feature)
 }
@@ -388,8 +422,8 @@ input_fn_builder_EF <- function(features,
 #' @return A list of \code{InputFeatures}.
 #' @keywords internal
 .convert_examples_to_features_EF <- function(examples,
-                                            seq_length,
-                                            tokenizer) {
+                                             seq_length,
+                                             tokenizer) {
   # I have no idea why they had to rename the elements of examples/features
   # and then recreate these functions to handle the slightly different versions.
   # Whatever. We will clean up later. -JDB
@@ -400,13 +434,15 @@ input_fn_builder_EF <- function(features,
     examples,
     function(ex_index, example,
              seq_length, tokenizer) {
-
-      .convert_single_example_EF(ex_index = ex_index,
-                                example = example,
-                                seq_length = seq_length,
-                                tokenizer = tokenizer)
+      .convert_single_example_EF(
+        ex_index = ex_index,
+        example = example,
+        seq_length = seq_length,
+        tokenizer = tokenizer
+      )
     },
-    seq_length, tokenizer)
+    seq_length, tokenizer
+  )
   return(features)
 }
 
@@ -453,24 +489,48 @@ input_fn_builder_EF <- function(features,
 #' @examples
 #' \dontrun{
 #' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
-#' vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
-#' init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
-#' bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
-#' examples <- list(InputExample_EF(unique_id = 1,
-#'                                   text_a = "I saw the branch on the bank."),
-#'                  InputExample_EF(unique_id = 2,
-#'                                   text_a = "I saw the branch of the bank."))
-#' feats <- extract_features(examples = examples,
-#'                           vocab_file = vocab_file,
-#'                           bert_config_file = bert_config_file,
-#'                           init_checkpoint = init_checkpoint,
-#'                           batch_size = 2L)
+#' vocab_file <- file.path(BERT_PRETRAINED_DIR, "vocab.txt")
+#' init_checkpoint <- file.path(BERT_PRETRAINED_DIR, "bert_model.ckpt")
+#' bert_config_file <- file.path(BERT_PRETRAINED_DIR, "bert_config.json")
+#' examples <- list(
+#'   InputExample_EF(
+#'     unique_id = 1,
+#'     text_a = "I saw the branch on the bank."
+#'   ),
+#'   InputExample_EF(
+#'     unique_id = 2,
+#'     text_a = "I saw the branch of the bank."
+#'   )
+#' )
+#' feats <- extract_features(
+#'   examples = examples,
+#'   vocab_file = vocab_file,
+#'   bert_config_file = bert_config_file,
+#'   init_checkpoint = init_checkpoint,
+#'   batch_size = 2L
+#' )
 #' # can just specify checkpoint directory
-#' feats <- extract_features(examples = examples,
-#'                           ckpt_dir = BERT_PRETRAINED_DIR,
-#'                           batch_size = 2L)
+#' feats <- extract_features(
+#'   examples = examples,
+#'   ckpt_dir = BERT_PRETRAINED_DIR,
+#'   batch_size = 2L
+#' )
 #' }
 extract_features <- function(examples,
+                             model = c(
+                               "bert_base_uncased",
+                               "bert_base_cased",
+                               "bert_large_uncased",
+                               "bert_large_cased",
+                               "bert_large_uncased_wwm",
+                               "bert_large_cased_wwm",
+                               "bert_base_multilingual_cased",
+                               "bert_base_chinese",
+                               "scibert_scivocab_uncased",
+                               "scibert_scivocab_cased",
+                               "scibert_basevocab_uncased",
+                               "scibert_basevocab_cased"
+                             ),
                              ckpt_dir = NULL,
                              vocab_file = find_vocab(ckpt_dir),
                              bert_config_file = find_config(ckpt_dir),
@@ -480,43 +540,97 @@ extract_features <- function(examples,
                              layer_indexes = -4:-1,
                              use_one_hot_embeddings = FALSE,
                              batch_size = 2L,
-                             features = c("output",
-                                          "attention")) {
+                             features = c(
+                               "output",
+                               "attention"
+                             )) {
+  # If they specify a ckpt_dir or all of the other files, use that info.
+  # Otherwise infer from model.
   if ((missing(vocab_file) |
-       missing(bert_config_file) |
-       missing(init_checkpoint)) &
-      is.null(ckpt_dir)) {
-    stop("If ckpt_dir is not given, then vocab_file, bert_config_file, and ",
-         "init_checkpoint must be specified.")
+    missing(bert_config_file) |
+    missing(init_checkpoint)) &
+    is.null(ckpt_dir)) {
+    if (missing(model)) {
+      stop(
+        "You must specify a model, a ckpt_dir, or the locations of ",
+        "vocab_file, bert_config_file, and init_checkpoint."
+      )
+    } else {
+      model <- match.arg(model)
+      dir <- .choose_BERT_dir(NULL)
+      ckpt_dir <- .get_model_subdir(model, dir)
+      has_checkpoint <- .has_checkpoint(
+        model = model,
+        dir = dir,
+        ckpt_dir = ckpt_dir
+      )
+      if (!has_checkpoint) {
+        if (interactive()) { # nocov start
+          do_download <- utils::menu(
+            c("Yes.", "No."),
+            title = paste(
+              "Model not found. Do you wish to download the model?",
+              "\nThis may take a long time and use a lot of disk space."
+            )
+          )
+          if (do_download == 1L) {
+            download_BERT_checkpoint(model, dir)
+          } else {
+            stop(
+              "Could not find the specified model. Specify ckpt_dir, or ",
+              "run download_BERT_checkpoint."
+            )
+          }
+          # nocov end
+        } else {
+          stop(
+            "Could not find the specified model. Specify ckpt_dir, or ",
+            "run download_BERT_checkpoint."
+          )
+        }
+      }
+
+      # If we made it here, they have the model, so set the file locations.
+      vocab_file <- find_vocab(ckpt_dir)
+      bert_config_file <- find_config(ckpt_dir)
+      init_checkpoint <- find_ckpt(ckpt_dir)
+    }
   }
+
   if (missing(features)) {
     features <- "output"
   }
   features <- match.arg(features, several.ok = TRUE)
+
   include_zeroth <- FALSE
   if (0 %in% layer_indexes) {
     include_zeroth <- TRUE
     layer_indexes <- layer_indexes[layer_indexes != 0]
   }
 
-  bert_config <-  bert_config_from_json_file(bert_config_file)
+  bert_config <- bert_config_from_json_file(bert_config_file)
   n_layers <- bert_config$num_hidden_layers
   layer_indexes_actual <- .get_actual_indexes(layer_indexes, n_layers)
   n_dimensions <- bert_config$hidden_size
-  tokenizer <- FullTokenizer(vocab_file = vocab_file,
-                             do_lower_case = TRUE)
+  tokenizer <- FullTokenizer(
+    vocab_file = vocab_file,
+    do_lower_case = TRUE
+  )
   is_per_host <- tensorflow::tf$contrib$tpu$InputPipelineConfig$PER_HOST_V2
 
   run_config <- tensorflow::tf$contrib$tpu$RunConfig(
     master = NULL, # assume for now *not* for TPU
     tpu_config = tensorflow::tf$contrib$tpu$TPUConfig(
       num_shards = 8L,
-      per_host_input_for_training = is_per_host)
+      per_host_input_for_training = is_per_host
+    )
   )
 
-  raw_features <-  .convert_examples_to_features_EF(examples = examples,
-                                                seq_length = max_seq_length,
-                                                tokenizer = tokenizer)
+  raw_features <- .convert_examples_to_features_EF(
+    examples = examples,
+    seq_length = max_seq_length,
+    tokenizer = tokenizer
+  )
   unique_id_to_feature <- list()
   for (feature in raw_features) {
     unique_id_to_feature[[feature$unique_id]] <- feature
@@ -537,11 +651,14 @@ extract_features <- function(examples,
     predict_batch_size = batch_size
   )
 
-  input_fn <- input_fn_builder_EF(features = raw_features,
-                                  seq_length = max_seq_length)
+  input_fn <- input_fn_builder_EF(
+    features = raw_features,
+    seq_length = max_seq_length
+  )
 
   result_iterator <- estimator$predict(reticulate::py_func(input_fn),
-                                       yield_single_examples = TRUE)
+    yield_single_examples = TRUE
+  )
 
 
   # Set up the needed lists. They'll be filled in the for below.
@@ -551,11 +668,11 @@ extract_features <- function(examples,
   wants_attention <- "attention" %in% features
   if (wants_output) {
     big_output <- tibble::tibble(
-        sequence_index = integer(),
-        segment_index = integer(),
-        token_index = integer(),
-        token = character(),
-        layer_index = integer()
+      sequence_index = integer(),
+      segment_index = integer(),
+      token_index = integer(),
+      token = character(),
+      layer_index = integer()
     )
     for (colname in paste0("V", seq_len(n_dimensions))) {
       big_output[[colname]] <- integer()
@@ -593,7 +710,7 @@ extract_features <- function(examples,
   # result_iterator should have an entry available for each sequence.
   for (i in seq_along(examples)) {
     result <- if ("next" %in% names(result_iterator)) {
-      result_iterator$`next`()  # nocov
+      result_iterator$`next`() # nocov
     } else {
       result_iterator$`__next__`() # nocov
     }
@@ -630,17 +747,20 @@ extract_features <- function(examples,
   }
 
   # Iterate one more time to let python finish and be happy.
-  result <- tryCatch({
-    if ("next" %in% names(result_iterator)) {
-      result_iterator$`next`()  # nocov
-    } else {
-      result_iterator$`__next__`() # nocov
+  result <- tryCatch(
+    {
+      if ("next" %in% names(result_iterator)) {
+        result_iterator$`next`() # nocov
+      } else {
+        result_iterator$`__next__`() # nocov
+      }
+    },
+    error = function(e) {
+      FALSE
+      # If we get error, `result` will be assigned this FALSE.
+      # The only way to tell we've reached the end is to get an error. :-/
     }
-  }, error = function(e) {
-    FALSE
-    # If we get error, `result` will be assigned this FALSE.
-    # The only way to tell we've reached the end is to get an error. :-/
-  })
+  )
   if (!identical(result, FALSE)) {
     stop("More results returned than sequences.") # nocov
   }
@@ -676,7 +796,7 @@ extract_features <- function(examples,
     result_output_names,
     function(this_layer, this_index) {
       this_output <- as.data.frame(
-        result[[this_layer]][token_seq,]
+        result[[this_layer]][token_seq, ]
       )
       this_output[["layer_index"]] <- layer_indexes_output[[this_index]]
       this_output
@@ -701,7 +821,8 @@ extract_features <- function(examples,
         dplyr::mutate(
           dplyr::group_by(
             dplyr::mutate(
-              feature_tibble, is_sep = token == "[SEP]"
+              feature_tibble,
+              is_sep = token == "[SEP]"
             ),
             ...
           ),
@@ -750,7 +871,8 @@ extract_features <- function(examples,
             ),
             name = "head_index"
           ),
-          value, indices_to = "token_index"
+          value,
+          indices_to = "token_index"
         ),
         value,
         indices_to = "attention_token_index",
@@ -816,14 +938,18 @@ extract_features <- function(examples,
 #' @return The "actual" integer index, between 1 and \code{length}, inclusive.
 #' @keywords internal
 .get_actual_index <- function(index,
-                             length) {
+                              length) {
   index <- as.integer(index)
   if (abs(index) > length) {
-    stop(paste("Index out of range.",
-               "Absolute value of index must be within specified length."))
+    stop(paste(
+      "Index out of range.",
+      "Absolute value of index must be within specified length."
+    ))
   } else if (index == 0) {
-    stop(paste("Ambiguous index.",
-               "Only strictly positive or negative indices accepted."))
+    stop(paste(
+      "Ambiguous index.",
+      "Only strictly positive or negative indices accepted."
+    ))
   } else if (index < 0) {
     return(as.integer((length + index) %% length + 1L))
   } else {
@@ -854,16 +980,26 @@ extract_features <- function(examples,
 #' @export
 #'
 #' @examples
-#' input_ex <- make_examples_simple(c("Here are some words.",
-#'                                    "Here are some more words."))
-#' input_ex2 <- make_examples_simple(list(c("First sequence, first segment.",
-#'                                          "First sequence, second segment."),
-#'                                        c("Second sequence, first segment.",
-#'                                         "Second sequence, second segment.")))
+#' input_ex <- make_examples_simple(c(
+#'   "Here are some words.",
+#'   "Here are some more words."
+#' ))
+#' input_ex2 <- make_examples_simple(list(
+#'   c(
+#'     "First sequence, first segment.",
+#'     "First sequence, second segment."
+#'   ),
+#'   c(
+#'     "Second sequence, first segment.",
+#'     "Second sequence, second segment."
+#'   )
+#' ))
 make_examples_simple <- function(seq_list) {
   if (any(purrr::map_int(seq_list, length) > 2)) {
-    warning("Examples must contain at most two distinct segments. ",
-            "Segments beyond the second will be ignored.")
+    warning(
+      "Examples must contain at most two distinct segments. ",
+      "Segments beyond the second will be ignored."
+    )
   }
   seq_nums <- seq_along(seq_list)
   purrr::map(seq_nums, function(sn) {
@@ -872,10 +1008,10 @@ make_examples_simple <- function(seq_list) {
     if (length(seq_list[[sn]]) > 1) {
       second_segment <- seq_list[[sn]][[2]]
     }
-    InputExample_EF(unique_id = sn,
-                           text_a = first_segment,
-                           text_b = second_segment)
+    InputExample_EF(
+      unique_id = sn,
+      text_a = first_segment,
+      text_b = second_segment
+    )
   })
 }
-
-

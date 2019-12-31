@@ -54,14 +54,17 @@ convert_to_unicode <- function(text) {
 #' @export
 #'
 #' @examples
-#' \dontrun{ vocab <- load_vocab(vocab_file = "vocab.txt") }
+#' \dontrun{
+#' vocab <- load_vocab(vocab_file = "vocab.txt")
+#' }
 load_vocab <- function(vocab_file) {
   token_list <- readLines(vocab_file)
-  if (length(token_list)==0) {
+  if (length(token_list) == 0) {
     return(integer(0))
   }
   token_list <- purrr::map(token_list, function(token) {
-    convert_to_unicode(trimws(token))})
+    convert_to_unicode(trimws(token))
+  })
   index_list <- seq_along(token_list) - 1 # vocab is zero-indexed
   names(index_list) <- token_list
   return(index_list)
@@ -84,7 +87,7 @@ load_vocab <- function(vocab_file) {
 #' @export
 #'
 #' @examples
-#' convert_by_vocab(c("token1"=0, "token2"=1), "token1")
+#' convert_by_vocab(c("token1" = 0, "token2" = 1), "token1")
 convert_by_vocab <- function(vocab, items) {
   return(vocab[items])
 }
@@ -143,18 +146,22 @@ whitespace_tokenize <- function(text) {
 #' @export
 #'
 #' @examples
-#' \dontrun{f_tokenizer <- FullTokenizer("vocab.txt", TRUE) }
+#' \dontrun{
+#' f_tokenizer <- FullTokenizer("vocab.txt", TRUE)
+#' }
 FullTokenizer <- function(vocab_file, do_lower_case = TRUE) {
   vocab <- load_vocab(vocab_file)
   inv_vocab <- names(vocab)
   names(inv_vocab) <- vocab
   basic_tokenizer <- BasicTokenizer(do_lower_case = do_lower_case)
   wordpiece_tokenizer <- WordpieceTokenizer(vocab = vocab)
-  obj <- list("do_lower_case" = do_lower_case,
-              "vocab" = vocab,
-              "inv_vocab" = inv_vocab,
-              "basic_tokenizer" = basic_tokenizer,
-              "wordpiece_tokenizer" = wordpiece_tokenizer)
+  obj <- list(
+    "do_lower_case" = do_lower_case,
+    "vocab" = vocab,
+    "inv_vocab" = inv_vocab,
+    "basic_tokenizer" = basic_tokenizer,
+    "wordpiece_tokenizer" = wordpiece_tokenizer
+  )
   class(obj) <- "FullTokenizer"
   return(obj)
 }
@@ -175,7 +182,7 @@ FullTokenizer <- function(vocab_file, do_lower_case = TRUE) {
 #'
 #' @return A list of tokens.
 #' @export
-tokenize <- function (tokenizer, text) {
+tokenize <- function(tokenizer, text) {
   UseMethod("tokenize", tokenizer)
 }
 
@@ -196,10 +203,12 @@ tokenize.FullTokenizer <- function(tokenizer, text) {
 
   # We can't use purrr::map_chr here, since the output of .f is itself a vector
   # of variable length (map_chr died trying...). Use map + unlist.
-  split_tokens <- purrr::map(b_tokens,
-                             function(bt) {
-                               tokenize(tokenizer$wordpiece_tokenizer, bt)
-                             })
+  split_tokens <- purrr::map(
+    b_tokens,
+    function(bt) {
+      tokenize(tokenizer$wordpiece_tokenizer, bt)
+    }
+  )
   return(unlist(split_tokens))
 }
 
@@ -254,13 +263,15 @@ strip_accents <- function(text) {
   text <- stringi::stri_trans_nfd(text)
 
   return(
-    apply_to_chars(text,
-                   function(char) {
-                     if(stringi::stri_detect_charclass(char, "\\p{Mn}")) {
-                       return("")
-                     }
-                     return(char)
-                   })
+    apply_to_chars(
+      text,
+      function(char) {
+        if (stringi::stri_detect_charclass(char, "\\p{Mn}")) {
+          return("")
+        }
+        return(char)
+      }
+    )
   )
 }
 
@@ -284,13 +295,15 @@ split_on_punc <- function(text) {
   # Put a unique marker around each punctuation char, then split on the
   # marker (since we want the punctuation to be included in split).
   sep_marker <- "a!b"
-  output <- apply_to_chars(text,
-                           function(char) {
-                             if(is_punctuation(char)) {
-                               return(paste0(sep_marker, char, sep_marker))
-                             }
-                             return(char)
-                           })
+  output <- apply_to_chars(
+    text,
+    function(char) {
+      if (is_punctuation(char)) {
+        return(paste0(sep_marker, char, sep_marker))
+      }
+      return(char)
+    }
+  )
   return(
     unlist(
       stringi::stri_split_fixed(output, sep_marker, omit_empty = TRUE)
@@ -315,14 +328,16 @@ split_on_punc <- function(text) {
 #' @keywords internal
 tokenize_chinese_chars <- function(text) {
   return(
-    apply_to_chars(text,
-                   function(char) {
-                     cp <- utf8ToInt(char)
-                     if(is_chinese_char(cp)) {
-                       return(paste0(" ", char, " "))
-                     }
-                     return(char)
-                   })
+    apply_to_chars(
+      text,
+      function(char) {
+        cp <- utf8ToInt(char)
+        if (is_chinese_char(cp)) {
+          return(paste0(" ", char, " "))
+        }
+        return(char)
+      }
+    )
   )
 }
 
@@ -350,13 +365,13 @@ tokenize_chinese_chars <- function(text) {
 #' @keywords internal
 is_chinese_char <- function(cp) {
   if ((cp >= 0x4E00 & cp <= 0x9FFF) |
-      (cp >= 0x3400 & cp <= 0x4DBF) |
-      (cp >= 0x20000 & cp <= 0x2A6DF) |
-      (cp >= 0x2A700 & cp <= 0x2B73F) |
-      (cp >= 0x2B740 & cp <= 0x2B81F) |
-      (cp >= 0x2B820 & cp <= 0x2CEAF) |
-      (cp >= 0xF900 & cp <= 0xFAFF) |
-      (cp >= 0x2F800 & cp <= 0x2FA1F)) {
+    (cp >= 0x3400 & cp <= 0x4DBF) |
+    (cp >= 0x20000 & cp <= 0x2A6DF) |
+    (cp >= 0x2A700 & cp <= 0x2B73F) |
+    (cp >= 0x2B740 & cp <= 0x2B81F) |
+    (cp >= 0x2B820 & cp <= 0x2CEAF) |
+    (cp >= 0xF900 & cp <= 0xFAFF) |
+    (cp >= 0x2F800 & cp <= 0x2FA1F)) {
     return(TRUE)
   }
   return(FALSE)
@@ -378,16 +393,18 @@ is_chinese_char <- function(cp) {
 #' @keywords internal
 clean_text <- function(text) {
   return(
-    apply_to_chars(text,
-                   function(char) {
-                     cp <- utf8ToInt(char)
-                     if (cp == 0 | cp == 0xfffd | is_control(char)) {
-                       return("")
-                     } else if (is_whitespace(char)) {
-                       return(" ")
-                     }
-                     return(char)
-                   })
+    apply_to_chars(
+      text,
+      function(char) {
+        cp <- utf8ToInt(char)
+        if (cp == 0 | cp == 0xfffd | is_control(char)) {
+          return("")
+        } else if (is_whitespace(char)) {
+          return(" ")
+        }
+        return(char)
+      }
+    )
   )
 }
 
@@ -413,22 +430,21 @@ tokenize.BasicTokenizer <- function(tokenizer, text) {
   # and generally don't have any Chinese data in them (there are Chinese
   # characters in the vocabulary because Wikipedia does have some Chinese
   # words in the English Wikipedia.).
-  text  <- tokenize_chinese_chars(text)
+  text <- tokenize_chinese_chars(text)
 
   # We can't use purrr::map_chr here, since the output of .f is itself a vector
   # of variable length (map_chr died trying...). Use map + unlist.
   output_tokens <- purrr::map(whitespace_tokenize(text),
-                              .f = function(orig_token, do_lower_case) {
-                                if (do_lower_case) {
-                                  orig_token <- tolower(orig_token)
-                                }
-                                orig_token <- strip_accents(orig_token)
-                                return(split_on_punc(orig_token))
-                              },
-                              do_lower_case = tokenizer$do_lower_case
-                              )
+    .f = function(orig_token, do_lower_case) {
+      if (do_lower_case) {
+        orig_token <- tolower(orig_token)
+      }
+      orig_token <- strip_accents(orig_token)
+      return(split_on_punc(orig_token))
+    },
+    do_lower_case = tokenizer$do_lower_case
+  )
   return(unlist(output_tokens))
-
 }
 
 
@@ -458,9 +474,11 @@ tokenize.BasicTokenizer <- function(tokenizer, text) {
 WordpieceTokenizer <- function(vocab,
                                unk_token = "[UNK]",
                                max_input_chars_per_word = 200) {
-  obj <- list("vocab" = vocab,
-              "unk_token" = unk_token,
-              "max_input_chars_per_word" = max_input_chars_per_word)
+  obj <- list(
+    "vocab" = vocab,
+    "unk_token" = unk_token,
+    "max_input_chars_per_word" = max_input_chars_per_word
+  )
   class(obj) <- "WordpieceTokenizer"
   return(obj)
 }
@@ -490,10 +508,11 @@ tokenize.WordpieceTokenizer <- function(tokenizer, text) {
   # We can't use purrr::map_chr here, since the output of .f is itself a vector
   # of variable length (map_chr died trying...). Use map + unlist.
   output_tokens <- purrr::map(whitespace_tokenize(text),
-                              .f = tokenize_word,
-                              vocab = tokenizer$vocab,
-                              unk_token = tokenizer$unk_token,
-                              max_chars = tokenizer$max_input_chars_per_word)
+    .f = tokenize_word,
+    vocab = tokenizer$vocab,
+    unk_token = tokenizer$unk_token,
+    max_chars = tokenizer$max_input_chars_per_word
+  )
   return(unlist(output_tokens))
 }
 
@@ -528,16 +547,16 @@ tokenize_word <- function(word, vocab, unk_token = "[UNK]", max_chars = 100) {
     return(word)
   }
 
-  is_bad  <- FALSE
+  is_bad <- FALSE
   start <- 1
   sub_tokens <- character(0)
   while (start <= stringi::stri_length(word)) {
     end <- stringi::stri_length(word)
 
-    cur_substr  <- NA_character_
+    cur_substr <- NA_character_
     while (start <= end) {
-      sub_str <- substr(word, start, end)   # inclusive on both ends
-      if (start > 1) {  # means this substring is a suffix, so add '##'
+      sub_str <- substr(word, start, end) # inclusive on both ends
+      if (start > 1) { # means this substring is a suffix, so add '##'
         sub_str <- paste0("##", sub_str)
       }
       if (sub_str %in% vocab) {
@@ -546,8 +565,8 @@ tokenize_word <- function(word, vocab, unk_token = "[UNK]", max_chars = 100) {
       }
       end <- end - 1
     }
-    if (is.na(cur_substr) ) {
-      is_bad <-  TRUE
+    if (is.na(cur_substr)) {
+      is_bad <- TRUE
       break
     }
 
@@ -627,7 +646,7 @@ is_control <- function(char) {
 is_punctuation <- function(char) {
   cp <- utf8ToInt(char)
   if ((cp >= 33 & cp <= 47) | (cp >= 58 & cp <= 64) |
-      (cp >= 91 & cp <= 96) | (cp >= 123 & cp <= 126)) {
+    (cp >= 91 & cp <= 96) | (cp >= 123 & cp <= 126)) {
     return(TRUE)
   }
   return(stringi::stri_detect_charclass(char, "\\p{P}"))
@@ -677,22 +696,26 @@ apply_to_chars <- function(text, .f, ...) {
 #' @examples
 #' \dontrun{
 #' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
-#'  tokens <- tokenize_text(text = c("Who doesn't like tacos?", "Not me!"),
-#'                          ckpt_dir = BERT_PRETRAINED_DIR)
+#' tokens <- tokenize_text(
+#'   text = c("Who doesn't like tacos?", "Not me!"),
+#'   ckpt_dir = BERT_PRETRAINED_DIR
+#' )
 #' }
 tokenize_text <- function(text,
                           ckpt_dir = NULL,
                           vocab_file = find_vocab(ckpt_dir),
                           include_special = TRUE) {
-  tokenizer <- FullTokenizer(vocab_file = vocab_file,
-                             do_lower_case = TRUE)
+  tokenizer <- FullTokenizer(
+    vocab_file = vocab_file,
+    do_lower_case = TRUE
+  )
   token_list <- purrr::map(text, function(t) {
     tl <- tokenize(tokenizer, t)
     if (include_special) {
       tl <- c("[CLS]", tl, "[SEP]")
     }
     return(tl)
-    } )
+  })
   return(token_list)
 }
 
@@ -715,10 +738,13 @@ tokenize_text <- function(text,
 #' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
 #' to_check <- c("apple", "appl")
 #' check_vocab(words = to_check, ckpt_dir = BERT_PRETRAINED_DIR) # TRUE, FALSE
-#' #' }
+#' #'
+#' }
 check_vocab <- function(words,
                         ckpt_dir = NULL,
                         vocab_file = find_vocab(ckpt_dir)) {
   vocab <- readLines(vocab_file)
-  return(purrr::map_lgl(words, function(w) {return(any(vocab == w))} ) )
+  return(purrr::map_lgl(words, function(w) {
+    return(any(vocab == w))
+  }))
 }

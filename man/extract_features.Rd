@@ -6,6 +6,10 @@
 \usage{
 extract_features(
   examples,
+  model = c("bert_base_uncased", "bert_base_cased", "bert_large_uncased",
+    "bert_large_cased", "bert_large_uncased_wwm", "bert_large_cased_wwm",
+    "bert_base_multilingual_cased", "bert_base_chinese", "scibert_scivocab_uncased",
+    "scibert_scivocab_cased", "scibert_basevocab_uncased", "scibert_basevocab_cased"),
   ckpt_dir = NULL,
   vocab_file = find_vocab(ckpt_dir),
   bert_config_file = find_config(ckpt_dir),

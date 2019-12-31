@@ -61,5 +61,7 @@ mockery::stub(
   how = dont_download_checkpoint
 )
 
-cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
-                                  dir = checkpoint_main_dir)
+cpdir <- download_BERT_checkpoint(
+  model = "bert_base_uncased",
+  dir = checkpoint_main_dir
+)

@@ -13,19 +13,27 @@
 # limitations under the License.
 
 test_that("features and examples routines work", {
-  examples <- list(InputExample_EF(unique_id = 1,
-                                   text_a = "I saw the branch on the bank.",
-                                   text_b = "A second sequence of words."),
-                   InputExample_EF(unique_id = 2,
-                                   text_a = "I saw the branch of the bank."))
+  examples <- list(
+    InputExample_EF(
+      unique_id = 1,
+      text_a = "I saw the branch on the bank.",
+      text_b = "A second sequence of words."
+    ),
+    InputExample_EF(
+      unique_id = 2,
+      text_a = "I saw the branch of the bank."
+    )
+  )
   # tokenizer <- FullTokenizer("vocab.txt")
   # saveRDS(tokenizer, here::here("tests", "testthat", "tokenizer.rds"))
   # tokenizer <- readRDS(here::here("tests", "testthat", "tokenizer.rds"))
   tokenizer <- readRDS("tokenizer.rds")
-  feat_in <- .convert_single_example_EF(ex_index = 6L,
-                                    example = examples[[2]],
-                                    seq_length = 5L,
-                                    tokenizer = tokenizer)
+  feat_in <- .convert_single_example_EF(
+    ex_index = 6L,
+    example = examples[[2]],
+    seq_length = 5L,
+    tokenizer = tokenizer
+  )
   expected_feat_in <- readRDS("sample_feat_in.rds")
   testthat::expect_identical(feat_in, expected_feat_in)
 
@@ -34,25 +42,51 @@ test_that("features and examples routines work", {
   BERT_PRETRAINED_DIR <- cpdir # from setup.R
 
   # Test the ckpt_dir argument here. (Expect no error.)
-  feats <- extract_features(examples = examples,
-                            ckpt_dir = BERT_PRETRAINED_DIR,
-                            batch_size = 2L)
+  feats <- extract_features(
+    examples = examples,
+    ckpt_dir = BERT_PRETRAINED_DIR,
+    batch_size = 2L
+  )
 
   testthat::expect_error(
-    extract_features(examples = examples,
-                     batch_size = 2L),
+    extract_features(
+      examples = examples,
+      batch_size = 2L
+    ),
     "ckpt_dir"
   )
 
-  vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
-  init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
+  # We should get the same thing if we specify by model instead.
+  feats2 <- extract_features(
+    examples = examples,
+    model = "bert_base_uncased",
+    batch_size = 2L
+  )
+
+  expect_identical(feats2, feats)
+  rm(feats2)
+
+  # Also make sure it fails if they don't have the model.
+  expect_error(
+    extract_features(
+      examples = examples,
+      model = "bert_base_cased"
+    ),
+    "Specify ckpt_dir"
+  )
+
+  vocab_file <- file.path(BERT_PRETRAINED_DIR, "vocab.txt")
+  init_checkpoint <- file.path(BERT_PRETRAINED_DIR, "bert_model.ckpt")
   # Checkpoint "path" is actually only a stub filename; add ".index" to
   # check for a specific file.
-  testthat::skip_if_not(file.exists(paste0(init_checkpoint,
-                                           ".index")),
-                        message = "Checkpoint index not found; skipping test.")
+  testthat::skip_if_not(file.exists(paste0(
+    init_checkpoint,
+    ".index"
+  )),
+  message = "Checkpoint index not found; skipping test."
+  )
 
-  bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
+  bert_config_file <- file.path(BERT_PRETRAINED_DIR, "bert_config.json")
 
   # Each token should be repeated 4 times (once for each of the 4 layers
   # requested by default). I'm sure there's a better way to do this, but this
@@ -99,13 +133,15 @@ test_that("features and examples routines work", {
   expect_length(feats, 1)
 
   # Make sure we can grab layer 0 when we want to.
-  feats <- extract_features(examples = examples,
-                            vocab_file = vocab_file,
-                            bert_config_file = bert_config_file,
-                            init_checkpoint = init_checkpoint,
-                            batch_size = 2L,
-                            layer_indexes = -4:0,
-                            features = c("output", "attention"))
+  feats <- extract_features(
+    examples = examples,
+    vocab_file = vocab_file,
+    bert_config_file = bert_config_file,
+    init_checkpoint = init_checkpoint,
+    batch_size = 2L,
+    layer_indexes = -4:0,
+    features = c("output", "attention")
+  )
 
   expect_length(feats, 2)
 
@@ -121,25 +157,28 @@ test_that("features and examples routines work", {
   expected_feats <- readRDS("sample_feats.rds")
   # The sorting changed since I saved an example, so let's put it into the same
   # order as the one we're getting now.
-  expected_feats <- dplyr::arrange(expected_feats,
-                                   sequence_index,
-                                   layer_index,
-                                   token_index)
+  expected_feats <- dplyr::arrange(
+    expected_feats,
+    sequence_index,
+    layer_index,
+    token_index
+  )
   expected_feats_flat <- suppressWarnings(as.numeric(unlist(expected_feats)))
 
   tol <- 10^(-5)
 
   # check both the sum and mean relative difference
   rel_diff_sum <- abs(sum(test_feats_flat, na.rm = TRUE) -
-                        sum(expected_feats_flat, na.rm = TRUE)) /
+    sum(expected_feats_flat, na.rm = TRUE)) /
     (tol + abs(sum(test_feats_flat, na.rm = TRUE) +
-                 sum(expected_feats_flat, na.rm = TRUE)))
+      sum(expected_feats_flat, na.rm = TRUE)))
   testthat::expect_lte(rel_diff_sum, tol)
 
   mean_relative_difference <- mean(abs(test_feats_flat - expected_feats_flat) /
-                                     (tol + abs(test_feats_flat +
-                                                  expected_feats_flat)),
-                                   na.rm = TRUE)
+    (tol + abs(test_feats_flat +
+      expected_feats_flat)),
+  na.rm = TRUE
+  )
 
   testthat::expect_lte(mean_relative_difference, tol)
 
@@ -162,24 +201,27 @@ test_that("features and examples routines work", {
   test_attn_flat <- sort(test_attn_flat)
 
   rel_diff_sum <- abs(sum(test_attn_flat, na.rm = TRUE) -
-                        sum(expected_attn_flat, na.rm = TRUE)) /
+    sum(expected_attn_flat, na.rm = TRUE)) /
     (tol + abs(sum(test_attn_flat, na.rm = TRUE) +
-                 sum(expected_attn_flat, na.rm = TRUE)))
+      sum(expected_attn_flat, na.rm = TRUE)))
   testthat::expect_lte(rel_diff_sum, tol)
 
   mean_relative_difference <- mean(abs(test_attn_flat - expected_attn_flat) /
-                                     (tol + abs(test_attn_flat +
-                                                  expected_attn_flat)),
-                                   na.rm = TRUE)
+    (tol + abs(test_attn_flat +
+      expected_attn_flat)),
+  na.rm = TRUE
+  )
 
   testthat::expect_lte(mean_relative_difference, tol)
 
-  feats <- extract_features(examples = examples,
-                            vocab_file = vocab_file,
-                            bert_config_file = bert_config_file,
-                            init_checkpoint = init_checkpoint,
-                            batch_size = 2L,
-                            features = "output")
+  feats <- extract_features(
+    examples = examples,
+    vocab_file = vocab_file,
+    bert_config_file = bert_config_file,
+    init_checkpoint = init_checkpoint,
+    batch_size = 2L,
+    features = "output"
+  )
   expect_length(feats, 1)
   expect_is(feats$output, "tbl_df")
   expect_equal(
@@ -190,12 +232,14 @@ test_that("features and examples routines work", {
     )
   )
 
-  feats <- extract_features(examples = examples,
-                            vocab_file = vocab_file,
-                            bert_config_file = bert_config_file,
-                            init_checkpoint = init_checkpoint,
-                            batch_size = 2L,
-                            features = "attention")
+  feats <- extract_features(
+    examples = examples,
+    vocab_file = vocab_file,
+    bert_config_file = bert_config_file,
+    init_checkpoint = init_checkpoint,
+    batch_size = 2L,
+    features = "attention"
+  )
   expect_length(feats, 1)
   expect_is(feats$attention, "tbl_df")
   expect_equal(
@@ -227,11 +271,15 @@ test_that("features and examples routines work", {
 })
 
 test_that(".get_actual_index works", {
-  testthat::expect_error(.get_actual_index(index = 0, length = 10),
-                         "Ambiguous")
+  testthat::expect_error(
+    .get_actual_index(index = 0, length = 10),
+    "Ambiguous"
+  )
 
-  testthat::expect_error(.get_actual_index(index = 11, length = 10),
-                         "out of range")
+  testthat::expect_error(
+    .get_actual_index(index = 11, length = 10),
+    "out of range"
+  )
 
   testthat::expect_identical(.get_actual_index(index = -2, length = 10), 9L)
 
@@ -239,8 +287,10 @@ test_that(".get_actual_index works", {
 })
 
 test_that("make_examples_simple works", {
-  text <- c("Here are some words.",
-            "Here are some more words.")
+  text <- c(
+    "Here are some words.",
+    "Here are some more words."
+  )
   input_ex <- make_examples_simple(text)
   testthat::expect_s3_class(input_ex[[1]], "InputExample_EF")
 
@@ -251,14 +301,22 @@ test_that("make_examples_simple works", {
 })
 
 test_that("make_examples_simple works for two-segment examples", {
-  text <- list(c("First sequence, first segment.",
-                 "First sequence, second segment."),
-               c("Second sequence, first segment.",
-                 "Second sequence, second segment.",
-                 "Second sequence, EXTRA segment."),
-               "Third sequence, only one segment.")
-  testthat::expect_warning(input_ex <- make_examples_simple(text),
-                           "ignored")
+  text <- list(
+    c(
+      "First sequence, first segment.",
+      "First sequence, second segment."
+    ),
+    c(
+      "Second sequence, first segment.",
+      "Second sequence, second segment.",
+      "Second sequence, EXTRA segment."
+    ),
+    "Third sequence, only one segment."
+  )
+  testthat::expect_warning(
+    input_ex <- make_examples_simple(text),
+    "ignored"
+  )
   testthat::expect_identical(input_ex[[1]]$text_a, text[[1]][[1]])
   testthat::expect_identical(input_ex[[1]]$text_b, text[[1]][[2]])
   testthat::expect_identical(input_ex[[2]]$text_a, text[[2]][[1]])

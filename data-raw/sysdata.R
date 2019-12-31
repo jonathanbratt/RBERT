@@ -56,7 +56,8 @@ checkpoint_url_map <- c(
 # I want to convert this to a tibble with more info, but I don't want to
 # reformat all that, so I'm using enframe.
 checkpoint_url_map <- tibble::enframe(
-  checkpoint_url_map, name = "model", value = "url"
+  checkpoint_url_map,
+  name = "model", value = "url"
 ) %>%
   dplyr::mutate(
     archive_type = c(

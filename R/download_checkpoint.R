@@ -62,23 +62,25 @@
 #'
 #' @examples
 #' \dontrun{
-#'  download_BERT_checkpoint("bert_base_uncased")
-#'  download_BERT_checkpoint("bert_large_uncased")
-#'  temp_dir <- tempdir()
-#'  download_BERT_checkpoint("bert_base_uncased", dir = temp_dir)
+#' download_BERT_checkpoint("bert_base_uncased")
+#' download_BERT_checkpoint("bert_large_uncased")
+#' temp_dir <- tempdir()
+#' download_BERT_checkpoint("bert_base_uncased", dir = temp_dir)
 #' }
-download_BERT_checkpoint <- function(model = c("bert_base_uncased",
-                                               "bert_base_cased",
-                                               "bert_large_uncased",
-                                               "bert_large_cased",
-                                               "bert_large_uncased_wwm",
-                                               "bert_large_cased_wwm",
-                                               "bert_base_multilingual_cased",
-                                               "bert_base_chinese",
-                                               "scibert_scivocab_uncased",
-                                               "scibert_scivocab_cased",
-                                               "scibert_basevocab_uncased",
-                                               "scibert_basevocab_cased"),
+download_BERT_checkpoint <- function(model = c(
+                                       "bert_base_uncased",
+                                       "bert_base_cased",
+                                       "bert_large_uncased",
+                                       "bert_large_cased",
+                                       "bert_large_uncased_wwm",
+                                       "bert_large_cased_wwm",
+                                       "bert_base_multilingual_cased",
+                                       "bert_base_chinese",
+                                       "scibert_scivocab_uncased",
+                                       "scibert_scivocab_cased",
+                                       "scibert_basevocab_uncased",
+                                       "scibert_basevocab_cased"
+                                     ),
                                      dir = NULL,
                                      url = NULL,
                                      force = FALSE,
@@ -93,25 +95,25 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
     model <- match.arg(model)
     url <- .get_model_url(model)
     archive_type <- .get_model_archive_type(model)
-    checkpoint_subdir <- .get_model_subdir(model, dir)
+    ckpt_dir <- .get_model_subdir(model, dir)
     checkpoint_archive_path <- .get_model_archive_path(model, dir, archive_type)
   } else {
     model <- NULL
     archive_type <- archive_type %||% .infer_archive_type(url)
-    checkpoint_subdir <- .infer_checkpoint_subdir(url, dir)
+    ckpt_dir <- .infer_ckpt_dir(url, dir)
     checkpoint_archive_path <- .infer_checkpoint_archive_path(url, dir)
   }
 
   has_checkpoint <- .has_checkpoint(
     model = model,
     dir = dir,
-    checkpoint_subdir = checkpoint_subdir
+    ckpt_dir = ckpt_dir
   )
 
   if (
     force ||
-    (keep_archive && !file.exists(checkpoint_archive_path)) ||
-    !has_checkpoint
+      (keep_archive && !file.exists(checkpoint_archive_path)) ||
+      !has_checkpoint
   ) {
     .download_BERT_checkpoint(url, checkpoint_archive_path)
   }
@@ -120,7 +122,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
     .process_BERT_checkpoint(
       dir,
       checkpoint_archive_path,
-      checkpoint_subdir,
+      ckpt_dir,
       archive_type
     )
   }
@@ -132,7 +134,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
   # The normalizePath shouldn't be necessary here, but I was getting
   # inconsistent returns on Windows. I suspect it's because the return is
   # slightly different when the path exists.
-  return(normalizePath(checkpoint_subdir))
+  return(normalizePath(ckpt_dir))
 }
 
 #' Choose a directory for BERT checkpoints
@@ -160,20 +162,20 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' model or url.
 #'
 #' @inheritParams download_BERT_checkpoint
-#' @param checkpoint_subdir The path to the subdir where this checkpoint should
-#'   be saved. If model is given, checkpoint_subdir is inferred.
+#' @param ckpt_dir The path to the subdir where this checkpoint should
+#'   be saved. If model is given, ckpt_dir is inferred.
 #'
 #' @return A logical indicating whether the user already has that checkpoint in
 #'   that location.
 #' @keywords internal
 .has_checkpoint <- function(model = NULL,
                             dir = NULL,
-                            checkpoint_subdir = NULL) {
+                            ckpt_dir = NULL) {
   dir <- .choose_BERT_dir(dir)
-  if (is.null(checkpoint_subdir)) {
-    checkpoint_subdir <- .get_model_subdir(model, dir)
+  if (is.null(ckpt_dir)) {
+    ckpt_dir <- .get_model_subdir(model, dir)
   }
-  filenames <- list.files(checkpoint_subdir)
+  filenames <- list.files(ckpt_dir)
 
   return(
     !any(
@@ -202,7 +204,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
     method = "libcurl"
   )
   if (status != 0) {
-    stop("Checkpoint download failed.")  # nocovr
+    stop("Checkpoint download failed.") # nocov
   }
   invisible(TRUE)
   # nocov end
@@ -217,7 +219,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @keywords internal
 .process_BERT_checkpoint <- function(dir,
                                      checkpoint_archive_path,
-                                     checkpoint_subdir,
+                                     ckpt_dir,
                                      archive_type) {
   # We're only here if the files don't exist or we're supposed to overwrite, so
   # always overwrite.
@@ -225,49 +227,50 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
     archive_type,
     "zip" = utils::unzip(
       zipfile = checkpoint_archive_path,
-      exdir = checkpoint_subdir,
+      exdir = ckpt_dir,
       overwrite = TRUE
     ),
     "tar-gzip" = {
       con <- gzfile(checkpoint_archive_path, open = "rb")
       utils::untar(
         con,
-        exdir = checkpoint_subdir
+        exdir = ckpt_dir
       )
       close(con)
     }
   )
 
   # We write into the subdir, but *usually* it'll make a folder inside of that
-  # dir. Move everything up to be inside checkpoint_subdir.
+  # dir. Move everything up to be inside ckpt_dir.
   extra_dirs <- list.dirs(
-    checkpoint_subdir, full.names = TRUE, recursive = FALSE
+    ckpt_dir,
+    full.names = TRUE, recursive = FALSE
   )
   if (length(extra_dirs) > 0) {
-    for(dir_name in extra_dirs) {
+    for (dir_name in extra_dirs) {
       cp_files <- list.files(
         dir_name,
         recursive = TRUE
       )
       file.rename(
         file.path(dir_name, cp_files),
-        file.path(checkpoint_subdir, cp_files)
+        file.path(ckpt_dir, cp_files)
       )
       unlink(dir_name, recursive = TRUE)
     }
   }
 
-  filenames <- list.files(checkpoint_subdir)
+  filenames <- list.files(ckpt_dir)
 
   # Quick check to see if expected files found.
   if (!("bert_config.json" %in% filenames)) {
-    warning("No bert_config file found.")  # nocovr
+    warning("No bert_config file found.") # nocovr
   }
   if (!("vocab.txt" %in% filenames)) {
-    warning("No vocabulary file found.")  # nocovr
+    warning("No vocabulary file found.") # nocovr
   }
   if (!any(grepl("bert_model.ckpt", filenames))) {
-    warning("No checkpoint file found.")  # nocovr
+    warning("No checkpoint file found.") # nocovr
   }
 
   invisible(TRUE)
@@ -288,7 +291,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @keywords internal
 .get_model_url <- function(model) {
   return(
-    checkpoint_url_map[checkpoint_url_map$model == model,][["url"]]
+    checkpoint_url_map[checkpoint_url_map$model == model, ][["url"]]
   )
 }
 
@@ -303,7 +306,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @keywords internal
 .get_model_archive_type <- function(model) {
   return(
-    checkpoint_url_map[checkpoint_url_map$model == model,][["archive_type"]]
+    checkpoint_url_map[checkpoint_url_map$model == model, ][["archive_type"]]
   )
 }
 
@@ -370,7 +373,7 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #' @return A character vector file path, reflecting the "name" part of a
 #'   checkpoint \code{url}, placed within \code{dir}.
 #' @keywords internal
-.infer_checkpoint_subdir <- function(url, dir) {
+.infer_ckpt_dir <- function(url, dir) {
   return(
     normalizePath(
       file.path(
@@ -421,11 +424,11 @@ download_BERT_checkpoint <- function(model = c("bert_base_uncased",
 #'
 #' @examples
 #' \dontrun{
-#'   set_BERT_dir("fake_dir")
+#' set_BERT_dir("fake_dir")
 #' }
 set_BERT_dir <- function(dir) {
   if (!file.exists(dir)) {
-    dir.create(dir) # nocov
+    dir.create(dir, recursive = TRUE) # nocov
   }
   dir <- normalizePath(dir)
   options(BERT.dir = dir)
@@ -433,8 +436,10 @@ set_BERT_dir <- function(dir) {
 
 # Copied from `rlang` to avoid importing that package. Roxygen doesn't like it
 # and I'm not sure how to fix that, so instead I'm not documenting.
-`%||%` <- function (x, y) {
-  if (is.null(x))
+`%||%` <- function(x, y) {
+  if (is.null(x)) {
     y
-  else x
+  } else {
+    x
+  }
 }

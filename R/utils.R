@@ -27,7 +27,7 @@ NULL
 #' @describeIn find_files Find the vocabulary file ('vocab.txt').
 #' @export
 find_vocab <- function(ckpt_dir) {
-  vocab_file <- file.path(ckpt_dir, 'vocab.txt')
+  vocab_file <- file.path(ckpt_dir, "vocab.txt")
   if (file.exists(vocab_file)) {
     return(vocab_file)
   } else {
@@ -39,7 +39,7 @@ find_vocab <- function(ckpt_dir) {
 #' @describeIn find_files Find the config file ('bert_config.json').
 #' @export
 find_config <- function(ckpt_dir) {
-  config_file <- file.path(ckpt_dir, 'bert_config.json')
+  config_file <- file.path(ckpt_dir, "bert_config.json")
   if (file.exists(config_file)) {
     return(config_file)
   } else {
@@ -53,9 +53,9 @@ find_config <- function(ckpt_dir) {
 find_ckpt <- function(ckpt_dir) {
   # The path we want to return here isn't an actual file, but a name stub for
   # files with suffixes '.index', '.meta', etc.
-  ckpt_filestub <- file.path(ckpt_dir, 'bert_model.ckpt')
-  ckpt_file1 <- file.path(ckpt_dir, 'bert_model.ckpt.index')
-  ckpt_file2 <- file.path(ckpt_dir, 'bert_model.ckpt.meta')
+  ckpt_filestub <- file.path(ckpt_dir, "bert_model.ckpt")
+  ckpt_file1 <- file.path(ckpt_dir, "bert_model.ckpt.index")
+  ckpt_file2 <- file.path(ckpt_dir, "bert_model.ckpt.meta")
   if (file.exists(ckpt_file1) & file.exists(ckpt_file1)) {
     return(ckpt_filestub)
   } else {
