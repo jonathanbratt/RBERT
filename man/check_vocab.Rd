@@ -9,12 +9,14 @@ check_vocab(words, ckpt_dir = NULL, vocab_file = find_vocab(ckpt_dir))
 \arguments{
 \item{words}{Character vector; words to check.}
 
-\item{ckpt_dir}{Character; path to checkpoint directory. If specified,
-\code{vocab_file} defaults to standard filename within \code{ckpt_dir}.}
+\item{ckpt_dir}{Character; path to checkpoint directory. If specified, any
+other checkpoint files required by this function (\code{vocab_file},
+\code{bert_config_file}, or \code{init_checkpoint}) will default to
+standard filenames within \code{ckpt_dir}.}
 
-\item{vocab_file}{Character; path to vocabulary file. File is assumed to be a
-text file, with one token per line, with the line number corresponding to
-the index of that token in the vocabulary.}
+\item{vocab_file}{path to vocabulary file. File is assumed to be a text file,
+with one token per line, with the line number corresponding to the index of
+that token in the vocabulary.}
 }
 \value{
 A logical vector containing \code{TRUE} if the corresponding word was

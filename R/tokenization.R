@@ -666,11 +666,7 @@ apply_to_chars <- function(text, .f, ...) {
 #' primarily a tool for quickly checking the tokenization of a piece of text.
 #'
 #' @param text Character vector; text to tokenize.
-#' @param ckpt_dir Character; path to checkpoint directory. If specified,
-#'   \code{vocab_file} defaults to standard filename within \code{ckpt_dir}.
-#' @param vocab_file Character; path to vocabulary file. File is assumed to be a
-#'   text file, with one token per line, with the line number corresponding to
-#'   the index of that token in the vocabulary.
+#' @inheritParams extract_features
 #' @param include_special Logical; whether to add the special tokens "[CLS]" (at
 #'   the beginning) and "[SEP]" (at the end) of the token list.
 #'
@@ -708,7 +704,7 @@ tokenize_text <- function(text,
 #' in the vocabulary.
 #'
 #' @param words Character vector; words to check.
-#' @inheritParams tokenize_text
+#' @inheritParams extract_features
 #'
 #' @return A logical vector containing \code{TRUE} if the corresponding word was
 #'   found verbatim in the vocabulary, \code{FALSE} otherwise.

@@ -14,12 +14,14 @@ tokenize_text(
 \arguments{
 \item{text}{Character vector; text to tokenize.}
 
-\item{ckpt_dir}{Character; path to checkpoint directory. If specified,
-\code{vocab_file} defaults to standard filename within \code{ckpt_dir}.}
+\item{ckpt_dir}{Character; path to checkpoint directory. If specified, any
+other checkpoint files required by this function (\code{vocab_file},
+\code{bert_config_file}, or \code{init_checkpoint}) will default to
+standard filenames within \code{ckpt_dir}.}
 
-\item{vocab_file}{Character; path to vocabulary file. File is assumed to be a
-text file, with one token per line, with the line number corresponding to
-the index of that token in the vocabulary.}
+\item{vocab_file}{path to vocabulary file. File is assumed to be a text file,
+with one token per line, with the line number corresponding to the index of
+that token in the vocabulary.}
 
 \item{include_special}{Logical; whether to add the special tokens "[CLS]" (at
 the beginning) and "[SEP]" (at the end) of the token list.}

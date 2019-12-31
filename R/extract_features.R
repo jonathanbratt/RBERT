@@ -421,9 +421,10 @@ input_fn_builder_EF <- function(features,
 #' potentially be used as features in downstream tasks.)
 #'
 #' @param examples List of \code{InputExample_EF}s to convert.
-#' @param ckpt_dir Character; path to checkpoint directory. If specified,
-#'   \code{vocab_file}, \code{bert_config_file}, and \code{init_checkpoint}
-#'   default to standard filenames within \code{ckpt_dir}.
+#' @param ckpt_dir Character; path to checkpoint directory. If specified, any
+#'   other checkpoint files required by this function (\code{vocab_file},
+#'   \code{bert_config_file}, or \code{init_checkpoint}) will default to
+#'   standard filenames within \code{ckpt_dir}.
 #' @param vocab_file path to vocabulary file. File is assumed to be a text file,
 #'   with one token per line, with the line number corresponding to the index of
 #'   that token in the vocabulary.
