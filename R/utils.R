@@ -20,45 +20,45 @@
 #' Given the path to a checkpoint directory, return the paths to certain files
 #' in that directory.
 #'
-#' @param cp_dir Character; the path to the checkpoint directory.
+#' @param ckpt_dir Character; the path to the checkpoint directory.
 #' @name find_files
 NULL
 
 #' @describeIn find_files Find the vocabulary file ('vocab.txt').
 #' @export
-find_vocab <- function(cp_dir) {
-  vocab_file <- file.path(cp_dir, 'vocab.txt')
+find_vocab <- function(ckpt_dir) {
+  vocab_file <- file.path(ckpt_dir, 'vocab.txt')
   if (file.exists(vocab_file)) {
     return(vocab_file)
   } else {
-    stop("No file named 'vocab.txt' found in ", cp_dir) # nocov
+    stop("No file named 'vocab.txt' found in ", ckpt_dir) # nocov
   }
 }
 
 
 #' @describeIn find_files Find the config file ('bert_config.json').
 #' @export
-find_config <- function(cp_dir) {
-  config_file <- file.path(cp_dir, 'bert_config.json')
+find_config <- function(ckpt_dir) {
+  config_file <- file.path(ckpt_dir, 'bert_config.json')
   if (file.exists(config_file)) {
     return(config_file)
   } else {
-    stop("No file named 'bert_config.json' found in ", cp_dir) # nocov
+    stop("No file named 'bert_config.json' found in ", ckpt_dir) # nocov
   }
 }
 
 #' @describeIn find_files Find the checkpoint file stub (files begin with
 #'   'bert_model.ckpt').
 #' @export
-find_ckpt <- function(cp_dir) {
+find_ckpt <- function(ckpt_dir) {
   # The path we want to return here isn't an actual file, but a name stub for
   # files with suffixes '.index', '.meta', etc.
-  ckpt_filestub <- file.path(cp_dir, 'bert_model.ckpt')
-  ckpt_file1 <- file.path(cp_dir, 'bert_model.ckpt.index')
-  ckpt_file2 <- file.path(cp_dir, 'bert_model.ckpt.meta')
+  ckpt_filestub <- file.path(ckpt_dir, 'bert_model.ckpt')
+  ckpt_file1 <- file.path(ckpt_dir, 'bert_model.ckpt.index')
+  ckpt_file2 <- file.path(ckpt_dir, 'bert_model.ckpt.meta')
   if (file.exists(ckpt_file1) & file.exists(ckpt_file1)) {
     return(ckpt_filestub)
   } else {
-    stop("Checkpoint file(s) missing from ", cp_dir) # nocov
+    stop("Checkpoint file(s) missing from ", ckpt_dir) # nocov
   }
 }

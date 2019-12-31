@@ -7,14 +7,14 @@
 \alias{find_ckpt}
 \title{Find Checkpoint Files}
 \usage{
-find_vocab(cp_dir)
+find_vocab(ckpt_dir)
 
-find_config(cp_dir)
+find_config(ckpt_dir)
 
-find_ckpt(cp_dir)
+find_ckpt(ckpt_dir)
 }
 \arguments{
-\item{cp_dir}{Character; the path to the checkpoint directory.}
+\item{ckpt_dir}{Character; the path to the checkpoint directory.}
 }
 \description{
 Given the path to a checkpoint directory, return the paths to certain files
