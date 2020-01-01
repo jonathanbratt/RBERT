@@ -4,7 +4,7 @@
 \alias{.has_checkpoint}
 \title{Check whether the user already has a checkpoint}
 \usage{
-.has_checkpoint(model = NULL, dir = NULL, checkpoint_subdir = NULL)
+.has_checkpoint(model = NULL, dir = NULL, ckpt_dir = NULL)
 }
 \arguments{
 \item{model}{Character vector. Which model checkpoint to download.}
@@ -18,8 +18,8 @@ folder in the user cache directory (determined using
 `RBERT.dir` option will be updated to that location. Note that the
 checkpoint will create a subdirectory inside this \code{dir}.}
 
-\item{checkpoint_subdir}{The path to the subdir where this checkpoint should
-be saved. If model is given, checkpoint_subdir is inferred.}
+\item{ckpt_dir}{The path to the subdir where this checkpoint should
+be saved. If model is given, ckpt_dir is inferred.}
 }
 \value{
 A logical indicating whether the user already has that checkpoint in

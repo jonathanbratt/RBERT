@@ -16,20 +16,27 @@
 test_that("download_checkpoint works", {
   # checkpoint was downloaded in setup.R
   # Redownloading the checkpoint should occur without incident.
-  new_cpdir <- download_BERT_checkpoint(model = "bert_base_uncased",
-                                         dir = checkpoint_main_dir)
+  new_cpdir <- download_BERT_checkpoint(
+    model = "bert_base_uncased",
+    dir = checkpoint_main_dir
+  )
   expect_identical(new_cpdir, cpdir)
 
   testthat::expect_true(
-    file.exists(file.path(cpdir, "vocab.txt")))
+    file.exists(file.path(cpdir, "vocab.txt"))
+  )
   testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_config.json")))
+    file.exists(file.path(cpdir, "bert_config.json"))
+  )
   testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_model.ckpt.index")))
+    file.exists(file.path(cpdir, "bert_model.ckpt.index"))
+  )
   testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_model.ckpt.meta")))
+    file.exists(file.path(cpdir, "bert_model.ckpt.meta"))
+  )
   testthat::expect_true(
-    file.exists(file.path(cpdir, "bert_model.ckpt.data-00000-of-00001")))
+    file.exists(file.path(cpdir, "bert_model.ckpt.data-00000-of-00001"))
+  )
 })
 
 test_that("dir chooser works.", {

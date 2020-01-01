@@ -42,20 +42,22 @@
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        totrain <- tensorflow::tf$get_variable("totrain",
-#'                                               tensorflow::shape(10L, 20L))
-#'        loss <- 2*totrain
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   totrain <- tensorflow::tf$get_variable(
+#'     "totrain",
+#'     tensorflow::shape(10L, 20L)
+#'   )
+#'   loss <- 2 * totrain
 #'
-#'        train_op <- create_optimizer(
-#'          loss = loss,
-#'          init_lr = 0.01,
-#'          num_train_steps = 20L,
-#'          num_warmup_steps = 10L,
-#'          use_tpu = FALSE
-#'        )
-#'      })
+#'   train_op <- create_optimizer(
+#'     loss = loss,
+#'     init_lr = 0.01,
+#'     num_train_steps = 20L,
+#'     num_warmup_steps = 10L,
+#'     use_tpu = FALSE
+#'   )
+#' })
 #' }
 create_optimizer <- function(loss,
                              init_lr,
@@ -66,9 +68,11 @@ create_optimizer <- function(loss,
   # This is used for keeping track of total number of training steps.
   global_step <- tensorflow::tf$train$get_or_create_global_step()
 
-  learning_rate <- tensorflow::tf$constant(value = init_lr,
-                                           shape = list(),
-                                           dtype = tensorflow::tf$float32)
+  learning_rate <- tensorflow::tf$constant(
+    value = init_lr,
+    shape = list(),
+    dtype = tensorflow::tf$float32
+  )
 
   # Implements linear decay of the learning rate.
   # https://devdocs.io/tensorflow~python/tf/train/polynomial_decay
@@ -78,27 +82,37 @@ create_optimizer <- function(loss,
     num_train_steps,
     end_learning_rate = 0.0,
     power = 1.0,
-    cycle = FALSE)
+    cycle = FALSE
+  )
 
   # Implements linear warmup. I.e., if global_step < num_warmup_steps, the
   # learning rate will be `global_step/num_warmup_steps * init_lr`.
   if (num_warmup_steps > 0) {
-    global_steps_int <- tensorflow::tf$cast(global_step,
-                                            tensorflow::tf$int32)
+    global_steps_int <- tensorflow::tf$cast(
+      global_step,
+      tensorflow::tf$int32
+    )
     warmup_steps_int <- tensorflow::tf$constant(num_warmup_steps,
-                                                dtype = tensorflow::tf$int32)
+      dtype = tensorflow::tf$int32
+    )
 
-    global_steps_float <- tensorflow::tf$cast(global_steps_int,
-                                              tensorflow::tf$float32)
-    warmup_steps_float <- tensorflow::tf$cast(warmup_steps_int,
-                                              tensorflow::tf$float32)
+    global_steps_float <- tensorflow::tf$cast(
+      global_steps_int,
+      tensorflow::tf$float32
+    )
+    warmup_steps_float <- tensorflow::tf$cast(
+      warmup_steps_int,
+      tensorflow::tf$float32
+    )
 
     warmup_percent_done <- global_steps_float / warmup_steps_float
     warmup_learning_rate <- init_lr * warmup_percent_done
 
     # This is casting a logical to a float...
-    is_warmup <- tensorflow::tf$cast(global_steps_int < warmup_steps_int,
-                                     tensorflow::tf$float32)
+    is_warmup <- tensorflow::tf$cast(
+      global_steps_int < warmup_steps_int,
+      tensorflow::tf$float32
+    )
     # ...so that we can write an `if` statement like this? -JDB
     learning_rate <- (
       (1.0 - is_warmup) * learning_rate + is_warmup * warmup_learning_rate)
@@ -113,7 +127,8 @@ create_optimizer <- function(loss,
     beta_1 = 0.9,
     beta_2 = 0.999,
     epsilon = 1e-6,
-    exclude_from_weight_decay=c("LayerNorm", "layer_norm", "bias"))
+    exclude_from_weight_decay = c("LayerNorm", "layer_norm", "bias")
+  )
 
   if (use_tpu) {
     optimizer <- tensorflow::tf$contrib$tpu$CrossShardOptimizer(optimizer)
@@ -132,14 +147,17 @@ create_optimizer <- function(loss,
   # Be sure this structure is compatible with downstream usage. -JDB
   grads_and_vars <- purrr::map2(grads, tvars, list)
   train_op <- optimizer$apply_gradients(grads_and_vars,
-                                        global_step = global_step)
+    global_step = global_step
+  )
 
   # Normally the global step update is done inside of `apply_gradients`.
   # However, `AdamWeightDecayOptimizer` doesn't do this.  But if you use a
   # different optimizer, you should probably take this line out.
   new_global_step <- global_step + 1L
-  train_op <- tensorflow::tf$group(train_op,
-                                   list(global_step$assign(new_global_step)))
+  train_op <- tensorflow::tf$group(
+    train_op,
+    list(global_step$assign(new_global_step))
+  )
   return(train_op)
 }
 
@@ -171,10 +189,10 @@ create_optimizer <- function(loss,
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        optimizer <- AdamWeightDecayOptimizer(learning_rate = 0.01)
-#'      })
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   optimizer <- AdamWeightDecayOptimizer(learning_rate = 0.01)
+#' })
 #' }
 AdamWeightDecayOptimizer <- function(learning_rate,
                                      weight_decay_rate = 0.0,
@@ -238,8 +256,10 @@ AdamWeightDecayOptimizer <- function(learning_rate,
         # In python, the regex below was wrapped in _get_variable_name.
         # (Get the variable name from the tensor name.) -JDB
         param_name <- param$name # tensor name
-        match <- stringr::str_match(string = param_name,
-                                    pattern = "^(.*):\\d+$")[[2]]
+        match <- stringr::str_match(
+          string = param_name,
+          pattern = "^(.*):\\d+$"
+        )[[2]]
         if (!is.na(match)) {
           param_name <- match # variable name
         }
@@ -249,13 +269,15 @@ AdamWeightDecayOptimizer <- function(learning_rate,
           shape = param$shape$as_list(),
           dtype = tensorflow::tf$float32,
           trainable = FALSE,
-          initializer = tensorflow::tf$zeros_initializer())
+          initializer = tensorflow::tf$zeros_initializer()
+        )
         v <- tensorflow::tf$get_variable(
           name = paste0(param_name, "/adam_v"),
           shape = param$shape$as_list(),
           dtype = tensorflow::tf$float32,
           trainable = FALSE,
-          initializer = tensorflow::tf$zeros_initializer())
+          initializer = tensorflow::tf$zeros_initializer()
+        )
 
         # Standard Adam update.
         # Note: here we're not accessing beta_1, etc. as object parameters, we
@@ -263,10 +285,12 @@ AdamWeightDecayOptimizer <- function(learning_rate,
         # environment. THIS WOULDN'T WORK IF THESE VALUES HAD TO BE MUTABLE. But
         # I think they are effectively static in this case. -JDB
         next_m <- (tensorflow::tf$multiply(beta_1, m) +
-                     tensorflow::tf$multiply(1.0 - beta_1, grad))
+          tensorflow::tf$multiply(1.0 - beta_1, grad))
         next_v <- (tensorflow::tf$multiply(beta_2, v) +
-                     tensorflow::tf$multiply(1.0 - beta_2,
-                                             tensorflow::tf$square(grad)))
+          tensorflow::tf$multiply(
+            1.0 - beta_2,
+            tensorflow::tf$square(grad)
+          ))
         update <- next_m / (tensorflow::tf$sqrt(next_v) + epsilon)
 
         # Just adding the square of the weights to the loss function is *not*
@@ -296,7 +320,7 @@ AdamWeightDecayOptimizer <- function(learning_rate,
         if (use_weight_decay) {
           update <- update + weight_decay_rate * param
         }
-        update_with_lr  <- learning_rate * update
+        update_with_lr <- learning_rate * update
 
         next_param <- param - update_with_lr
 
@@ -304,26 +328,27 @@ AdamWeightDecayOptimizer <- function(learning_rate,
         # be a base function for this, but I can only find it in external
         # packages that I don't want to require just for this. -JDB
         assignments <- unlist(
-          list(assignments,
-               param$assign(next_param),
-               m$assign(next_m),
-               v$assign(next_v)),
-          recursive = FALSE)
-
+          list(
+            assignments,
+            param$assign(next_param),
+            m$assign(next_m),
+            v$assign(next_v)
+          ),
+          recursive = FALSE
+        )
       }
     }
     # In python, the list was "delisted" by `*assignments`. This seems to
     # be the best R alternative. I'm not entirely sure this is needed--the
     # tf.group function may be able to handle lists. -JDB
     return(
-      do.call(function(...) {tensorflow::tf$group(..., name = name)},
-              args = assignments)
+      do.call(function(...) {
+        tensorflow::tf$group(..., name = name)
+      },
+      args = assignments
+      )
     )
   } # end definition of `apply_gradients`
 
   return(this_opt)
 }
-
-
-
-

@@ -33,16 +33,18 @@
 #'
 #' @examples
 #' \dontrun{
-#'  input_ex <- InputExample(guid = 0, text_a = "Some text to classify.")
+#' input_ex <- InputExample(guid = 0, text_a = "Some text to classify.")
 #' }
 InputExample <- function(guid,
                          text_a,
                          text_b = NULL,
                          label = NULL) {
-  obj <- list("guid" = guid,
-              "text_a" = text_a,
-              "text_b" = text_b,
-              "label" = label)
+  obj <- list(
+    "guid" = guid,
+    "text_a" = text_a,
+    "text_b" = text_b,
+    "label" = label
+  )
   class(obj) <- "InputExample"
   return(obj)
 }
@@ -80,11 +82,13 @@ InputFeatures <- function(input_ids,
                           segment_ids,
                           label_id,
                           is_real_example = TRUE) {
-  obj <- list("input_ids" = input_ids,
-              "input_mask" = input_mask,
-              "segment_ids" = segment_ids,
-              "label_id" = label_id,
-              "is_real_example" = is_real_example)
+  obj <- list(
+    "input_ids" = input_ids,
+    "input_mask" = input_mask,
+    "segment_ids" = segment_ids,
+    "label_id" = label_id,
+    "is_real_example" = is_real_example
+  )
   class(obj) <- "InputFeatures"
   return(obj)
 }
@@ -113,15 +117,19 @@ InputFeatures <- function(input_ids,
 #' @examples
 #' \dontrun{
 #' tokenizer <- FullTokenizer("vocab.txt")
-#' input_ex <- InputExample(guid = 1L,
-#'                          text_a = "Some text to classify.",
-#'                          text_b = "More wordy words.",
-#'                          label = "good")
-#' feat <- convert_single_example(ex_index = 1L,
-#'                                example = input_ex,
-#'                                label_list = c("good", "bad"),
-#'                                max_seq_length = 15L,
-#'                                tokenizer = tokenizer)
+#' input_ex <- InputExample(
+#'   guid = 1L,
+#'   text_a = "Some text to classify.",
+#'   text_b = "More wordy words.",
+#'   label = "good"
+#' )
+#' feat <- convert_single_example(
+#'   ex_index = 1L,
+#'   example = input_ex,
+#'   label_list = c("good", "bad"),
+#'   max_seq_length = 15L,
+#'   tokenizer = tokenizer
+#' )
 #' }
 convert_single_example <- function(ex_index,
                                    example,
@@ -135,8 +143,8 @@ convert_single_example <- function(ex_index,
       input_mask = rep(0, max_seq_length),
       segment_ids = rep(0, max_seq_length),
       label_id = 0,
-      is_real_example = FALSE)
-    )
+      is_real_example = FALSE
+    ))
   }
 
   # I'm going to tentatively use 1-based indexing here. -JDB
@@ -210,18 +218,20 @@ convert_single_example <- function(ex_index,
 
   # Stop now if the lengths aren't right somehow. -JDB
   if (length(input_ids) != max_seq_length |
-      length(input_mask) != max_seq_length |
-      length(segment_ids) != max_seq_length) {
+    length(input_mask) != max_seq_length |
+    length(segment_ids) != max_seq_length) {
     stop("input_ids, input_mask, or segment_ids have the wrong length.")
   }
 
   label_id <- label_map[[example$label]]
 
-  feature <- InputFeatures(input_ids = input_ids,
-                           input_mask = input_mask,
-                           segment_ids = segment_ids,
-                           label_id = label_id,
-                           is_real_example = TRUE)
+  feature <- InputFeatures(
+    input_ids = input_ids,
+    input_mask = input_mask,
+    segment_ids = segment_ids,
+    label_id = label_id,
+    is_real_example = TRUE
+  )
   return(feature)
 }
 
@@ -310,8 +320,10 @@ truncate_seq_pair <- function(tokens_a, tokens_b, max_length) {
       trunc_b <- trunc_b[-length(trunc_b)]
     }
   }
-  return(list("trunc_a" = trunc_a,
-              "trunc_b" = trunc_b))
+  return(list(
+    "trunc_a" = trunc_a,
+    "trunc_b" = trunc_b
+  ))
 }
 
 
@@ -343,30 +355,39 @@ truncate_seq_pair <- function(tokens_a, tokens_b, max_length) {
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        input_ids <- tensorflow::tf$constant(list(list(31L, 51L, 99L),
-#'                                                  list(15L, 5L, 0L)))
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   input_ids <- tensorflow::tf$constant(list(
+#'     list(31L, 51L, 99L),
+#'     list(15L, 5L, 0L)
+#'   ))
 #'
-#'        input_mask <- tensorflow::tf$constant(list(list(1L, 1L, 1L),
-#'                                                   list(1L, 1L, 0L)))
-#'        token_type_ids <- tensorflow::tf$constant(list(list(0L, 0L, 1L),
-#'                                                       list(0L, 2L, 0L)))
-#'        config <- BertConfig(vocab_size = 32000L,
-#'                             hidden_size = 768L,
-#'                             num_hidden_layers = 8L,
-#'                             num_attention_heads = 12L,
-#'                             intermediate_size = 1024L)
-#'        class_model <- create_model(bert_config = config,
-#'                                    is_training = TRUE,
-#'                                    input_ids = input_ids,
-#'                                    input_mask = input_mask,
-#'                                    segment_ids = token_type_ids,
-#'                                    labels = c(1L, 2L),
-#'                                    num_labels = 2L,
-#'                                    use_one_hot_embeddings = FALSE)
-#'      }
-#' )
+#'   input_mask <- tensorflow::tf$constant(list(
+#'     list(1L, 1L, 1L),
+#'     list(1L, 1L, 0L)
+#'   ))
+#'   token_type_ids <- tensorflow::tf$constant(list(
+#'     list(0L, 0L, 1L),
+#'     list(0L, 2L, 0L)
+#'   ))
+#'   config <- BertConfig(
+#'     vocab_size = 32000L,
+#'     hidden_size = 768L,
+#'     num_hidden_layers = 8L,
+#'     num_attention_heads = 12L,
+#'     intermediate_size = 1024L
+#'   )
+#'   class_model <- create_model(
+#'     bert_config = config,
+#'     is_training = TRUE,
+#'     input_ids = input_ids,
+#'     input_mask = input_mask,
+#'     segment_ids = token_type_ids,
+#'     labels = c(1L, 2L),
+#'     num_labels = 2L,
+#'     use_one_hot_embeddings = FALSE
+#'   )
+#' })
 #' }
 create_model <- function(bert_config,
                          is_training,
@@ -417,27 +438,33 @@ create_model <- function(bert_config,
     }
 
     logits <- tensorflow::tf$matmul(output_layer,
-                                    output_weights,
-                                    transpose_b = TRUE)
+      output_weights,
+      transpose_b = TRUE
+    )
     logits <- tensorflow::tf$nn$bias_add(logits, output_bias)
     probabilities <- tensorflow::tf$nn$softmax(logits, axis = -1L)
     log_probs <- tensorflow::tf$nn$log_softmax(logits, axis = -1L)
-    one_hot_labels <- tensorflow::tf$one_hot(indices = labels,
-                                             depth = num_labels,
-                                             dtype = tensorflow::tf$float32)
+    one_hot_labels <- tensorflow::tf$one_hot(
+      indices = labels,
+      depth = num_labels,
+      dtype = tensorflow::tf$float32
+    )
 
     # This implies that `labels` has a shape compatible with batch size. Most
     # likely the length of `labels` *is* batch size... Confirm when we get
     # there.
     # I believe that the following is calculating the cross-entropy loss. -JDB
     per_example_loss <- -tensorflow::tf$reduce_sum(one_hot_labels * log_probs,
-                                                   axis = -1L)
+      axis = -1L
+    )
     loss <- tensorflow::tf$reduce_mean(per_example_loss)
 
-    return(list("loss" = loss,
-                "per_example_loss" = per_example_loss,
-                "logits" = logits,
-                "probabilities" = probabilities))
+    return(list(
+      "loss" = loss,
+      "per_example_loss" = per_example_loss,
+      "logits" = logits,
+      "probabilities" = probabilities
+    ))
   })
 }
 
@@ -485,38 +512,49 @@ create_model <- function(bert_config,
 #' @examples
 #' \dontrun{
 #' with(tensorflow::tf$variable_scope("examples",
-#'                                    reuse = tensorflow::tf$AUTO_REUSE),
-#'      {
-#'        input_ids <- tensorflow::tf$constant(list(list(31L, 51L, 99L),
-#'                                                  list(15L, 5L, 0L)))
+#'   reuse = tensorflow::tf$AUTO_REUSE
+#' ), {
+#'   input_ids <- tensorflow::tf$constant(list(
+#'     list(31L, 51L, 99L),
+#'     list(15L, 5L, 0L)
+#'   ))
 #'
-#'        input_mask <- tensorflow::tf$constant(list(list(1L, 1L, 1L),
-#'                                                   list(1L, 1L, 0L)))
-#'        token_type_ids <- tensorflow::tf$constant(list(list(0L, 0L, 1L),
-#'                                                       list(0L, 2L, 0L)))
-#'        config <- BertConfig(vocab_size = 30522L,
-#'                             hidden_size = 768L,
-#'                             num_hidden_layers = 8L,
-#'                             type_vocab_size = 2L,
-#'                             num_attention_heads = 12L,
-#'                             intermediate_size = 3072L)
+#'   input_mask <- tensorflow::tf$constant(list(
+#'     list(1L, 1L, 1L),
+#'     list(1L, 1L, 0L)
+#'   ))
+#'   token_type_ids <- tensorflow::tf$constant(list(
+#'     list(0L, 0L, 1L),
+#'     list(0L, 2L, 0L)
+#'   ))
+#'   config <- BertConfig(
+#'     vocab_size = 30522L,
+#'     hidden_size = 768L,
+#'     num_hidden_layers = 8L,
+#'     type_vocab_size = 2L,
+#'     num_attention_heads = 12L,
+#'     intermediate_size = 3072L
+#'   )
 #'
-#'        temp_dir <- tempdir()
-#'        init_checkpoint <- file.path(temp_dir,
-#'                                     "BERT_checkpoints",
-#'                                     "uncased_L-12_H-768_A-12",
-#'                                     "bert_model.ckpt")
+#'   temp_dir <- tempdir()
+#'   init_checkpoint <- file.path(
+#'     temp_dir,
+#'     "BERT_checkpoints",
+#'     "uncased_L-12_H-768_A-12",
+#'     "bert_model.ckpt"
+#'   )
 #'
-#'        example_mod_fn <- model_fn_builder(bert_config = config,
-#'                                           num_labels = 2L,
-#'                                           init_checkpoint = init_checkpoint,
-#'                                           learning_rate = 0.01,
-#'                                           num_train_steps = 20L,
-#'                                           num_warmup_steps = 10L,
-#'                                           use_tpu = FALSE,
-#'                                           use_one_hot_embeddings = FALSE)
-#'      }
-#' )
+#'   example_mod_fn <- model_fn_builder(
+#'     bert_config = config,
+#'     num_labels = 2L,
+#'     init_checkpoint = init_checkpoint,
+#'     learning_rate = 0.01,
+#'     num_train_steps = 20L,
+#'     num_warmup_steps = 10L,
+#'     use_tpu = FALSE,
+#'     use_one_hot_embeddings = FALSE
+#'   )
+#' })
 #' }
 model_fn_builder <- function(bert_config,
                              num_labels,
@@ -530,8 +568,10 @@ model_fn_builder <- function(bert_config,
   model_fn <- function(features, labels, mode, params) {
     print("*** Features ***")
     for (name in sort(names(features))) {
-      print(paste0("  name = ", name,
-                   ", shape = ", features[[name]]$shape ))
+      print(paste0(
+        "  name = ", name,
+        ", shape = ", features[[name]]$shape
+      ))
     }
 
     input_ids <- features$input_ids
@@ -544,10 +584,12 @@ model_fn_builder <- function(bert_config,
     # `features` is. (RBERT issue #25) -JDB
     if ("is_real_example" %in% names(features)) {
       is_real_example <- tensorflow::tf$cast(features$is_real_example,
-                                             dtype = tensorflow::tf$float32)
+        dtype = tensorflow::tf$float32
+      )
     } else {
       is_real_example <- tensorflow::tf$ones(tensorflow::tf$shape(label_ids),
-                                             dtype = tensorflow::tf$float32)
+        dtype = tensorflow::tf$float32
+      )
     }
     is_training <- (mode == tensorflow::tf$estimator$ModeKeys$TRAIN)
 
@@ -575,14 +617,18 @@ model_fn_builder <- function(bert_config,
       initialized_variable_names <- gamap$initialized_variable_names
       if (use_tpu) {
         tpu_scaffold <- function() {
-          tensorflow::tf$train$init_from_checkpoint(init_checkpoint,
-                                                    assignment_map)
+          tensorflow::tf$train$init_from_checkpoint(
+            init_checkpoint,
+            assignment_map
+          )
           return(tensorflow::tf$train$Scaffold())
         }
         scaffold_fn <- tpu_scaffold
       } else {
-        tensorflow::tf$train$init_from_checkpoint(init_checkpoint,
-                                                  assignment_map)
+        tensorflow::tf$train$init_from_checkpoint(
+          init_checkpoint,
+          assignment_map
+        )
       }
     }
     print("*** Trainable Variables ***")
@@ -591,18 +637,22 @@ model_fn_builder <- function(bert_config,
       if (var$name %in% initialized_variable_names) {
         init_string <- ", *INIT_FROM_CKPT*"
       }
-      print(paste0("  name = ", var$name,
-                   ", shape = ", var$shape,
-                   init_string))
+      print(paste0(
+        "  name = ", var$name,
+        ", shape = ", var$shape,
+        init_string
+      ))
     }
 
     output_spec <- NULL
     if (is_training) {
-      train_op <- create_optimizer(total_loss,
-                                   learning_rate,
-                                   num_train_steps,
-                                   num_warmup_steps,
-                                   use_tpu)
+      train_op <- create_optimizer(
+        total_loss,
+        learning_rate,
+        num_train_steps,
+        num_warmup_steps,
+        use_tpu
+      )
       output_spec <- tensorflow::tf$contrib$tpu$TPUEstimatorSpec(
         mode = mode,
         loss = total_loss,
@@ -615,23 +665,34 @@ model_fn_builder <- function(bert_config,
                             logits,
                             is_real_example) {
         predictions <- tensorflow::tf$argmax(logits,
-                                             axis = -1L,
-                                             output_type = tensorflow::tf$int32)
-        accuracy <-  tensorflow::tf$metrics$accuracy(labels = label_ids,
-                                                     predictions = predictions,
-                                                     weights = is_real_example)
-        loss <- tensorflow::tf$metrics$mean(values = per_example_loss,
-                                            weights = is_real_example)
-        return(list("eval_accuracy" = accuracy,
-                    "eval_loss" = loss))
+          axis = -1L,
+          output_type = tensorflow::tf$int32
+        )
+        accuracy <- tensorflow::tf$metrics$accuracy(
+          labels = label_ids,
+          predictions = predictions,
+          weights = is_real_example
+        )
+        loss <- tensorflow::tf$metrics$mean(
+          values = per_example_loss,
+          weights = is_real_example
+        )
+        return(list(
+          "eval_accuracy" = accuracy,
+          "eval_loss" = loss
+        ))
       }
       # "`eval_metrics` is a tuple of `metric_fn` and `tensors`..."
       # See link in comments below. -JDB
-      eval_metrics <- list(metric_fn,
-                           list(per_example_loss,
-                                label_ids,
-                                logits,
-                                is_real_example))
+      eval_metrics <- list(
+        metric_fn,
+        list(
+          per_example_loss,
+          label_ids,
+          logits,
+          is_real_example
+        )
+      )
       output_spec <- tensorflow::tf$contrib$tpu$TPUEstimatorSpec(
         mode = mode,
         loss = total_loss,
@@ -678,36 +739,60 @@ model_fn_builder <- function(bert_config,
 #' @examples
 #' \dontrun{
 #' tokenizer <- FullTokenizer("vocab.txt")
-#' seq_len = 15L
-#' input_ex1 <- InputExample(guid = 1L,
-#'                          text_a = "Some text to classify.",
-#'                          text_b = "More wordy words.",
-#'                          label = "good")
-#' input_ex2 <- InputExample(guid = 2L,
-#'                          text_a = "This is another example.",
-#'                          text_b = "So many words.",
-#'                          label = "bad")
-#' feat <- convert_examples_to_features(examples = list(input_ex1, input_ex2),
-#'                                      label_list = c("good", "bad"),
-#'                                      max_seq_length = seq_len,
-#'                                      tokenizer = tokenizer)
-#' input_fn <- input_fn_builder(features = feat,
-#'                                      seq_length = seq_len,
-#'                                      is_training = TRUE,
-#'                                      drop_remainder = FALSE)
+#' seq_len <- 15L
+#' input_ex1 <- InputExample(
+#'   guid = 1L,
+#'   text_a = "Some text to classify.",
+#'   text_b = "More wordy words.",
+#'   label = "good"
+#' )
+#' input_ex2 <- InputExample(
+#'   guid = 2L,
+#'   text_a = "This is another example.",
+#'   text_b = "So many words.",
+#'   label = "bad"
+#' )
+#' feat <- convert_examples_to_features(
+#'   examples = list(input_ex1, input_ex2),
+#'   label_list = c("good", "bad"),
+#'   max_seq_length = seq_len,
+#'   tokenizer = tokenizer
+#' )
+#' input_fn <- input_fn_builder(
+#'   features = feat,
+#'   seq_length = seq_len,
+#'   is_training = TRUE,
+#'   drop_remainder = FALSE
+#' )
 #' }
 input_fn_builder <- function(features,
                              seq_length,
                              is_training,
                              drop_remainder) {
-  all_input_ids <- purrr::map(features,
-                              function(f) { as.integer(f$input_ids) })
-  all_input_mask <- purrr::map(features,
-                               function(f) { as.integer(f$input_mask) })
-  all_segment_ids <- purrr::map(features,
-                                function(f) { as.integer(f$segment_ids) })
-  all_label_ids <- purrr::map(features,
-                              function(f) { as.integer(f$label_id) })
+  all_input_ids <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$input_ids)
+    }
+  )
+  all_input_mask <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$input_mask)
+    }
+  )
+  all_segment_ids <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$segment_ids)
+    }
+  )
+  all_label_ids <- purrr::map(
+    features,
+    function(f) {
+      as.integer(f$label_id)
+    }
+  )
 
   input_fn <- function(params) {
     batch_size <- params$batch_size
@@ -759,9 +844,11 @@ input_fn_builder <- function(features,
       print("null batch size; defaulting to 32")
       batch_size <- 32L
     }
-    d <- d$batch(batch_size = batch_size,
-                 drop_remainder = drop_remainder)
-    return(d)  # return from `input_fn`
+    d <- d$batch(
+      batch_size = batch_size,
+      drop_remainder = drop_remainder
+    )
+    return(d) # return from `input_fn`
   }
   return(input_fn)
 }
@@ -786,18 +873,24 @@ input_fn_builder <- function(features,
 #' @examples
 #' \dontrun{
 #' tokenizer <- FullTokenizer("vocab.txt")
-#' input_ex1 <- InputExample(guid = 1L,
-#'                          text_a = "Some text to classify.",
-#'                          text_b = "More wordy words.",
-#'                          label = "good")
-#' input_ex2 <- InputExample(guid = 2L,
-#'                          text_a = "This is another example.",
-#'                          text_b = "So many words.",
-#'                          label = "bad")
-#' feat <- convert_examples_to_features(examples = list(input_ex1, input_ex2),
-#'                                      label_list = c("good", "bad"),
-#'                                      max_seq_length = 15L,
-#'                                      tokenizer = tokenizer)
+#' input_ex1 <- InputExample(
+#'   guid = 1L,
+#'   text_a = "Some text to classify.",
+#'   text_b = "More wordy words.",
+#'   label = "good"
+#' )
+#' input_ex2 <- InputExample(
+#'   guid = 2L,
+#'   text_a = "This is another example.",
+#'   text_b = "So many words.",
+#'   label = "bad"
+#' )
+#' feat <- convert_examples_to_features(
+#'   examples = list(input_ex1, input_ex2),
+#'   label_list = c("good", "bad"),
+#'   max_seq_length = 15L,
+#'   tokenizer = tokenizer
+#' )
 #' }
 convert_examples_to_features <- function(examples,
                                          label_list,
@@ -810,12 +903,15 @@ convert_examples_to_features <- function(examples,
     examples,
     function(ex_index, example,
              label_list, max_seq_length, tokenizer) {
-      convert_single_example(ex_index = ex_index,
-                             example = example,
-                             label_list = label_list,
-                             max_seq_length = max_seq_length,
-                             tokenizer = tokenizer)
+      convert_single_example(
+        ex_index = ex_index,
+        example = example,
+        label_list = label_list,
+        max_seq_length = max_seq_length,
+        tokenizer = tokenizer
+      )
     },
-    label_list, max_seq_length, tokenizer)
+    label_list, max_seq_length, tokenizer
+  )
   return(features)
 }

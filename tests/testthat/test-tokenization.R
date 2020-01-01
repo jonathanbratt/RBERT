@@ -14,16 +14,16 @@
 
 
 test_that("the convert token/id functions work", {
-  vocab <- c("token1"=0, "token2"=1, "token3"=2)
+  vocab <- c("token1" = 0, "token2" = 1, "token3" = 2)
   inv_voc <- names(vocab)
   names(inv_voc) <- vocab
 
   test_result <- convert_tokens_to_ids(vocab, c("token1", "token3"))
-  expected_result <-  c("token1"=0, "token3"=2)
+  expected_result <- c("token1" = 0, "token3" = 2)
   testthat::expect_identical(test_result, expected_result)
 
   test_result <- convert_ids_to_tokens(inv_voc, c(1, 3))
-  expected_result <-  c("0"="token1", "2"="token3")
+  expected_result <- c("0" = "token1", "2" = "token3")
   testthat::expect_identical(test_result, expected_result)
 })
 
@@ -31,15 +31,19 @@ test_that("The FullTokenizer tokenizer works as expected", {
   f_tokenizer <- FullTokenizer("vocab.txt", TRUE)
   text <- "\u535A\u00E7anned words; tihs is Silly"
   test_result <- tokenize(f_tokenizer, text)
-  expected_result <- c("\u535A", "canned", "words", ";",
-                       "ti", "##hs", "is", "silly")
+  expected_result <- c(
+    "\u535A", "canned", "words", ";",
+    "ti", "##hs", "is", "silly"
+  )
   testthat::expect_identical(test_result, expected_result)
 
   f_tokenizer <- FullTokenizer("vocab_small.txt", TRUE)
   text <- "know the unknowable!"
   test_result <- tokenize(f_tokenizer, text)
-  expected_result <- c("know", "the", "un", "##know",
-                       "##able", "[UNK]")
+  expected_result <- c(
+    "know", "the", "un", "##know",
+    "##able", "[UNK]"
+  )
   testthat::expect_identical(test_result, expected_result)
 })
 
@@ -57,6 +61,11 @@ test_that("Tokenizers handle edge cases correctly", {
   test_result <- tokenize(wp_tokenizer, text = "excessively long")
   expected_result <- c("[UNK]", "long")
   testthat::expect_identical(test_result, expected_result)
+
+  expect_identical(
+    load_vocab("vocab0.txt"),
+    integer(0)
+  )
 })
 
 
