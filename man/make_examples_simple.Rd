@@ -21,10 +21,18 @@ length-2 sublists or vectors, those examples will be two-segment sequences,
 e.g. for doing sentence-pair classification.
 }
 \examples{
-input_ex <- make_examples_simple(c("Here are some words.",
-                                   "Here are some more words."))
-input_ex2 <- make_examples_simple(list(c("First sequence, first segment.",
-                                         "First sequence, second segment."),
-                                       c("Second sequence, first segment.",
-                                        "Second sequence, second segment.")))
+input_ex <- make_examples_simple(c(
+  "Here are some words.",
+  "Here are some more words."
+))
+input_ex2 <- make_examples_simple(list(
+  c(
+    "First sequence, first segment.",
+    "First sequence, second segment."
+  ),
+  c(
+    "Second sequence, first segment.",
+    "Second sequence, second segment."
+  )
+))
 }

@@ -29,22 +29,30 @@ of this closure is the (modified) output of
 \examples{
 \dontrun{
 tokenizer <- FullTokenizer("vocab.txt")
-seq_len = 15L
-input_ex1 <- InputExample(guid = 1L,
-                         text_a = "Some text to classify.",
-                         text_b = "More wordy words.",
-                         label = "good")
-input_ex2 <- InputExample(guid = 2L,
-                         text_a = "This is another example.",
-                         text_b = "So many words.",
-                         label = "bad")
-feat <- convert_examples_to_features(examples = list(input_ex1, input_ex2),
-                                     label_list = c("good", "bad"),
-                                     max_seq_length = seq_len,
-                                     tokenizer = tokenizer)
-input_fn <- input_fn_builder(features = feat,
-                                     seq_length = seq_len,
-                                     is_training = TRUE,
-                                     drop_remainder = FALSE)
+seq_len <- 15L
+input_ex1 <- InputExample(
+  guid = 1L,
+  text_a = "Some text to classify.",
+  text_b = "More wordy words.",
+  label = "good"
+)
+input_ex2 <- InputExample(
+  guid = 2L,
+  text_a = "This is another example.",
+  text_b = "So many words.",
+  label = "bad"
+)
+feat <- convert_examples_to_features(
+  examples = list(input_ex1, input_ex2),
+  label_list = c("good", "bad"),
+  max_seq_length = seq_len,
+  tokenizer = tokenizer
+)
+input_fn <- input_fn_builder(
+  features = feat,
+  seq_length = seq_len,
+  is_training = TRUE,
+  drop_remainder = FALSE
+)
 }
 }

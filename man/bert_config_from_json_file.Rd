@@ -19,10 +19,12 @@ appropriate values.
 \examples{
 \dontrun{
 temp_dir <- tempdir()
-json_file <- file.path(temp_dir,
-                       "BERT_checkpoints",
-                       "uncased_L-12_H-768_A-12",
-                       "bert_config.json")
+json_file <- file.path(
+  temp_dir,
+  "BERT_checkpoints",
+  "uncased_L-12_H-768_A-12",
+  "bert_config.json"
+)
 bert_config_from_json_file(json_file)
 }
 }

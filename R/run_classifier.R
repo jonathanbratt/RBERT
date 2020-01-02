@@ -345,8 +345,6 @@ truncate_seq_pair <- function(tokens_a, tokens_b, max_length) {
 #' @param labels Integer Tensor; represents training example classification
 #'   labels. Length = batch size.
 #' @param num_labels Integer; number of classification labels.
-#' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
-#'   or tf.embedding_lookup() for the word embeddings.
 #'
 #' @return A list including the loss (for training) and the model output
 #'   (softmax probabilities, log probs).
@@ -385,7 +383,6 @@ truncate_seq_pair <- function(tokens_a, tokens_b, max_length) {
 #'     segment_ids = token_type_ids,
 #'     labels = c(1L, 2L),
 #'     num_labels = 2L,
-#'     use_one_hot_embeddings = FALSE
 #'   )
 #' })
 #' }
@@ -395,15 +392,13 @@ create_model <- function(bert_config,
                          input_mask,
                          segment_ids,
                          labels,
-                         num_labels,
-                         use_one_hot_embeddings) {
+                         num_labels) {
   model <- BertModel(
     config = bert_config,
     is_training = is_training,
     input_ids = input_ids,
     input_mask = input_mask,
-    token_type_ids = segment_ids,
-    use_one_hot_embeddings = use_one_hot_embeddings
+    token_type_ids = segment_ids
   )
 
   # In the demo (BERT colab), we are doing a simple classification task on the
@@ -503,9 +498,6 @@ create_model <- function(bert_config,
 #' @param num_train_steps Integer; number of steps to train for.
 #' @param num_warmup_steps Integer; number of steps to use for "warm-up".
 #' @param use_tpu Logical; whether to use TPU.
-#' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
-#'   or tf.embedding_lookup() for the word embeddings.
-#'
 #' @return \code{model_fn} closure for \code{TPUEstimator}.
 #' @export
 #'
@@ -551,8 +543,7 @@ create_model <- function(bert_config,
 #'     learning_rate = 0.01,
 #'     num_train_steps = 20L,
 #'     num_warmup_steps = 10L,
-#'     use_tpu = FALSE,
-#'     use_one_hot_embeddings = FALSE
+#'     use_tpu = FALSE
 #'   )
 #' })
 #' }
@@ -562,8 +553,7 @@ model_fn_builder <- function(bert_config,
                              learning_rate,
                              num_train_steps,
                              num_warmup_steps,
-                             use_tpu,
-                             use_one_hot_embeddings) {
+                             use_tpu) {
   # The `model_fn` for TPUEstimator.
   model_fn <- function(features, labels, mode, params) {
     print("*** Features ***")
@@ -600,8 +590,7 @@ model_fn_builder <- function(bert_config,
       input_mask = input_mask,
       segment_ids = segment_ids,
       labels = label_ids,
-      num_labels = num_labels,
-      use_one_hot_embeddings = use_one_hot_embeddings
+      num_labels = num_labels
     )
     total_loss <- created_model$loss
     per_example_loss <- created_model$per_example_loss

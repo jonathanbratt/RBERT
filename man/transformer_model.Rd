@@ -75,16 +75,20 @@ seq_length <- 500
 hidden_size <- 120
 
 with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     {
-       input_tensor <- tensorflow::tf$get_variable("input",
-                                                   shape = c(batch_size,
-                                                             seq_length,
-                                                             hidden_size))
-     }
-)
+  reuse = tensorflow::tf$AUTO_REUSE
+), {
+  input_tensor <- tensorflow::tf$get_variable("input",
+    shape = c(
+      batch_size,
+      seq_length,
+      hidden_size
+    )
+  )
+})
 
-model_t <- transformer_model(input_tensor = input_tensor,
-                             hidden_size = hidden_size)
+model_t <- transformer_model(
+  input_tensor = input_tensor,
+  hidden_size = hidden_size
+)
 }
 }

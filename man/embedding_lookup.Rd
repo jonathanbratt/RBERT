@@ -9,8 +9,7 @@ embedding_lookup(
   vocab_size,
   embedding_size = 128L,
   initializer_range = 0.02,
-  word_embedding_name = "word_embeddings",
-  use_one_hot_embeddings = FALSE
+  word_embedding_name = "word_embeddings"
 )
 }
 \arguments{
@@ -24,9 +23,6 @@ word ids.}
 \item{initializer_range}{Embedding initialization range (float).}
 
 \item{word_embedding_name}{Name of the embedding table (character).}
-
-\item{use_one_hot_embeddings}{If TRUE, use one-hot method for word
-embeddings. If FALSE, use \code{tf$gather()}.}
 }
 \value{
 Float Tensor of shape [batch_size, seq_length, embedding_size], along
@@ -37,12 +33,15 @@ Look up words embeddings for id tensor
 }
 \examples{
 \dontrun{
-with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     ids <- tensorflow::tf$get_variable("x", dtype = "int32",
-                                        shape = tensorflow::shape(10, 20))
+with(
+  tensorflow::tf$variable_scope("examples",
+    reuse = tensorflow::tf$AUTO_REUSE
+  ),
+  ids <- tensorflow::tf$get_variable("x",
+    dtype = "int32",
+    shape = tensorflow::shape(10, 20)
+  )
 )
 embedding_lookup(ids, vocab_size = 100, word_embedding_name = "some_name")
-
 }
 }

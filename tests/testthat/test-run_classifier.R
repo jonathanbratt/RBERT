@@ -56,8 +56,7 @@ test_that("create_model works", {
       input_mask = input_mask,
       segment_ids = token_type_ids,
       labels = c(1L, 2L),
-      num_labels = 2L,
-      use_one_hot_embeddings = FALSE
+      num_labels = 2L
     )
   })
   testthat::expect_is(
@@ -142,8 +141,7 @@ test_that("model_fn_builder works", {
       learning_rate = 0.01,
       num_train_steps = 20L,
       num_warmup_steps = 10L,
-      use_tpu = FALSE,
-      use_one_hot_embeddings = FALSE
+      use_tpu = FALSE
     )
     # After we implement InputFeatures class, come back and add tests for
     # `test_mod_fn`. Something like this, but better:

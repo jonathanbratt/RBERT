@@ -71,18 +71,22 @@ batch_size <- 10
 seq_length <- 512
 embedding_size <- 200
 with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     {
-       input_tensor <- tensorflow::tf$get_variable(
-         "input", dtype = "float",
-         shape = tensorflow::shape(batch_size, seq_length, embedding_size))
-       token_type_ids <- tensorflow::tf$get_variable(
-         "ids", dtype = "int32",
-         shape = tensorflow::shape(batch_size, seq_length))
-     }
-)
+  reuse = tensorflow::tf$AUTO_REUSE
+), {
+  input_tensor <- tensorflow::tf$get_variable(
+    "input",
+    dtype = "float",
+    shape = tensorflow::shape(batch_size, seq_length, embedding_size)
+  )
+  token_type_ids <- tensorflow::tf$get_variable(
+    "ids",
+    dtype = "int32",
+    shape = tensorflow::shape(batch_size, seq_length)
+  )
+})
 embedding_postprocessor(input_tensor,
-                        use_token_type = TRUE,
-                        token_type_ids = token_type_ids)
+  use_token_type = TRUE,
+  token_type_ids = token_type_ids
+)
 }
 }

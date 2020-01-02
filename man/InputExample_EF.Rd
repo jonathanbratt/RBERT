@@ -25,6 +25,8 @@ property is also annoyingly different; should eventually standardize better
 than the Python folks did. (RBERT issue #28.)
 }
 \examples{
-input_ex <- InputExample_EF(unique_id = 1,
-                            text_a = "I work at the bank.")
+input_ex <- InputExample_EF(
+  unique_id = 1,
+  text_a = "I work at the bank."
+)
 }

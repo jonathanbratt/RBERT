@@ -45,9 +45,9 @@ Inherits from class tf.train.Optimizer.
 \examples{
 \dontrun{
 with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     {
-       optimizer <- AdamWeightDecayOptimizer(learning_rate = 0.01)
-     })
+  reuse = tensorflow::tf$AUTO_REUSE
+), {
+  optimizer <- AdamWeightDecayOptimizer(learning_rate = 0.01)
+})
 }
 }

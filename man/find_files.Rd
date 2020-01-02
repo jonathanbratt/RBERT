@@ -14,7 +14,8 @@ find_config(ckpt_dir)
 find_ckpt(ckpt_dir)
 }
 \arguments{
-\item{ckpt_dir}{Character; the path to the checkpoint directory.}
+\item{ckpt_dir}{Character; the path to the checkpoint directory. If this
+argument is NULL, the associated functions also return NULL.}
 }
 \description{
 Given the path to a checkpoint directory, return the paths to certain files

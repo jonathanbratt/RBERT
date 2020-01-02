@@ -202,16 +202,13 @@ input_fn_builder_EF <- function(features,
 #'   (It needs to be specified here because we get them back as the model
 #'   "predictions".)
 #' @param use_tpu Logical; whether to use TPU.
-#' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
-#'   or tf.embedding_lookup() for the word embeddings.
 #'
 #' @return \code{model_fn} closure for \code{TPUEstimator}.
 #' @keywords internal
 .model_fn_builder_EF <- function(bert_config,
                                  init_checkpoint,
                                  layer_indexes,
-                                 use_tpu,
-                                 use_one_hot_embeddings) {
+                                 use_tpu) {
   # The `model_fn` for TPUEstimator.
   model_fn <- function(features, labels, mode, params) {
     unique_ids <- features$unique_ids
@@ -225,8 +222,7 @@ input_fn_builder_EF <- function(features,
       is_training = FALSE,
       input_ids = input_ids,
       input_mask = input_mask,
-      token_type_ids = input_type_ids,
-      use_one_hot_embeddings = use_one_hot_embeddings
+      token_type_ids = input_type_ids
     )
 
     if (mode != tensorflow::tf$estimator$ModeKeys$PREDICT) {
@@ -480,8 +476,6 @@ input_fn_builder_EF <- function(features,
 #'   back from the end) indicating which layers to extract as "output features".
 #'   The "zeroth" layer embeddings are the input embeddings vectors to the first
 #'   layer.
-#' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
-#'   or tf.embedding_lookup() for the word embeddings.
 #' @param batch_size Integer; how many examples to process per batch.
 #' @param features Character; whether to return "output" (layer outputs, the
 #'   default), "attention" (attention probabilities), or both.
@@ -547,7 +541,6 @@ extract_features <- function(examples,
                              output_file = NULL,
                              max_seq_length = 128L,
                              layer_indexes = -4:-1,
-                             use_one_hot_embeddings = FALSE,
                              batch_size = 2L,
                              features = c(
                                "output",
@@ -604,8 +597,7 @@ extract_features <- function(examples,
     bert_config = bert_config,
     init_checkpoint = init_checkpoint,
     layer_indexes = layer_indexes_actual,
-    use_tpu = FALSE,
-    use_one_hot_embeddings = use_one_hot_embeddings
+    use_tpu = FALSE
   )
 
   estimator <- tensorflow::tf$contrib$tpu$TPUEstimator(

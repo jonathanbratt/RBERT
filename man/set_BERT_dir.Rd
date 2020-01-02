@@ -25,6 +25,6 @@ session, and create it if it does not exist.
 }
 \examples{
 \dontrun{
-  set_BERT_dir("fake_dir")
+set_BERT_dir("fake_dir")
 }
 }
