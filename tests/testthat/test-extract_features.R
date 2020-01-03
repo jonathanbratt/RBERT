@@ -251,6 +251,29 @@ test_that("features and examples routines work", {
     )
   )
 
+  # works for examples given as character vectors
+  text_example1 <- "one"
+  text_example2 <- list(c("one", "two"), c("three", "four"))
+  text_example3 <- list(list("one", "two"), list("three", "four"))
+
+  feats1 <- extract_features(
+    examples = text_example1,
+    model= "bert_base_uncased"
+  )
+  testthat::expect_equal(dim(feats1$output), c(12L, 773L))
+
+  feats2 <- extract_features(
+    examples = text_example2,
+    model= "bert_base_uncased"
+  )
+  testthat::expect_equal(dim(feats2$output), c(40L, 773L))
+
+  feats3 <- extract_features(
+    examples = text_example3,
+    model= "bert_base_uncased"
+  )
+  testthat::expect_identical(feats2, feats3)
+
   # Manual speed tests:
   # emma_lines <- janeaustenr::emma[janeaustenr::emma != ""][5:54]
   # examples <- purrr::imap(
