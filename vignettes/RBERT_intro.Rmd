@@ -82,10 +82,9 @@ text_to_process2 <- list(c("Impulse is equal to the change in momentum.",
                            "Impulse is force times time."))
 
 BERT_feats <- extract_features(
-  examples = make_examples_simple(text_to_process2),
+  examples = text_to_process2,
   ckpt_dir = BERT_PRETRAINED_DIR,
-  layer_indexes = 1:12,
-  batch_size = 2L
+  layer_indexes = 1:12
 )
 
 # Extract the final layer output vector for the "[CLS]" token of the first
