@@ -102,7 +102,7 @@ sentence level, and you're less likely to hit the token limit with individual
 sentences than with, say, paragraphs of text.
 
 [^segments]: In principle, the input could have any number of segments, but the
-original BERT models were limited to two segments.
+BERT models are limited to two segments.
 
 ## The output of BERT
 
@@ -161,5 +161,3 @@ BERT models well.
 
 RBERT makes it easy (using the `extract_features` function) to obtain both the
 attention weights and the token embeddings at each layer of a BERT model.
-
-
