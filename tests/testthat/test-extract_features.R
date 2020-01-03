@@ -255,12 +255,19 @@ test_that("features and examples routines work", {
   text_example1 <- "one"
   text_example2 <- list(c("one", "two"), c("three", "four"))
   text_example3 <- list(list("one", "two"), list("three", "four"))
+  lone_example <- make_examples_simple(text_example1)[[1]]
 
   feats1 <- extract_features(
     examples = text_example1,
     model= "bert_base_uncased"
   )
   testthat::expect_equal(dim(feats1$output), c(12L, 773L))
+
+  feats1b <- extract_features(
+    examples = lone_example,
+    model= "bert_base_uncased"
+  )
+  testthat::expect_identical(feats1, feats1b)
 
   feats2 <- extract_features(
     examples = text_example2,
