@@ -81,26 +81,10 @@ potentially be used as features in downstream tasks.)
 \examples{
 \dontrun{
 BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
-vocab_file <- file.path(BERT_PRETRAINED_DIR, "vocab.txt")
-init_checkpoint <- file.path(BERT_PRETRAINED_DIR, "bert_model.ckpt")
-bert_config_file <- file.path(BERT_PRETRAINED_DIR, "bert_config.json")
-examples <- list(
-  InputExample_EF(
-    unique_id = 1,
-    text_a = "I saw the branch on the bank."
-  ),
-  InputExample_EF(
-    unique_id = 2,
-    text_a = "I saw the branch of the bank."
-  )
-)
-feats <- extract_features(
-  examples = examples,
-  vocab_file = vocab_file,
-  bert_config_file = bert_config_file,
-  init_checkpoint = init_checkpoint
-)
-# Can just specify checkpoint directory
+examples <- c("I saw the branch on the bank.",
+              "I saw the branch of the bank.")
+
+# Just specify checkpoint directory.
 feats <- extract_features(
   examples = examples,
   ckpt_dir = BERT_PRETRAINED_DIR
