@@ -558,7 +558,7 @@ extract_features <- function(examples,
     examples <- make_examples_simple(seq_list = examples)
   } else if (inherits(examples, "InputExample_EF")) {
     # As a courtesy, now allow a single InputExample_EF object to be passed in.
-    examples <- list(examples)
+    examples <- list(examples) # nocov
   } else {
     is_correct_class <- purrr::map_lgl(
       examples,
