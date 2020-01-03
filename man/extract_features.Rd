@@ -23,7 +23,8 @@ extract_features(
 )
 }
 \arguments{
-\item{examples}{List of \code{InputExample_EF}s to convert.}
+\item{examples}{List of \code{InputExample_EF} objects, or character
+vector(s) that can be converted to \code{InputExample_EF} objects.}
 
 \item{model}{Character; which model checkpoint to use. If specified,
 \code{ckpt_dir}, code{vocab_file}, \code{bert_config_file}, and

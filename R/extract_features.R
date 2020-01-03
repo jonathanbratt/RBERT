@@ -452,7 +452,8 @@ input_fn_builder_EF <- function(features,
 #' existing BERT model and capture certain output layers. (These could
 #' potentially be used as features in downstream tasks.)
 #'
-#' @param examples List of \code{InputExample_EF}s to convert.
+#' @param examples List of \code{InputExample_EF} objects, or character
+#'   vector(s) that can be converted to \code{InputExample_EF} objects.
 #' @param model Character; which model checkpoint to use. If specified,
 #'   \code{ckpt_dir}, code{vocab_file}, \code{bert_config_file}, and
 #'   \code{init_checkpoint} will be inferred. If you do not have this
@@ -553,6 +554,25 @@ extract_features <- function(examples,
                                "attention"
                              ),
                              verbose = FALSE) {
+  if (is.character(examples)) {
+    examples <- make_examples_simple(seq_list = examples)
+  } else if (inherits(examples, "InputExample_EF")) {
+    # As a courtesy, now allow a single InputExample_EF object to be passed in.
+    examples <- list(examples)
+  } else {
+    is_correct_class <- purrr::map_lgl(
+      examples,
+      function(e) {
+        inherits(e, "InputExample_EF")
+      }
+    )
+    if (!all(is_correct_class)) {
+      # Assume they can be converted.
+      # Let `make_examples_simple` handle any messaging.
+      examples <- make_examples_simple(seq_list = examples)
+    }
+  }
+
   model_paths <- .infer_model_paths(
     model, ckpt_dir, vocab_file, bert_config_file, init_checkpoint
   )
