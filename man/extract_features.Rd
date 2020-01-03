@@ -18,7 +18,8 @@ extract_features(
   max_seq_length = 128L,
   layer_indexes = -4:-1,
   batch_size = 2L,
-  features = c("output", "attention")
+  features = c("output", "attention"),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -59,6 +60,13 @@ layer.}
 
 \item{features}{Character; whether to return "output" (layer outputs, the
 default), "attention" (attention probabilities), or both.}
+
+\item{verbose}{Logical; if FALSE, suppresses most of the TensorFlow chatter
+by temporarily setting the logging threshold to its highest level. If TRUE,
+keeps the current logging threshold, which defaults to "WARN". To change
+the logging threshold of the current session, run
+\code{tensorflow::tf$logging$set_verbosity(tensorflow::tf$logging$DEBUG)}
+(setting whatever verbosity level you want).}
 }
 \value{
 A list with elements "output" (the layer outputs as a tibble) and/or

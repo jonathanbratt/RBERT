@@ -479,6 +479,12 @@ input_fn_builder_EF <- function(features,
 #' @param batch_size Integer; how many examples to process per batch.
 #' @param features Character; whether to return "output" (layer outputs, the
 #'   default), "attention" (attention probabilities), or both.
+#' @param verbose Logical; if FALSE, suppresses most of the TensorFlow chatter
+#'   by temporarily setting the logging threshold to its highest level. If TRUE,
+#'   keeps the current logging threshold, which defaults to "WARN". To change
+#'   the logging threshold of the current session, run
+#'   \code{tensorflow::tf$logging$set_verbosity(tensorflow::tf$logging$DEBUG)}
+#'   (setting whatever verbosity level you want).
 #'
 #' @return A list with elements "output" (the layer outputs as a tibble) and/or
 #'   "attention" (the attention weights as a tibble).
@@ -545,7 +551,8 @@ extract_features <- function(examples,
                              features = c(
                                "output",
                                "attention"
-                             )) {
+                             ),
+                             verbose = FALSE) {
   model_paths <- .infer_model_paths(
     model, ckpt_dir, vocab_file, bert_config_file, init_checkpoint
   )
@@ -563,6 +570,13 @@ extract_features <- function(examples,
   if (0 %in% layer_indexes) {
     include_zeroth <- TRUE
     layer_indexes <- layer_indexes[layer_indexes != 0]
+  }
+
+  old_verbosity_level <- tensorflow::tf$logging$get_verbosity()
+  old_sys_log_level <- Sys.getenv("TF_CPP_MIN_LOG_LEVEL")
+  if (!verbose) {
+    tensorflow::tf$logging$set_verbosity(tensorflow::tf$logging$FATAL)
+    Sys.setenv(TF_CPP_MIN_LOG_LEVEL = "3")
   }
 
   bert_config <- bert_config_from_json_file(bert_config_file)
@@ -701,6 +715,10 @@ extract_features <- function(examples,
       )
     }
   }
+
+  # restore original verbosity levels
+  tensorflow::tf$logging$set_verbosity(old_verbosity_level)
+  Sys.setenv(TF_CPP_MIN_LOG_LEVEL = old_sys_log_level)
 
   # Iterate one more time to let python finish and be happy.
   result <- tryCatch(
