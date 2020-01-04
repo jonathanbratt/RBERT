@@ -23,14 +23,15 @@ answer" in certain training tasks.)
 \examples{
 \dontrun{
 with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     {
-       from_tensor <- ids <- tensorflow::tf$get_variable("ften",
-                                         dtype = "float", shape = c(10, 20))
-       to_mask <- ids <- tensorflow::tf$get_variable("mask",
-                                         dtype = "int32", shape = c(10, 30))
-     }
-)
+  reuse = tensorflow::tf$AUTO_REUSE
+), {
+  from_tensor <- ids <- tensorflow::tf$get_variable("ften",
+    dtype = "float", shape = c(10, 20)
+  )
+  to_mask <- ids <- tensorflow::tf$get_variable("mask",
+    dtype = "int32", shape = c(10, 30)
+  )
+})
 create_attention_mask_from_input_mask(from_tensor, to_mask)
 }
 }

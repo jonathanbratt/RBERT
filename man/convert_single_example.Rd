@@ -36,14 +36,18 @@ Converts a single \code{InputExample} into a single \code{InputFeatures}.
 \examples{
 \dontrun{
 tokenizer <- FullTokenizer("vocab.txt")
-input_ex <- InputExample(guid = 1L,
-                         text_a = "Some text to classify.",
-                         text_b = "More wordy words.",
-                         label = "good")
-feat <- convert_single_example(ex_index = 1L,
-                               example = input_ex,
-                               label_list = c("good", "bad"),
-                               max_seq_length = 15L,
-                               tokenizer = tokenizer)
+input_ex <- InputExample(
+  guid = 1L,
+  text_a = "Some text to classify.",
+  text_b = "More wordy words.",
+  label = "good"
+)
+feat <- convert_single_example(
+  ex_index = 1L,
+  example = input_ex,
+  label_list = c("good", "bad"),
+  max_seq_length = 15L,
+  tokenizer = tokenizer
+)
 }
 }

@@ -42,5 +42,5 @@ ids to tokens.
 }}
 
 \examples{
-convert_by_vocab(c("token1"=0, "token2"=1), "token1")
+convert_by_vocab(c("token1" = 0, "token2" = 1), "token1")
 }

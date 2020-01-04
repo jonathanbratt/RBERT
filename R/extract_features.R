@@ -202,16 +202,13 @@ input_fn_builder_EF <- function(features,
 #'   (It needs to be specified here because we get them back as the model
 #'   "predictions".)
 #' @param use_tpu Logical; whether to use TPU.
-#' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
-#'   or tf.embedding_lookup() for the word embeddings.
 #'
 #' @return \code{model_fn} closure for \code{TPUEstimator}.
 #' @keywords internal
 .model_fn_builder_EF <- function(bert_config,
                                  init_checkpoint,
                                  layer_indexes,
-                                 use_tpu,
-                                 use_one_hot_embeddings) {
+                                 use_tpu) {
   # The `model_fn` for TPUEstimator.
   model_fn <- function(features, labels, mode, params) {
     unique_ids <- features$unique_ids
@@ -225,8 +222,7 @@ input_fn_builder_EF <- function(features,
       is_training = FALSE,
       input_ids = input_ids,
       input_mask = input_mask,
-      token_type_ids = input_type_ids,
-      use_one_hot_embeddings = use_one_hot_embeddings
+      token_type_ids = input_type_ids
     )
 
     if (mode != tensorflow::tf$estimator$ModeKeys$PREDICT) {
@@ -456,7 +452,8 @@ input_fn_builder_EF <- function(features,
 #' existing BERT model and capture certain output layers. (These could
 #' potentially be used as features in downstream tasks.)
 #'
-#' @param examples List of \code{InputExample_EF}s to convert.
+#' @param examples List of \code{InputExample_EF} objects, or character
+#'   vector(s) that can be converted to \code{InputExample_EF} objects.
 #' @param model Character; which model checkpoint to use. If specified,
 #'   \code{ckpt_dir}, code{vocab_file}, \code{bert_config_file}, and
 #'   \code{init_checkpoint} will be inferred. If you do not have this
@@ -480,11 +477,15 @@ input_fn_builder_EF <- function(features,
 #'   back from the end) indicating which layers to extract as "output features".
 #'   The "zeroth" layer embeddings are the input embeddings vectors to the first
 #'   layer.
-#' @param use_one_hot_embeddings Logical; whether to use one-hot word embeddings
-#'   or tf.embedding_lookup() for the word embeddings.
 #' @param batch_size Integer; how many examples to process per batch.
 #' @param features Character; whether to return "output" (layer outputs, the
 #'   default), "attention" (attention probabilities), or both.
+#' @param verbose Logical; if FALSE, suppresses most of the TensorFlow chatter
+#'   by temporarily setting the logging threshold to its highest level. If TRUE,
+#'   keeps the current logging threshold, which defaults to "WARN". To change
+#'   the logging threshold of the current session, run
+#'   \code{tensorflow::tf$logging$set_verbosity(tensorflow::tf$logging$DEBUG)}
+#'   (setting whatever verbosity level you want).
 #'
 #' @return A list with elements "output" (the layer outputs as a tibble) and/or
 #'   "attention" (the attention weights as a tibble).
@@ -493,26 +494,10 @@ input_fn_builder_EF <- function(features,
 #' @examples
 #' \dontrun{
 #' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
-#' vocab_file <- file.path(BERT_PRETRAINED_DIR, "vocab.txt")
-#' init_checkpoint <- file.path(BERT_PRETRAINED_DIR, "bert_model.ckpt")
-#' bert_config_file <- file.path(BERT_PRETRAINED_DIR, "bert_config.json")
-#' examples <- list(
-#'   InputExample_EF(
-#'     unique_id = 1,
-#'     text_a = "I saw the branch on the bank."
-#'   ),
-#'   InputExample_EF(
-#'     unique_id = 2,
-#'     text_a = "I saw the branch of the bank."
-#'   )
-#' )
-#' feats <- extract_features(
-#'   examples = examples,
-#'   vocab_file = vocab_file,
-#'   bert_config_file = bert_config_file,
-#'   init_checkpoint = init_checkpoint
-#' )
-#' # Can just specify checkpoint directory
+#' examples <- c("I saw the branch on the bank.",
+#'               "I saw the branch of the bank.")
+#'
+#' # Just specify checkpoint directory.
 #' feats <- extract_features(
 #'   examples = examples,
 #'   ckpt_dir = BERT_PRETRAINED_DIR
@@ -547,12 +532,31 @@ extract_features <- function(examples,
                              output_file = NULL,
                              max_seq_length = 128L,
                              layer_indexes = -4:-1,
-                             use_one_hot_embeddings = FALSE,
                              batch_size = 2L,
                              features = c(
                                "output",
                                "attention"
-                             )) {
+                             ),
+                             verbose = FALSE) {
+  if (is.character(examples)) {
+    examples <- make_examples_simple(seq_list = examples)
+  } else if (inherits(examples, "InputExample_EF")) {
+    # As a courtesy, now allow a single InputExample_EF object to be passed in.
+    examples <- list(examples)
+  } else {
+    is_correct_class <- purrr::map_lgl(
+      examples,
+      function(e) {
+        inherits(e, "InputExample_EF")
+      }
+    )
+    if (!all(is_correct_class)) {
+      # Assume they can be converted.
+      # Let `make_examples_simple` handle any messaging.
+      examples <- make_examples_simple(seq_list = examples)
+    }
+  }
+
   model_paths <- .infer_model_paths(
     model, ckpt_dir, vocab_file, bert_config_file, init_checkpoint
   )
@@ -570,6 +574,13 @@ extract_features <- function(examples,
   if (0 %in% layer_indexes) {
     include_zeroth <- TRUE
     layer_indexes <- layer_indexes[layer_indexes != 0]
+  }
+
+  old_verbosity_level <- tensorflow::tf$logging$get_verbosity()
+  old_sys_log_level <- Sys.getenv("TF_CPP_MIN_LOG_LEVEL")
+  if (!verbose) {
+    tensorflow::tf$logging$set_verbosity(tensorflow::tf$logging$FATAL)
+    Sys.setenv(TF_CPP_MIN_LOG_LEVEL = "3")
   }
 
   bert_config <- bert_config_from_json_file(bert_config_file)
@@ -604,8 +615,7 @@ extract_features <- function(examples,
     bert_config = bert_config,
     init_checkpoint = init_checkpoint,
     layer_indexes = layer_indexes_actual,
-    use_tpu = FALSE,
-    use_one_hot_embeddings = use_one_hot_embeddings
+    use_tpu = FALSE
   )
 
   estimator <- tensorflow::tf$contrib$tpu$TPUEstimator(
@@ -709,6 +719,10 @@ extract_features <- function(examples,
       )
     }
   }
+
+  # restore original verbosity levels
+  tensorflow::tf$logging$set_verbosity(old_verbosity_level)
+  Sys.setenv(TF_CPP_MIN_LOG_LEVEL = old_sys_log_level)
 
   # Iterate one more time to let python finish and be happy.
   result <- tryCatch(

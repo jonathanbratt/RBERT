@@ -4,13 +4,7 @@
 \alias{.model_fn_builder_EF}
 \title{Define \code{model_fn} closure for \code{TPUEstimator}}
 \usage{
-.model_fn_builder_EF(
-  bert_config,
-  init_checkpoint,
-  layer_indexes,
-  use_tpu,
-  use_one_hot_embeddings
-)
+.model_fn_builder_EF(bert_config, init_checkpoint, layer_indexes, use_tpu)
 }
 \arguments{
 \item{bert_config}{\code{BertConfig} instance.}
@@ -25,9 +19,6 @@ back from the end) indicating which layers to extract as "output features".
 "predictions".)}
 
 \item{use_tpu}{Logical; whether to use TPU.}
-
-\item{use_one_hot_embeddings}{Logical; whether to use one-hot word embeddings
-or tf.embedding_lookup() for the word embeddings.}
 }
 \value{
 \code{model_fn} closure for \code{TPUEstimator}.

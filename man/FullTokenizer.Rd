@@ -18,5 +18,7 @@ An object of class FullTokenizer.
 Construct objects of FullTokenizer class.
 }
 \examples{
-\dontrun{f_tokenizer <- FullTokenizer("vocab.txt", TRUE) }
+\dontrun{
+f_tokenizer <- FullTokenizer("vocab.txt", TRUE)
+}
 }

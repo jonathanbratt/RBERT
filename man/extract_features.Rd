@@ -17,13 +17,19 @@ extract_features(
   output_file = NULL,
   max_seq_length = 128L,
   layer_indexes = -4:-1,
-  use_one_hot_embeddings = FALSE,
   batch_size = 2L,
-  features = c("output", "attention")
+  features = c("output", "attention"),
+  verbose = FALSE
 )
 }
 \arguments{
-\item{examples}{List of \code{InputExample_EF}s to convert.}
+\item{examples}{List of \code{InputExample_EF} objects, or character
+vector(s) that can be converted to \code{InputExample_EF} objects.}
+
+\item{model}{Character; which model checkpoint to use. If specified,
+\code{ckpt_dir}, code{vocab_file}, \code{bert_config_file}, and
+\code{init_checkpoint} will be inferred. If you do not have this
+checkpoint, you will be prompted to download it in interactive mode.}
 
 \item{ckpt_dir}{Character; path to checkpoint directory. If specified, any
 other checkpoint files required by this function (\code{vocab_file},
@@ -51,13 +57,17 @@ back from the end) indicating which layers to extract as "output features".
 The "zeroth" layer embeddings are the input embeddings vectors to the first
 layer.}
 
-\item{use_one_hot_embeddings}{Logical; whether to use one-hot word embeddings
-or tf.embedding_lookup() for the word embeddings.}
-
 \item{batch_size}{Integer; how many examples to process per batch.}
 
 \item{features}{Character; whether to return "output" (layer outputs, the
 default), "attention" (attention probabilities), or both.}
+
+\item{verbose}{Logical; if FALSE, suppresses most of the TensorFlow chatter
+by temporarily setting the logging threshold to its highest level. If TRUE,
+keeps the current logging threshold, which defaults to "WARN". To change
+the logging threshold of the current session, run
+\code{tensorflow::tf$logging$set_verbosity(tensorflow::tf$logging$DEBUG)}
+(setting whatever verbosity level you want).}
 }
 \value{
 A list with elements "output" (the layer outputs as a tibble) and/or
@@ -71,21 +81,20 @@ potentially be used as features in downstream tasks.)
 \examples{
 \dontrun{
 BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
-vocab_file <- file.path(BERT_PRETRAINED_DIR, 'vocab.txt')
-init_checkpoint <- file.path(BERT_PRETRAINED_DIR, 'bert_model.ckpt')
-bert_config_file <- file.path(BERT_PRETRAINED_DIR, 'bert_config.json')
-examples <- list(InputExample_EF(unique_id = 1,
-                                  text_a = "I saw the branch on the bank."),
-                 InputExample_EF(unique_id = 2,
-                                  text_a = "I saw the branch of the bank."))
-feats <- extract_features(examples = examples,
-                          vocab_file = vocab_file,
-                          bert_config_file = bert_config_file,
-                          init_checkpoint = init_checkpoint,
-                          batch_size = 2L)
-# can just specify checkpoint directory
-feats <- extract_features(examples = examples,
-                          ckpt_dir = BERT_PRETRAINED_DIR,
-                          batch_size = 2L)
+examples <- c("I saw the branch on the bank.",
+              "I saw the branch of the bank.")
+
+# Just specify checkpoint directory.
+feats <- extract_features(
+  examples = examples,
+  ckpt_dir = BERT_PRETRAINED_DIR
+)
+# Can also just specify the model, if you have it downloaded.
+# In interactive mode, you'll be prompted to download the model if you do not
+# have it.
+feats <- extract_features(
+  examples = examples,
+  model = "bert_base_uncased"
+)
 }
 }

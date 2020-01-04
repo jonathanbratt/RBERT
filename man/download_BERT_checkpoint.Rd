@@ -73,9 +73,9 @@ or other repositories.
 
 \examples{
 \dontrun{
- download_BERT_checkpoint("bert_base_uncased")
- download_BERT_checkpoint("bert_large_uncased")
- temp_dir <- tempdir()
- download_BERT_checkpoint("bert_base_uncased", dir = temp_dir)
+download_BERT_checkpoint("bert_base_uncased")
+download_BERT_checkpoint("bert_large_uncased")
+temp_dir <- tempdir()
+download_BERT_checkpoint("bert_base_uncased", dir = temp_dir)
 }
 }

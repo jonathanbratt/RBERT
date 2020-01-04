@@ -31,5 +31,6 @@ in the vocabulary.
 BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
 to_check <- c("apple", "appl")
 check_vocab(words = to_check, ckpt_dir = BERT_PRETRAINED_DIR) # TRUE, FALSE
-#' }
+#'
+}
 }

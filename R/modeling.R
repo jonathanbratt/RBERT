@@ -140,8 +140,6 @@ bert_config_from_json_file <- function(json_file) {
 #'   seq_length]}.
 #' @param token_type_ids (optional) Int32 Tensor of shape \code{[batch_size,
 #'   seq_length]}.
-#' @param use_one_hot_embeddings (optional) Logical; whether to use one-hot word
-#'   embeddings or tf.embedding_lookup() for the word embeddings.
 #' @param scope (optional) Character; name for variable scope. Defaults to
 #'   "bert".
 #'
@@ -188,7 +186,6 @@ BertModel <- function(config,
                       input_ids,
                       input_mask = NULL,
                       token_type_ids = NULL,
-                      use_one_hot_embeddings = FALSE,
                       scope = NULL) {
   if (!is_training) {
     config$hidden_dropout_prob <- 0.0
@@ -221,8 +218,7 @@ BertModel <- function(config,
         vocab_size = config$vocab_size,
         embedding_size = config$hidden_size,
         initializer_range = config$initializer_range,
-        word_embedding_name = "word_embeddings",
-        use_one_hot_embeddings = use_one_hot_embeddings
+        word_embedding_name = "word_embeddings"
       )
       embedding_output <- elup[[1]]
       embedding_table <- elup[[2]]
@@ -613,8 +609,6 @@ create_initializer <- function(initializer_range = 0.02) {
 #' @param embedding_size Width of the word embeddings (integer).
 #' @param initializer_range Embedding initialization range (float).
 #' @param word_embedding_name Name of the embedding table (character).
-#' @param use_one_hot_embeddings If TRUE, use one-hot method for word
-#'   embeddings. If FALSE, use \code{tf$gather()}.
 #'
 #' @return Float Tensor of shape [batch_size, seq_length, embedding_size], along
 #'   with the embedding table in a list.
@@ -637,8 +631,7 @@ embedding_lookup <- function(input_ids,
                              vocab_size,
                              embedding_size = 128L,
                              initializer_range = 0.02,
-                             word_embedding_name = "word_embeddings",
-                             use_one_hot_embeddings = FALSE) {
+                             word_embedding_name = "word_embeddings") {
   # This function assumes that the input is of shape [batch_size, seq_length,
   # num_inputs].
   #
@@ -660,14 +653,17 @@ embedding_lookup <- function(input_ids,
   # a single-element vector. So use list in this case.
   flat_input_ids <- tensorflow::tf$reshape(input_ids, shape = list(-1L))
 
-  if (use_one_hot_embeddings) {
-    one_hot_input_ids <- tensorflow::tf$one_hot(flat_input_ids,
-      depth = as.integer(vocab_size)
-    )
-    output <- tensorflow::tf$matmul(one_hot_input_ids, embedding_table)
-  } else {
-    output <- tensorflow::tf$gather(embedding_table, flat_input_ids)
-  }
+  # Keeping this here in the comments for the historians, but there doesn't
+  # appear to be a reason to keep the `use_one_hot_embeddings` parameter.
+  # if (use_one_hot_embeddings) {
+  #   one_hot_input_ids <- tensorflow::tf$one_hot(flat_input_ids,
+  #     depth = as.integer(vocab_size)
+  #   )
+  #   output <- tensorflow::tf$matmul(one_hot_input_ids, embedding_table)
+  # } else {
+  #   output <- tensorflow::tf$gather(embedding_table, flat_input_ids)
+  # }
+  output <- tensorflow::tf$gather(embedding_table, flat_input_ids)
 
   input_shape <- unlist(get_shape_list(input_ids))
   num_dims <- length(input_shape)

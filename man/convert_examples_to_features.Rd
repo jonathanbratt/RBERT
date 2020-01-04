@@ -26,17 +26,23 @@ Converts a set of \code{InputExample}s to a list of \code{InputFeatures}.
 \examples{
 \dontrun{
 tokenizer <- FullTokenizer("vocab.txt")
-input_ex1 <- InputExample(guid = 1L,
-                         text_a = "Some text to classify.",
-                         text_b = "More wordy words.",
-                         label = "good")
-input_ex2 <- InputExample(guid = 2L,
-                         text_a = "This is another example.",
-                         text_b = "So many words.",
-                         label = "bad")
-feat <- convert_examples_to_features(examples = list(input_ex1, input_ex2),
-                                     label_list = c("good", "bad"),
-                                     max_seq_length = 15L,
-                                     tokenizer = tokenizer)
+input_ex1 <- InputExample(
+  guid = 1L,
+  text_a = "Some text to classify.",
+  text_b = "More wordy words.",
+  label = "good"
+)
+input_ex2 <- InputExample(
+  guid = 2L,
+  text_a = "This is another example.",
+  text_b = "So many words.",
+  label = "bad"
+)
+feat <- convert_examples_to_features(
+  examples = list(input_ex1, input_ex2),
+  label_list = c("good", "bad"),
+  max_seq_length = 15L,
+  tokenizer = tokenizer
+)
 }
 }

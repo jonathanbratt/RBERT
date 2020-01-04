@@ -37,7 +37,9 @@ primarily a tool for quickly checking the tokenization of a piece of text.
 \examples{
 \dontrun{
 BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
- tokens <- tokenize_text(text = c("Who doesn't like tacos?", "Not me!"),
-                         ckpt_dir = BERT_PRETRAINED_DIR)
+tokens <- tokenize_text(
+  text = c("Who doesn't like tacos?", "Not me!"),
+  ckpt_dir = BERT_PRETRAINED_DIR
+)
 }
 }

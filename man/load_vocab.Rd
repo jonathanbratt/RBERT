@@ -20,5 +20,7 @@ vector. Names are tokens in vocabulary, values are integer indices.
 Load a vocabulary file
 }
 \examples{
-\dontrun{ vocab <- load_vocab(vocab_file = "vocab.txt") }
+\dontrun{
+vocab <- load_vocab(vocab_file = "vocab.txt")
+}
 }

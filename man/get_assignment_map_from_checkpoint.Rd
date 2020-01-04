@@ -37,26 +37,27 @@ the original model structure to reconstruct the computational graph. -JDB
 # Just for illustration: create a "model" with a couple variables
 # that overlap some variable names in the BERT checkpoint.
 with(tensorflow::tf$variable_scope("bert",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     {
-       test_ten1 <- tensorflow::tf$get_variable(
-         "encoder/layer_9/output/dense/bias",
-         shape = c(1L, 2L, 3L)
-       )
-       test_ten2 <- tensorflow::tf$get_variable(
-         "encoder/layer_9/output/dense/kernel",
-         shape = c(1L, 2L, 3L)
-       )
-     }
-)
+  reuse = tensorflow::tf$AUTO_REUSE
+), {
+  test_ten1 <- tensorflow::tf$get_variable(
+    "encoder/layer_9/output/dense/bias",
+    shape = c(1L, 2L, 3L)
+  )
+  test_ten2 <- tensorflow::tf$get_variable(
+    "encoder/layer_9/output/dense/kernel",
+    shape = c(1L, 2L, 3L)
+  )
+})
 tvars <- tensorflow::tf$get_collection(
   tensorflow::tf$GraphKeys$GLOBAL_VARIABLES
 )
 temp_dir <- tempdir()
-init_checkpoint <- file.path(temp_dir,
-                             "BERT_checkpoints",
-                             "uncased_L-12_H-768_A-12",
-                             "bert_model.ckpt")
+init_checkpoint <- file.path(
+  temp_dir,
+  "BERT_checkpoints",
+  "uncased_L-12_H-768_A-12",
+  "bert_model.ckpt"
+)
 
 amap <- get_assignment_map_from_checkpoint(tvars, init_checkpoint)
 }

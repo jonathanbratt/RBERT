@@ -31,14 +31,13 @@ https://stackoverflow.com/questions/37096225/
 \examples{
 \dontrun{
 with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
- {
-   phx <- tensorflow::tf$placeholder(tensorflow::tf$int32, shape = c(4))
-   get_shape_list(phx) # static
-   tfu <- tensorflow::tf$unique(phx)
-   tfy <- tfu$y
-   get_shape_list(tfy) # dynamic
- }
-)
+  reuse = tensorflow::tf$AUTO_REUSE
+), {
+  phx <- tensorflow::tf$placeholder(tensorflow::tf$int32, shape = c(4))
+  get_shape_list(phx) # static
+  tfu <- tensorflow::tf$unique(phx)
+  tfy <- tfu$y
+  get_shape_list(tfy) # dynamic
+})
 }
 }

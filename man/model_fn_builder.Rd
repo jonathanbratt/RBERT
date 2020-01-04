@@ -11,8 +11,7 @@ model_fn_builder(
   learning_rate,
   num_train_steps,
   num_warmup_steps,
-  use_tpu,
-  use_one_hot_embeddings
+  use_tpu
 )
 }
 \arguments{
@@ -31,9 +30,6 @@ explicit, starting with "/".}
 \item{num_warmup_steps}{Integer; number of steps to use for "warm-up".}
 
 \item{use_tpu}{Logical; whether to use TPU.}
-
-\item{use_one_hot_embeddings}{Logical; whether to use one-hot word embeddings
-or tf.embedding_lookup() for the word embeddings.}
 }
 \value{
 \code{model_fn} closure for \code{TPUEstimator}.
@@ -64,37 +60,47 @@ This reference may be helpful:
 \examples{
 \dontrun{
 with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     {
-       input_ids <- tensorflow::tf$constant(list(list(31L, 51L, 99L),
-                                                 list(15L, 5L, 0L)))
+  reuse = tensorflow::tf$AUTO_REUSE
+), {
+  input_ids <- tensorflow::tf$constant(list(
+    list(31L, 51L, 99L),
+    list(15L, 5L, 0L)
+  ))
 
-       input_mask <- tensorflow::tf$constant(list(list(1L, 1L, 1L),
-                                                  list(1L, 1L, 0L)))
-       token_type_ids <- tensorflow::tf$constant(list(list(0L, 0L, 1L),
-                                                      list(0L, 2L, 0L)))
-       config <- BertConfig(vocab_size = 30522L,
-                            hidden_size = 768L,
-                            num_hidden_layers = 8L,
-                            type_vocab_size = 2L,
-                            num_attention_heads = 12L,
-                            intermediate_size = 3072L)
+  input_mask <- tensorflow::tf$constant(list(
+    list(1L, 1L, 1L),
+    list(1L, 1L, 0L)
+  ))
+  token_type_ids <- tensorflow::tf$constant(list(
+    list(0L, 0L, 1L),
+    list(0L, 2L, 0L)
+  ))
+  config <- BertConfig(
+    vocab_size = 30522L,
+    hidden_size = 768L,
+    num_hidden_layers = 8L,
+    type_vocab_size = 2L,
+    num_attention_heads = 12L,
+    intermediate_size = 3072L
+  )
 
-       temp_dir <- tempdir()
-       init_checkpoint <- file.path(temp_dir,
-                                    "BERT_checkpoints",
-                                    "uncased_L-12_H-768_A-12",
-                                    "bert_model.ckpt")
+  temp_dir <- tempdir()
+  init_checkpoint <- file.path(
+    temp_dir,
+    "BERT_checkpoints",
+    "uncased_L-12_H-768_A-12",
+    "bert_model.ckpt"
+  )
 
-       example_mod_fn <- model_fn_builder(bert_config = config,
-                                          num_labels = 2L,
-                                          init_checkpoint = init_checkpoint,
-                                          learning_rate = 0.01,
-                                          num_train_steps = 20L,
-                                          num_warmup_steps = 10L,
-                                          use_tpu = FALSE,
-                                          use_one_hot_embeddings = FALSE)
-     }
-)
+  example_mod_fn <- model_fn_builder(
+    bert_config = config,
+    num_labels = 2L,
+    init_checkpoint = init_checkpoint,
+    learning_rate = 0.01,
+    num_train_steps = 20L,
+    num_warmup_steps = 10L,
+    use_tpu = FALSE
+  )
+})
 }
 }

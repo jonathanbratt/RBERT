@@ -21,11 +21,15 @@ width is requested, function will complain.
 }
 \examples{
 \dontrun{
-with(tensorflow::tf$variable_scope("examples",
-                                   reuse = tensorflow::tf$AUTO_REUSE),
-     r2t <- tensorflow::tf$get_variable("r2t", dtype = "int32",
-                                        shape = c(10, 20))
+with(
+  tensorflow::tf$variable_scope("examples",
+    reuse = tensorflow::tf$AUTO_REUSE
+  ),
+  r2t <- tensorflow::tf$get_variable("r2t",
+    dtype = "int32",
+    shape = c(10, 20)
+  )
 )
-reshape_from_matrix(r2t, orig_shape_list=c(5L, 2L, 20L))
+reshape_from_matrix(r2t, orig_shape_list = c(5L, 2L, 20L))
 }
 }

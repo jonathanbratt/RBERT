@@ -27,6 +27,6 @@ classification.
 }
 \examples{
 \dontrun{
- input_ex <- InputExample(guid = 0, text_a = "Some text to classify.")
+input_ex <- InputExample(guid = 0, text_a = "Some text to classify.")
 }
 }

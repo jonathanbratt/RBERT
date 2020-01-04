@@ -1,0 +1,130 @@
+---
+title: "BERT Basics"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{BERT Basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+ <!-- 
+ Copyright 2019 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning. 
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+
+
+
+If you are not familiar with BERT, I suggest you check out the helpful blog post [here](http://jalammar.github.io/illustrated-bert/), and the resources linked from it.
+
+Until you have time to do that, this vignette is intended to be a quick, bare-bones introduction to BERT--just enough so that the rest of this package makes sense.
+
+## What is BERT?
+
+For now, think of BERT as a function that takes in text and puts out numbers--a long list of numbers for *each* token (~word) of the input.
+
+In fact, there is really a family of such functions.
+Google research released the first BERT models in late 2018, and others have followed (as well as many that include slight modifications to the original structure).
+When referring to any results using "BERT", it is important to specify which BERT you're talking about.
+
+## The input to BERT
+
+### Tokenization
+
+BERT takes "natural" text as input, with some restrictions.
+The first thing that BERT does is to [tokenize](https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization) the input text.
+Most common words will be tokenized as themselves, but words that are not included in the vocabulary of that particular version of BERT will be tokenized as two or more "word pieces".
+Each character of punctuation also gets its own token.
+Finally, BERT adds a few special delimiter tokens to each piece of input.
+
+For example, "Who doesn't like tacos?" might be tokenized as:
+
+`[CLS] who doesn ' t like ta ##cos ? [SEP]`
+
+The "##" bit indicates that "cos" was originally attached to "ta".
+The word "tacos" was split up this way because that word isn't found in (this version of) BERT's limited vocabulary.
+
+Any output from BERT is organized in terms of tokens like this.
+
+### Sequences
+
+Current BERT models can process chunks of text that consist of no more than 512 tokens (so the maximum number of words is rather fewer than that in practice). 
+If you have text longer than that, you will need to find some way of splitting it up.
+A natural way of splitting up your text is by individual sentences, if possible.
+In this package (consistently) and in other literature (perhaps less consistently) a chunk of text processed by BERT is referred to as a "sequence".
+So a list of such chunks may be indexed by a "sequence_index", for example.
+
+### Segments
+
+A sequence *may* be divided into two [^segments] "segments".
+This is useful when your particular application calls for two distinct pieces of text to be input (e.g. a model that evaluates the logical compatibility of two statements).
+Note that the sequence as a whole still can't exceed the token limit, so splitting your text into segments is not a way to input longer text.
+In fact, a delimiter token is required to separate the two segments, which counts against the 512 limit, so you'll actually lose a bit of capacity by using segments.
+
+When possible, it's probably best to use individual sentences as your input sequences (or segments, if you're going that way).
+BERT was trained at the sentence level, and you're less likely to hit the token limit with individual sentences than with, say, paragraphs of text.
+
+[^segments]: In principle, the input could have any number of segments, but the BERT models are limited to two segments.
+
+## The output of BERT
+
+### Embeddings 
+
+One way of thinking about BERT is as a machine for producing context-dependent [embeddings](https://en.wikipedia.org/wiki/Word_embedding).
+Here, an "embedding" is a vector [^vector] that gets associated with each token of the input.
+Useful embeddings will have a number of special properties.
+For example, tokens with similar meanings will have embeddings that are "nearby" in the embedding space.
+
+Static embeddings, such as [word2vec](https://en.wikipedia.org/wiki/Word2vec), have been around for several years.
+However, they typically have been unable to distinguish between [homographs](https://en.wikipedia.org/wiki/Homograph), such as "train [teach]" and "train [locomotive]".
+More generally, such embeddings are insensitive to word order, sentence structure, and other contextual cues.
+
+[^vector]: Think, "point in a high-dimensional space."
+
+### Context-dependent embeddings
+
+In contrast, BERT's output can be understood as embedding vectors that *are* appropriately sensitive to the context in which each word is used.
+Not only does this make it possible to give homographs their own embeddings, it also allows more subtle differences in meaning and usage to be picked up.
+
+BERT outputs an embedding vector for each input token, including the special tokens "[CLS]" and "[SEP]".
+The vector for [CLS] can be thought of as "pure context"; it's the embedding of a token that has no intrinsic meaning, but is still sensitive to the context around it.[^CLS]
+
+BERT has a layered structure (see next section), and output embedding vectors can be obtained at each layer.
+
+[^CLS]: The interpretation of [CLS] is a bit more nuanced than this simple explanation implies.
+See [this discussion](https://github.com/google-research/bert/issues/196) for more details.
+
+## The insides of BERT
+
+Context-dependence is achieved through the "attention" mechanism.
+In very cartoony terms, "attention" provides a way for each token to "choose" (based on training) which of its surrounding tokens to be most influenced by.
+BERT consists of multiple sequential layers of attention, with multiple "heads" per layer.
+Each head may split its attention across any of the input tokens (including itself).
+It may be helpful to picture each token processed by BERT as a many-headed beast, able to attend at each moment to any or all of its neighbors, and modify itself slightly in the next moment based on what it sees.
+
+The amount of attention paid by each token, to each token, in each layer and head, can be represented by a weight that is normalized to one for each "attender".
+While these weights are not part of the formal output of BERT, it can be instructive to study them to better understand what aspects of language BERT models well.
+
+RBERT makes it easy (using the `extract_features` function) to obtain both the attention weights and the token embeddings at each layer of a BERT model.
