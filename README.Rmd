@@ -57,7 +57,9 @@ RBERT is a work in progress. While fine-tuning a BERT model using RBERT may be p
 
 RBERT is best suited for exploring pre-trained BERT models, and obtaining contextual representations of input text for use as features in downstream tasks.
 
-See the "Introduction to RBERT" vignette included with the package for more specific examples.
+* See the "Introduction to RBERT" vignette included with the package for more specific examples.
+* For a quick explanation of what BERT is, see the "BERT Basics" vignette.
+* The package [RBERTviz](https://github.com/jonathanbratt/RBERTviz) provides tools for making fun and easy visualizations of BERT data.
 
 ## Running Tests
 
