@@ -4,11 +4,22 @@
 \alias{attention_layer}
 \title{Build multi-headed attention layer}
 \usage{
-attention_layer(from_tensor, to_tensor, attention_mask = NULL,
-  num_attention_heads = 1L, size_per_head = 512L, query_act = NULL,
-  key_act = NULL, value_act = NULL, attention_probs_dropout_prob = 0,
-  initializer_range = 0.02, do_return_2d_tensor = FALSE,
-  batch_size = NULL, from_seq_length = NULL, to_seq_length = NULL)
+attention_layer(
+  from_tensor,
+  to_tensor,
+  attention_mask = NULL,
+  num_attention_heads = 1L,
+  size_per_head = 512L,
+  query_act = NULL,
+  key_act = NULL,
+  value_act = NULL,
+  attention_probs_dropout_prob = 0,
+  initializer_range = 0.02,
+  do_return_2d_tensor = FALSE,
+  batch_size = NULL,
+  from_seq_length = NULL,
+  to_seq_length = NULL
+)
 }
 \arguments{
 \item{from_tensor}{Float Tensor of shape \code{[batch_size, from_seq_length,

@@ -21,8 +21,7 @@ Creates a 3D attention mask.
 }
 \details{
 Attention masks are used to control which words can pay attention to which.
-This function just sets up the structure of the mask (a matrix of dimensions
-From x To for each incoming example in the batch), and populates it with
-ones.
+This function takes an input mask with extent along the "to sequence" axis,
+and broadcasts along the "from sequence" axis as well.
 }
 \keyword{internal}

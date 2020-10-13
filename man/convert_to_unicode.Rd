@@ -17,5 +17,5 @@ See documentation for `Encoding` for more information.
 Assumes utf-8 input.
 }
 \examples{
-convert_to_unicode("fa\\xC3\\xA7ile")
+convert_to_unicode("fa\xC3\xA7ile")
 }

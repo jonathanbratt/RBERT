@@ -4,10 +4,18 @@
 \alias{extract_features}
 \title{Extract output features from BERT}
 \usage{
-extract_features(examples, vocab_file, bert_config_file, init_checkpoint,
-  output_file = NULL, max_seq_length = 128L, layer_indexes = -4:-1,
-  use_one_hot_embeddings = FALSE, batch_size = 2L,
-  features = c("output", "attention"))
+extract_features(
+  examples,
+  vocab_file,
+  bert_config_file,
+  init_checkpoint,
+  output_file = NULL,
+  max_seq_length = 128L,
+  layer_indexes = -4:-1,
+  use_one_hot_embeddings = FALSE,
+  batch_size = 2L,
+  features = c("output", "attention")
+)
 }
 \arguments{
 \item{examples}{List of \code{InputExample_EF}s to convert.}

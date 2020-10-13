@@ -4,9 +4,15 @@
 \alias{BertModel}
 \title{Construct object of class BertModel}
 \usage{
-BertModel(config, is_training, input_ids, input_mask = NULL,
-  token_type_ids = NULL, use_one_hot_embeddings = FALSE,
-  scope = NULL)
+BertModel(
+  config,
+  is_training,
+  input_ids,
+  input_mask = NULL,
+  token_type_ids = NULL,
+  use_one_hot_embeddings = FALSE,
+  scope = NULL
+)
 }
 \arguments{
 \item{config}{\code{BertConfig} instance.}

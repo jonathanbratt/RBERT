@@ -29,7 +29,20 @@
 #'
 #' @keywords internal
 .update_list <- function(list1, list2) {
-  return(utils::modifyList(list1, list2)[names(list1)])
+  # For some reason, py to R conversion wasn't working here, so do manually:
+  if (inherits(list1, "python.builtin.dict")) {
+    lnames <- names(list1)
+    list1 <- purrr::map(lnames, function(n) {list1[[n]]})
+    names(list1) <- lnames
+  }
+  if (inherits(list2, "python.builtin.dict")) {
+    lnames <- names(list2)
+    list2 <- purrr::map(lnames, function(n) {list2[[n]]})
+    names(list2) <- lnames
+  }
+  list1 <- as.list(list1)
+  list2 <- as.list(list2)
+  return(utils::modifyList(list1, list2, keep.null = TRUE)[names(list1)])
 }
 
 # .create_attention_mask ---------------------------------------------------
@@ -39,9 +52,8 @@
 #' Creates a 3D attention mask.
 #'
 #' Attention masks are used to control which words can pay attention to which.
-#' This function just sets up the structure of the mask (a matrix of dimensions
-#' From x To for each incoming example in the batch), and populates it with
-#' ones.
+#' This function takes an input mask with extent along the "to sequence" axis,
+#' and broadcasts along the "from sequence" axis as well.
 #'
 #' @param from_shape List or integer vector. First two elements should be
 #' \code{batch_size} and \code{from_seq_len}.

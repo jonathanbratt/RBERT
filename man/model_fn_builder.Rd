@@ -4,8 +4,16 @@
 \alias{model_fn_builder}
 \title{Define \code{model_fn} closure for \code{TPUEstimator}}
 \usage{
-model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
-  num_train_steps, num_warmup_steps, use_tpu, use_one_hot_embeddings)
+model_fn_builder(
+  bert_config,
+  num_labels,
+  init_checkpoint,
+  learning_rate,
+  num_train_steps,
+  num_warmup_steps,
+  use_tpu,
+  use_one_hot_embeddings
+)
 }
 \arguments{
 \item{bert_config}{\code{BertConfig} instance.}

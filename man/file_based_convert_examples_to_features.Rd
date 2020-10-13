@@ -4,8 +4,13 @@
 \alias{file_based_convert_examples_to_features}
 \title{Convert a set of \code{InputExample}s to a TFRecord file.}
 \usage{
-file_based_convert_examples_to_features(examples, label_list,
-  max_seq_length, tokenizer, output_file)
+file_based_convert_examples_to_features(
+  examples,
+  label_list,
+  max_seq_length,
+  tokenizer,
+  output_file
+)
 }
 \arguments{
 \item{examples}{List of \code{InputExample}s to convert.}

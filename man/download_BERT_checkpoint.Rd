@@ -9,14 +9,17 @@
 \url{https://github.com/allenai/scibert}
 }
 \usage{
-download_BERT_checkpoint(model = c("bert_base_uncased",
-  "bert_base_cased", "bert_large_uncased", "bert_large_cased",
-  "bert_large_uncased_wwm", "bert_large_cased_wwm",
-  "bert_base_multilingual_cased", "bert_base_chinese",
-  "scibert_scivocab_uncased", "scibert_scivocab_cased",
-  "scibert_basevocab_uncased", "scibert_basevocab_cased"), dir = NULL,
-  url = NULL, force = FALSE, keep_archive = FALSE,
-  archive_type = NULL)
+download_BERT_checkpoint(
+  model = c("bert_base_uncased", "bert_base_cased", "bert_large_uncased",
+    "bert_large_cased", "bert_large_uncased_wwm", "bert_large_cased_wwm",
+    "bert_base_multilingual_cased", "bert_base_chinese", "scibert_scivocab_uncased",
+    "scibert_scivocab_cased", "scibert_basevocab_uncased", "scibert_basevocab_cased"),
+  dir = NULL,
+  url = NULL,
+  force = FALSE,
+  keep_archive = FALSE,
+  archive_type = NULL
+)
 }
 \arguments{
 \item{model}{Character vector. Which model checkpoint to download.}

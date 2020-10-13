@@ -1,4 +1,4 @@
-# Copyright 2019 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
+# Copyright 2020 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,242 +12,307 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# SingleTransformerEncoderLayer -----------------------------------------------
+# custom layer: transformer_encoder_single ----------------------------------------
 
-#' @export
-SingleTransformerEncoderLayer <- R6::R6Class(
-  "SingleTransformerEncoderLayer",
-  inherit = keras::KerasLayer,
-  lock_objects = FALSE,
-
-  public = list(
-    initialize = function(param_list = list(), ...) {
-      self$params <- list(
-        intermediate_size  = NULL,
-        intermediate_activation = "gelu",
-        hidden_size = NULL,
-        num_heads = NULL,
-        hidden_dropout = NULL,
-        attention_dropout = 0.1,
-        initializer_range = 0.02,
-        size_per_head = NULL,
-        query_activation = NULL,
-        key_activation = NULL,
-        value_activation = NULL,
-        negative_infinity = -10000.0,
-        trainable = TRUE,
-        name = NULL,
-        dtype = tensorflow::tf$float32$name,
-        dynamic = FALSE
-      )
-      self$params <- .update_list(self$params, param_list)
-      self$params <- .update_list(self$params, list(...))
-
-      if (self$params$hidden_size %% self$params$num_heads != 0) {
-        stop("In SingleTransformerEncoderLayer$initialize: ",
-             "hidden_size should be multiple of num_heads.")
-      }
-
-      self$size_per_head <- self$params$hidden_size / self$params$num_heads
-
-      if (!is.null(self$params$size_per_head)) {
-        if (self$params$size_per_head != self$size_per_head) {
-          stop("In SingleTransformerEncoderLayer$initialize: ",
-               "calculated size_per_head doesn't match passed value.")
-        }
-      }
-
-      self$self_attention_layer <- NULL
-      self$intermediate_layer <- NULL
-      self$output_projector <- NULL
-
-      self$supports_masking <- TRUE
-    },
-
-    build = function(input_shape) {
-      # (input_spec?)
-      self$self_attention_layer <- custom_layer_transformer_self_attention(
-        param_list = self$params,
-        name = "attention"
-      )
-
-      # ok, now I'm not sure again... why can't we use keras::layer_dense here? I think we can.
-      self$intermediate_layer <- keras::layer_dense(
-        units = self$params$intermediate_size,
-        # activation = self$params$intermediate_activation,
-        # activation should be string, not actual function at this point?
-        activation = get_activation(self$params$intermediate_activation),
-        kernel_initializer = keras::initializer_truncated_normal(
-          stddev = self$params$initializer_range
-        ),
-        name = "intermediate"
-      )
-
-      self$output_projector <- custom_layer_projection(
-        param_list = self$params,
-        name = "output")
-
-      super$build(input_shape)
-    },
-
-    call = function(inputs, mask = NULL, training = NULL) {
-      layer_input <- inputs
-
-      attention_output <- self$self_attention_layer(layer_input,
-                                                    mask = mask,
-                                                    training = training)
-      intermediate_output <- self$intermediate_layer(attention_output)
-      # in kpe/bert-for-tf2 (which I referred to heavily), the `training`
-      # parameter is not included below. However, if I understand correctly,
-      # it *should* be there. -JDB
-      # https://github.com/kpe/bert-for-tf2/issues/18
-      layer_output <- self$output_projector(list(intermediate_output,
-                                                 attention_output),
-                                            training = training,
-                                            mask = mask)
-      return(layer_output)
-    }
+#' @keywords internal
+.custom_layer_transformer_encoder_single_init <- function(param_list = list(),
+                                                          ...) {
+  self$params <- list(
+    intermediate_size  = NULL,
+    intermediate_activation = "gelu",
+    hidden_size = NULL,
+    num_heads = NULL,
+    hidden_dropout = NULL,
+    attention_dropout = 0.1,
+    initializer_range = 0.02,
+    size_per_head = NULL,
+    query_activation = NULL,
+    key_activation = NULL,
+    value_activation = NULL,
+    negative_infinity = -10000.0,
+    trainable = TRUE,
+    name = "Transformer",
+    dtype = tensorflow::tf$float32$name,
+    dynamic = FALSE
   )
-)
+  self$params <- .update_list(self$params, param_list)
+  self$params <- .update_list(self$params, list(...))
+
+  if (self$params$hidden_size %% self$params$num_heads != 0) {
+    stop("In SingleTransformerEncoderLayer$initialize: ",
+         "hidden_size should be multiple of num_heads.")
+  }
+
+  self$size_per_head <- self$params$hidden_size / self$params$num_heads
+
+  if (!is.null(self$params$size_per_head)) {
+    if (self$params$size_per_head != self$size_per_head) {
+      stop("In SingleTransformerEncoderLayer$initialize: ",
+           "calculated size_per_head doesn't match passed value.")
+    }
+  }
+
+  self$self_attention_layer <- NULL
+  self$intermediate_layer <- NULL
+  self$output_projector <- NULL
+
+  self$supports_masking <- TRUE
+
+  super()$`__init__`(name = self$params$name)
+}
+
+#' @keywords internal
+.custom_layer_transformer_encoder_single_build <- function(input_shape) {
+  self$self_attention_layer <- custom_layer_attention(
+    param_list = self$params,
+    name = "attention"
+  )
+
+  self$intermediate_layer <- keras::layer_dense(
+    units = self$params$intermediate_size,
+    # Custom activation needs to be passed as actual function, not string.
+    activation = get_activation(self$params$intermediate_activation),
+    kernel_initializer = keras::initializer_truncated_normal(
+      stddev = self$params$initializer_range
+    ),
+    # So variable names match canonical. Slightly questionable. :)
+    name = "intermediate/dense"
+  )
+
+  self$output_projector <- custom_layer_proj_add_norm(
+    param_list = self$params,
+    name = "output"
+  )
+
+  super()$build(input_shape)
+}
 
 
+#' @keywords internal
+.custom_layer_transformer_encoder_single_call <- function(inputs,
+                                                          mask = NULL,
+                                                          training = NULL) {
+  # The attention layer also outputs the attention prob matrix.
+  #TODO: verify I can grab the correct output.
+  attention_output_and_probs <- self$self_attention_layer(inputs)
+  attention_output <- attention_output_and_probs[[1]]
+  attention_probs <- attention_output_and_probs[[2]]
+  intermediate_output <- self$intermediate_layer(attention_output)
 
-# wrapper function
+  layer_output <- self$output_projector(list(intermediate_output,
+                                             attention_output))
+  return(list(layer_output, attention_probs))
+}
+
+#' @keywords internal
+.make_custom_layer_transformer_encoder_single <- function() {
+  layer_function <- keras::Layer(
+    classname = "Transformer",
+
+    initialize = .custom_layer_transformer_encoder_single_init,
+    build = .custom_layer_transformer_encoder_single_build,
+    call = .custom_layer_transformer_encoder_single_call
+  )
+
+  python_layer_object <- attr(layer_function, which = "layer")
+  return(python_layer_object)
+}
+
+
+#' Custom Layer: Single Transformer Encoder Layer
+#'
+#' Create single layer of a transformer-based encoder.
+#'
+#'
+#' @inheritParams custom_layer_layernorm
+#' @param param_list A named list of parameter values used in defining the
+#'   layer.
+#'   \describe{
+#'   \item{`dtype`}{The data type of the layer output.
+#'     Defaults to "float32". Valid values from `tensorflow::tf$float32$name`,
+#'     etc. }
+#'   }
+#'
 #' @export
-custom_layer_single_tranformer_encoder <- function(object,
-                                                   trainable = TRUE,
-                                                   param_list = list(),
-                                                   ...) {
-  keras::create_layer(layer_class = SingleTransformerEncoderLayer,
+#' @md
+custom_layer_transformer_encoder_single <- function(object,
+                                                    name = NULL,
+                                                    trainable = NULL,
+                                                    param_list = list(),
+                                                    ...) {
+  keras::create_layer(layer_class = .custom_layers$transformer_encoder_single,
                       object = object,
                       args = list(
+                        name = name,
                         trainable = trainable,
                         param_list = param_list,
                         ...
-                      ))
+                      )
+  )
 }
 
-# TransformerEncoderLayer -----------------------------------------------
 
+# custom layer: transformer_encoder ----------------------------------------
 
-#' @export
-TransformerEncoderLayer <- R6::R6Class(
-  "TransformerEncoderLayer",
-  inherit = keras::KerasLayer,
-  lock_objects = FALSE,
-
-  public = list(
-    initialize = function(param_list = list(), ...) {
-      # lazy way of mimicking the params-flow stuff.
-      # ALSO! don't forget to look up the chain to see what inherited parameters should be present
-
-      self$params <- list(
-        num_layers = NULL,
-        out_layer_ndxs = NULL,   # [-1] # which layers to return. 1-indexed.
-        shared_layer = FALSE,  # False for BERT, True for ALBERT
-        intermediate_size  = NULL,
-        intermediate_activation = "gelu",
-        hidden_size = NULL,
-        num_heads = NULL,
-        hidden_dropout = NULL,
-        attention_dropout = 0.1,
-        initializer_range = 0.02,
-        size_per_head = NULL,
-        query_activation = NULL,
-        key_activation = NULL,
-        value_activation = NULL,
-        negative_infinity = -10000.0,
-        trainable = TRUE,
-        name = NULL,
-        dtype = tensorflow::tf$float32$name,
-        dynamic = FALSE
-      )
-      self$params <- .update_list(self$params, param_list)
-      self$params <- .update_list(self$params, list(...))
-
-      self$encoder_layers <- list()
-      self$shared_layer <- NULL  # for ALBERT
-      self$supports_masking <- TRUE
-    },
-
-    build = function(input_shape) {
-      # (input_spec?)
-      # create transformer encoder sub-layers
-      if (self$params$shared_layer) {
-        # ALBERT: share parameters
-        self$shared_layer <- custom_layer_single_tranformer_encoder(
-          param_list = self$params,
-          name = "layer_shared"
-        )
-      } else {
-        # BERT
-        # NB: this will start with 1.
-        layer_indices <- seq_len(self$params$num_layers)
-        for (layer_index in layer_indices) {
-          # Names must be 0-indexed for compatibility with existing checkpoints.
-          layer_name <- paste0("layer_", layer_index - 1)
-          encoder_layer <- custom_layer_single_tranformer_encoder(
-            param_list = self$params,
-            name = layer_name
-          )
-          self$encoder_layers[[layer_index]] <- encoder_layer
-        }
-      }
-
-      super$build(input_shape)
-    },
-    call = function(inputs, mask = NULL, training = NULL) {
-      layer_output <- inputs
-
-      layer_outputs <- list()
-      # NB: this will start with 1.
-      layer_indices <- seq_len(self$params$num_layers)
-      for (layer_index in layer_indices) {
-        if (!is.null(self$encoder_layers)) {
-          #BERT
-          encoder_layer <- self$encoder_layers[[layer_index]]
-        } else {
-          #ALBERT
-          encoder_layer <- self$shared_layer
-        }
-        layer_input <- layer_output
-        layer_output <- encoder_layer(layer_input,
-                                      mask = mask,
-                                      training = training)
-        layer_outputs[[layer_index]] <- layer_output # This will be 1-indexed.
-      }
-
-      # In pre-tf2 RBERT, returned attention matrices along with layer outputs
-      # here.
-      if (is.null(self$params$out_layer_ndxs)) {
-        # return just the final layer
-        final_output <- layer_output
-      } else {
-        final_output <- list()
-        out_index_num <- 1
-        for (index in self$params$out_layer_ndxs) {
-          final_output[[out_index_num]] <- layer_outputs[index]
-          out_index_num <- out_index_num + 1
-        }
-        # in kpe/bert-for-tf2 (python), final_output was changed to tuple here.
-      }
-
-      return(final_output)
-    }
-  )
-)
-
-# wrapper function
-#' @export
-custom_layer_tranformer_encoder <- function(object,
-                                                   trainable = TRUE,
-                                                   param_list = list(),
+#' @keywords internal
+.custom_layer_transformer_encoder_init <- function(param_list = list(),
                                                    ...) {
-  keras::create_layer(layer_class = TransformerEncoderLayer,
+  self$params <- list(
+    num_layers = NULL,
+    return_all_layers = TRUE,
+    shared_layer = FALSE,  # False for BERT, True for ALBERT
+    intermediate_size  = NULL,
+    intermediate_activation = "gelu",
+    hidden_size = NULL,
+    num_heads = NULL,
+    hidden_dropout = NULL,
+    attention_dropout = 0.1,
+    initializer_range = 0.02,
+    size_per_head = NULL,
+    query_activation = NULL,
+    key_activation = NULL,
+    value_activation = NULL,
+    negative_infinity = -10000.0,
+    trainable = TRUE,
+    name = NULL,
+    dtype = tensorflow::tf$float32$name,
+    dynamic = FALSE
+  )
+  self$params <- .update_list(self$params, param_list)
+  self$params <- .update_list(self$params, list(...))
+
+  self$encoder_layers <- NULL
+  self$shared_layer <- NULL  # for ALBERT
+  self$supports_masking <- TRUE
+
+  super()$`__init__`(name = self$params$name)
+}
+
+#' @keywords internal
+.custom_layer_transformer_encoder_build <- function(input_shape) {
+  # create transformer encoder sub-layers
+  encoder_layers <- NULL
+  if (self$params$shared_layer) {
+    # ALBERT: share parameters
+    self$shared_layer <- custom_layer_transformer_encoder_single(
+      param_list = self$params,
+      name = "layer_shared"
+    )
+  } else {
+    # BERT
+    # NB: this will start with 1.
+    layer_indices <- seq_len(self$params$num_layers)
+
+    # self$encoder_layers <- list()
+    encoder_layers <- vector("list", self$params$num_layers)
+    for (layer_index in layer_indices) {
+      # Names must be 0-indexed for compatibility with existing checkpoints.
+      layer_name <- paste0("layer_", layer_index - 1)
+      encoder_layer <- custom_layer_transformer_encoder_single(
+        param_list = self$params,
+        name = layer_name
+      )
+      encoder_layers[[layer_index]] <- encoder_layer
+    }
+  }
+
+  # Lists as class variables are handled a bit strangely by python... explain.
+  self$encoder_layers <- encoder_layers #TODO: do this?
+
+  super()$build(input_shape)
+}
+
+
+#' @keywords internal
+.custom_layer_transformer_encoder_call <- function(inputs,
+                                                   mask = NULL,
+                                                   training = NULL) {
+  layer_output <- inputs
+  layer_output_all <- list()
+  attention_probs_all <- list()
+  # NB: this will start with 1.
+  layer_indices <- seq_len(self$params$num_layers)
+  for (layer_index in layer_indices) {
+    if (!is.null(self$encoder_layers)) { # switch to actual flag
+      #BERT
+      # The "list" self$encoder_layers has been converted into a python object
+      # by this point (a tensorflow ListWrapper, to be specific), and is now
+      # zero-indexed, hence the `- 1`.
+      encoder_layer <- self$encoder_layers[[layer_index - 1]]
+    } else {
+      #ALBERT
+      encoder_layer <- self$shared_layer
+    }
+    layer_input <- layer_output
+    layer_output_and_probs <- encoder_layer(layer_input,
+                                            mask = mask,
+                                            training = training)
+    layer_output <- layer_output_and_probs[[1]]
+    attention_probs <- layer_output_and_probs[[2]]
+    # These will be 1-indexed.
+    layer_output_all[[layer_index]] <- layer_output
+    attention_probs_all[[layer_index]] <- attention_probs
+  }
+
+  # In pre-tf2 RBERT, returned attention matrices along with layer outputs
+  # here.
+  if (self$params$return_all_layers) {
+    final_output <- list("output" = layer_output_all, "attention" = attention_probs_all)
+  } else {
+    # return just the final layer
+    final_output <- layer_output_and_probs
+  }
+
+  return(final_output)
+}
+
+#' @keywords internal
+.make_custom_layer_transformer_encoder <- function() {
+  layer_function <- keras::Layer(
+    classname = "Transformer",
+
+    initialize = .custom_layer_transformer_encoder_init,
+    build = .custom_layer_transformer_encoder_build,
+    call = .custom_layer_transformer_encoder_call
+  )
+
+  python_layer_object <- attr(layer_function, which = "layer")
+  return(python_layer_object)
+}
+
+
+#' Custom Layer: Transformer Encoder Layer
+#'
+#' Create a multi-layer transformer-based encoder.
+#'
+#'
+#' @inheritParams custom_layer_layernorm
+#' @param param_list A named list of parameter values used in defining the
+#'   layer.
+#'   \describe{
+#'   \item{`dtype`}{The data type of the layer output.
+#'     Defaults to "float32". Valid values from `tensorflow::tf$float32$name`,
+#'     etc. }
+#'   }
+#'
+#' @export
+#' @md
+custom_layer_transformer_encoder <- function(object,
+                                             name = NULL,
+                                             trainable = NULL,
+                                             param_list = list(),
+                                             ...) {
+  keras::create_layer(layer_class = .custom_layers$transformer_encoder,
                       object = object,
                       args = list(
+                        name = name,
                         trainable = trainable,
                         param_list = param_list,
                         ...
-                      ))
+                      )
+  )
 }
+
+
+
+

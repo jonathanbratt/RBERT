@@ -887,11 +887,13 @@ create_attention_mask_from_input_mask <- function(from_tensor, to_mask) {
 #' @return  Tensor of shape: batch_size, num_attention_heads, seq_length, width.
 #'
 #' @keywords internal
-transpose_for_scores <- function(input_tensor,
+.transpose_for_scores <- function(input_tensor,
                                  batch_size,
                                  num_attention_heads,
                                  seq_length,
                                  width) {
+  # NB: the element ordering convention used by TF is different from the
+  # convention used by, say, as.array in R.
   output_tensor <-  tensorflow::tf$reshape(
     input_tensor,
     # We can't use shape() here, because batch_size is still undetermined
