@@ -16,35 +16,9 @@
 # custom layer: layer normalization -------------------------------------------
 
 #' @keywords internal
-.custom_layer_layernorm_init <- function(param_list = list(), ...) {
-  # Quick way of mimicking the params-flow structure.
-  # Basically, the object will look for relevant parameters in three places,
-  # with increasing priority.
-  #  1. The default values given below
-  #  2. The parameters passed in via the param_list argument
-  #  3. Any parameters explicitly named in the ... arguments
-  # This is a convenient way to ensure that the needed parameters are
-  # passed through the object structure.
+.custom_layer_layernorm_init <- function(param_list, ...) {
+  self$params <- .update_list(param_list, list(...))
 
-  #TODO: Double check which params are used.
-
-  self$params <- list(
-    epsilon = 1e-12,
-    initializer_range = 0.02,
-    trainable = TRUE,
-    name = "LayerNorm",
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  # The initialization method takes a param_list argument, as well as any
-  # other named arguments. These parameters are used to update the `params`
-  # property.
-
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
-
-  self$gamma  <- NULL
-  self$beta  <- NULL
   self$supports_masking <- TRUE
 
   super()$`__init__`(name = self$params$name)

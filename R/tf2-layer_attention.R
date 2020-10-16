@@ -16,46 +16,23 @@
 # custom layer: attention ----------------------------------------
 
 #' @keywords internal
-.custom_layer_attention_init <- function(param_list = list(), ...) {
-  self$params <- list(
-    hidden_size = NULL,
-    num_heads = NULL,
-    size_per_head = NULL,
-    initializer_range = 0.02,
-    query_activation = NULL,
-    key_activation = NULL,
-    value_activation = NULL,
-    attention_dropout = 0.1,
-    negative_infinity = -10000.0,
-    trainable = TRUE,
-    name = "Attention",
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
+.custom_layer_attention_init <- function(param_list, ...) {
+  self$params <- .update_list(param_list, list(...))
 
+  #TODO: is this needed?
   self$query_activation <- self$params$query_activation
   self$key_activation <- self$params$key_activation
   self$value_activation <- self$params$value_activation
 
-  self$query_layer <- NULL
-  self$key_layer <- NULL
-  self$value_layer <- NULL
-
-  self$dropout_layer <- NULL
-
-  self$attention_projector <- NULL
-
   self$size_per_head <- self$params$hidden_size / self$params$num_heads
 
+  #TODO: decide one place this check should go!
   if (!is.null(self$params$size_per_head)) {
     if (self$params$size_per_head != self$size_per_head) {
       stop("In custom attention layer: ",
            "calculated size_per_head doesn't match passed value.")
     }
   }
-
 
   self$supports_masking <- TRUE
 
@@ -216,7 +193,8 @@
   context_layer <- tensorflow::tf$reshape(context_layer, output_shape)
   # return(context_layer) #TODO: edit to include attention probs in output.
 
-  # Add residual and layer norm at this point, rather than making whole other layer.
+  # Add residual and layer norm at this point, rather than making whole other
+  # layer.
 
   # I think the mask parameter needs to be explicitly passed here, because
   # it may have been changed in this layer.

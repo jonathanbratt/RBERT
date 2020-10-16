@@ -656,3 +656,125 @@ apply_to_chars <- function(text, .f, ...) {
     collapse = ""
   )
 }
+
+# tokenize_text -----------------------------------------------------------
+
+#' Tokenize Text with Word Pieces
+#'
+#' Given some text and a word piece vocabulary, tokenizes the text. This is
+#' primarily a tool for quickly checking the tokenization of a piece of text.
+#'
+#' @param text Character vector; text to tokenize.
+#' @inheritParams extract_features
+#' @param include_special Logical; whether to add the special tokens "[CLS]" (at
+#'   the beginning) and "[SEP]" (at the end) of the token list.
+#'
+#' @return A list of character vectors, giving the tokenization of the input
+#'   text.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
+#' tokens <- tokenize_text(
+#'   text = c("Who doesn't like tacos?", "Not me!"),
+#'   ckpt_dir = BERT_PRETRAINED_DIR
+#' )
+#' }
+tokenize_text <- function(text,
+                          ckpt_dir = NULL,
+                          vocab_file = find_vocab(ckpt_dir),
+                          include_special = TRUE) {
+  tokenizer <- FullTokenizer(
+    vocab_file = vocab_file,
+    do_lower_case = TRUE
+  )
+  token_list <- purrr::map(text, function(t) {
+    tl <- tokenize(tokenizer, t)
+    if (include_special) {
+      tl <- c("[CLS]", tl, "[SEP]")
+    }
+    return(tl)
+  })
+  return(token_list)
+}
+
+# check_vocab -----------------------------------------------------------
+
+#' Check Vocabulary
+#'
+#' Given some words and a word piece vocabulary, checks to see if the words are
+#' in the vocabulary.
+#'
+#' @param words Character vector; words to check.
+#' @inheritParams extract_features
+#'
+#' @return A logical vector containing \code{TRUE} if the corresponding word was
+#'   found verbatim in the vocabulary, \code{FALSE} otherwise.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
+#' to_check <- c("apple", "appl")
+#' check_vocab(words = to_check, ckpt_dir = BERT_PRETRAINED_DIR) # TRUE, FALSE
+#' #'
+#' }
+check_vocab <- function(words,
+                        ckpt_dir = NULL,
+                        vocab_file = find_vocab(ckpt_dir)) {
+  vocab <- readLines(vocab_file)
+  return(purrr::map_lgl(words, function(w) {
+    return(any(vocab == w))
+  }))
+}
+# text_to_id -----------------------------------------------------------
+
+#' Tokenize Text with Word Pieces
+#'
+#' Given some text and a word piece vocabulary, IDifies the text. This is
+#' primarily a tool for quickly checking the IDification of a piece of text.
+#'
+#' @param text Character vector; text to tokenize.
+#' @inheritParams extract_features
+#' @param include_special Logical; whether to add the special tokens "[CLS]" (at
+#'   the beginning) and "[SEP]" (at the end) of the token list.
+#'
+#' @return A list of character vectors, giving the tokenization of the input
+#'   text.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' BERT_PRETRAINED_DIR <- download_BERT_checkpoint("bert_base_uncased")
+#' tokens <- text_to_id(
+#'   text = c("Who doesn't like tacos?", "Not me!"),
+#'   ckpt_dir = BERT_PRETRAINED_DIR
+#' )
+#' }
+text_to_id <- function(text,
+                       ckpt_dir = NULL,
+                       vocab_file = find_vocab(ckpt_dir),
+                       include_special = TRUE) {
+  stop("this doesn't work, but would be convenient to have?")
+  tokenizer <- FullTokenizer(
+    vocab_file = vocab_file,
+    do_lower_case = TRUE
+  )
+  token_list <- purrr::map(text, function(t) {
+    tl <- tokenize(tokenizer, t)
+    if (include_special) {
+      tl <- c("[CLS]", tl, "[SEP]")
+    }
+    return(tl)
+  })
+
+  vocab <- load_vocab(vocab_file = vocab_file)
+  id_list <- purrr::map(token_list, function(t) {
+    convert_tokens_to_ids(vocab = vocab, tokens = t)
+  })
+
+    convert_tokens_to_ids(vocab = vocab, tokens = token_list)
+  return(id_list)
+}
+

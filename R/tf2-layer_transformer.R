@@ -15,28 +15,8 @@
 # custom layer: transformer_encoder_single ----------------------------------------
 
 #' @keywords internal
-.custom_layer_transformer_encoder_single_init <- function(param_list = list(),
-                                                          ...) {
-  self$params <- list(
-    intermediate_size  = NULL,
-    intermediate_activation = "gelu",
-    hidden_size = NULL,
-    num_heads = NULL,
-    hidden_dropout = NULL,
-    attention_dropout = 0.1,
-    initializer_range = 0.02,
-    size_per_head = NULL,
-    query_activation = NULL,
-    key_activation = NULL,
-    value_activation = NULL,
-    negative_infinity = -10000.0,
-    trainable = TRUE,
-    name = "Transformer",
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
+.custom_layer_transformer_encoder_single_init <- function(param_list, ...) {
+  self$params <- .update_list(param_list, list(...))
 
   if (self$params$hidden_size %% self$params$num_heads != 0) {
     stop("In SingleTransformerEncoderLayer$initialize: ",
@@ -51,10 +31,6 @@
            "calculated size_per_head doesn't match passed value.")
     }
   }
-
-  self$self_attention_layer <- NULL
-  self$intermediate_layer <- NULL
-  self$output_projector <- NULL
 
   self$supports_masking <- TRUE
 
@@ -93,14 +69,16 @@
                                                           mask = NULL,
                                                           training = NULL) {
   # The attention layer also outputs the attention prob matrix.
-  #TODO: verify I can grab the correct output.
-  attention_output_and_probs <- self$self_attention_layer(inputs)
+  attention_output_and_probs <- self$self_attention_layer(inputs,
+                                                          mask = mask,
+                                                          training = training)
   attention_output <- attention_output_and_probs[[1]]
   attention_probs <- attention_output_and_probs[[2]]
   intermediate_output <- self$intermediate_layer(attention_output)
 
   layer_output <- self$output_projector(list(intermediate_output,
-                                             attention_output))
+                                             attention_output),
+                                        mask = mask)
   return(list(layer_output, attention_probs))
 }
 
@@ -155,34 +133,10 @@ custom_layer_transformer_encoder_single <- function(object,
 # custom layer: transformer_encoder ----------------------------------------
 
 #' @keywords internal
-.custom_layer_transformer_encoder_init <- function(param_list = list(),
-                                                   ...) {
-  self$params <- list(
-    num_layers = NULL,
-    return_all_layers = TRUE,
-    shared_layer = FALSE,  # False for BERT, True for ALBERT
-    intermediate_size  = NULL,
-    intermediate_activation = "gelu",
-    hidden_size = NULL,
-    num_heads = NULL,
-    hidden_dropout = NULL,
-    attention_dropout = 0.1,
-    initializer_range = 0.02,
-    size_per_head = NULL,
-    query_activation = NULL,
-    key_activation = NULL,
-    value_activation = NULL,
-    negative_infinity = -10000.0,
-    trainable = TRUE,
-    name = NULL,
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
+.custom_layer_transformer_encoder_init <- function(param_list, ...) {
+  self$params <- .update_list(param_list, list(...))
 
-  self$encoder_layers <- NULL
-  self$shared_layer <- NULL  # for ALBERT
+  # self$shared_layer <- NULL  # for ALBERT
   self$supports_masking <- TRUE
 
   super()$`__init__`(name = self$params$name)
@@ -203,7 +157,6 @@ custom_layer_transformer_encoder_single <- function(object,
     # NB: this will start with 1.
     layer_indices <- seq_len(self$params$num_layers)
 
-    # self$encoder_layers <- list()
     encoder_layers <- vector("list", self$params$num_layers)
     for (layer_index in layer_indices) {
       # Names must be 0-indexed for compatibility with existing checkpoints.
@@ -216,8 +169,8 @@ custom_layer_transformer_encoder_single <- function(object,
     }
   }
 
-  # Lists as class variables are handled a bit strangely by python... explain.
-  self$encoder_layers <- encoder_layers #TODO: do this?
+  # Lists as class variables are handled a bit strangely by python... explain?
+  self$encoder_layers <- encoder_layers
 
   super()$build(input_shape)
 }
@@ -233,7 +186,7 @@ custom_layer_transformer_encoder_single <- function(object,
   # NB: this will start with 1.
   layer_indices <- seq_len(self$params$num_layers)
   for (layer_index in layer_indices) {
-    if (!is.null(self$encoder_layers)) { # switch to actual flag
+    if (!self$params$shared_layer) {
       #BERT
       # The "list" self$encoder_layers has been converted into a python object
       # by this point (a tensorflow ListWrapper, to be specific), and is now
@@ -254,10 +207,9 @@ custom_layer_transformer_encoder_single <- function(object,
     attention_probs_all[[layer_index]] <- attention_probs
   }
 
-  # In pre-tf2 RBERT, returned attention matrices along with layer outputs
-  # here.
   if (self$params$return_all_layers) {
-    final_output <- list("output" = layer_output_all, "attention" = attention_probs_all)
+    final_output <- list("output" = layer_output_all,
+                         "attention" = attention_probs_all)
   } else {
     # return just the final layer
     final_output <- layer_output_and_probs

@@ -1,7 +1,7 @@
 Package: RBERT
 Type: Package
 Title: R Implementation of BERT
-Version: 0.1.8.999
+Version: 0.2.0.999
 Authors@R: c(
     person("Jonathan", "Bratt", email = "jonathan.bratt@macmillan.com", 
            role = c("aut", "cre")

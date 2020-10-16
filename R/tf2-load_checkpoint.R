@@ -1,4 +1,4 @@
-# Copyright 2019 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
+# Copyright 2020 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,16 @@
 
 # our version of this function just needs to be able to extract a list
 # from a json.
-get_params_from_checkpoint <- function(json_file) {
+get_params_from_checkpoint <- function(json_file = NULL) {
   # /shared/BERT_checkpoints/uncased_L-12_H-768_A-12/bert_config.json
-  # bert_ckpt_dir <- "/shared/BERT_checkpoints/uncased_L-12_H-768_A-12/"
-  # json_file <- file.path(bert_ckpt_dir, "bert_config.json") #generalize this
+  bert_ckpt_dir <- "/shared/BERT_checkpoints/uncased_L-12_H-768_A-12/"
+  json_file <- file.path(bert_ckpt_dir, "bert_config.json") # temporary, for convenience
   bc <- jsonlite::fromJSON(json_file)
 
+  size_per_head <- bc$hidden_size / bc$num_attention_heads
+  if (as.integer(size_per_head) != size_per_head) {
+    stop("inconsistent size per head parameter.")
+  }
   # some parameters need to be renamed...
   bert_params <- list(
     num_layers = bc$num_hidden_layers,
@@ -42,7 +46,21 @@ get_params_from_checkpoint <- function(json_file) {
     max_position_embeddings = bc$max_position_embeddings,
 
     embedding_size = bc$embedding_size,
-    shared_layer = !is.null(bc$embedding_size))
+    shared_layer = !is.null(bc$embedding_size),
+    # below are other params, not from config
+    initializer_range = 0.02,
+    size_per_head = size_per_head,
+    query_activation = NULL,
+    key_activation = NULL,
+    value_activation = NULL,
+    negative_infinity = -10000.0,
+    epsilon = 1e-12,
+    trainable = TRUE,
+    # dtype = tensorflow::tf$float32$name,
+    dynamic = FALSE,
+    name = "bert",
+    return_all_layers = TRUE
+  )
   return(bert_params)
 }
 

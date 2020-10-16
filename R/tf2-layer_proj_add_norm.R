@@ -16,26 +16,8 @@
 # custom layer: project, add, normalize ----------------------------------------
 
 #' @keywords internal
-.custom_layer_proj_add_norm_init <- function(param_list = list(), ...) {
-  # Quick way of mimicking the params-flow structure.
-
-  #TODO: Double check which params are used.
-
-  self$params <- list(
-    hidden_size = NULL,
-    hidden_dropout = 0.1,
-    initializer_range = 0.02,
-    trainable = TRUE,
-    name = "ProjAddNorm",
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
-
-  self$dense <- NULL
-  self$dropout <- NULL
-  self$layer_norm <- NULL
+.custom_layer_proj_add_norm_init <- function(param_list, ...) {
+  self$params <- .update_list(param_list, list(...))
 
   self$supports_masking <- TRUE
 

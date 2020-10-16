@@ -12,43 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# custom layer: transformer_encoder_single ----------------------------------------
+# custom layer: BERT ----------------------------------------
 
 #' @keywords internal
-.custom_layer_BERT_init <- function(param_list = list(),
-                                    ...) {
-  self$params <- list(
-    vocab_size = NULL,
-    use_token_type = TRUE,
-    use_position_embeddings = TRUE,
-    token_type_vocab_size = 2L,
-    embedding_size = NULL,   # NULL for BERT, not NULL for ALBERT
-    max_position_embeddings = 512L,
-    num_layers = NULL,
-    return_all_layers = TRUE,
-    shared_layer = FALSE,  # False for BERT, True for ALBERT
-    intermediate_size  = NULL,
-    intermediate_activation = "gelu",
-    hidden_size = 768L,
-    num_heads = NULL,
-    hidden_dropout = 0.1,
-    attention_dropout = 0.1,
-    initializer_range = 0.02,
-    size_per_head = NULL,
-    query_activation = NULL,
-    key_activation = NULL,
-    value_activation = NULL,
-    negative_infinity = -10000.0,
-    trainable = TRUE,
-    name = NULL,
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
-
-  self$embeddings_layer <- NULL
-  self$encoders_layer <- NULL
+.custom_layer_BERT_init <- function(param_list, ...) {
+  # Individually named parameters take precedence over values in param_list.
+  self$params <- .update_list(param_list, list(...))
 
   self$support_masking <- TRUE
 
@@ -75,17 +44,23 @@
 .custom_layer_BERT_call <- function(inputs,
                                     mask = NULL,
                                     training = NULL) {
-  if (is.null(mask)) {
-    mask <- self$embeddings_layer$compute_mask(inputs)
-  }
-
   embedding_output <- self$embeddings_layer(inputs,
                                             mask = mask,
                                             training = training)
+
+  # Compute the mask here instead of using compute_mask method.
+  input_ids <- inputs[[1]] # inputs is a [input_ids, token_type_ids] list.
+  mask <- tensorflow::tf$not_equal(input_ids, 0L)
+
   output <- self$encoders_layer(embedding_output,
                                 mask = mask,
+                                # mask = mask2,
                                 training = training)
-  return(output)   # [B, seq_len, hidden_size]
+  # The order of elements in a combined list can be unpredictable here,
+  # so set it explicitly.
+  return(list("initial_embeddings" = embedding_output,
+              "layer_output" = output$output,
+              "attention_matrix" = output$attention))
 }
 
 #' @keywords internal
@@ -110,11 +85,9 @@
 #'
 #' @inheritParams custom_layer_layernorm
 #' @param param_list A named list of parameter values used in defining the
-#'   layer.
+#'   layer. *standardize this here*
 #'   \describe{
-#'   \item{`dtype`}{The data type of the layer output.
-#'     Defaults to "float32". Valid values from `tensorflow::tf$float32$name`,
-#'     etc. }
+#'   \item{`xxx`}{description }
 #'   }
 #'
 #' @export

@@ -12,26 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # custom layer: position_embedding ----------------------------------------
 
 #' @keywords internal
-.custom_layer_position_embedding_init <- function(param_list = list(), ...) {
-  # Quick way of mimicking the params-flow structure.
-  self$params <- list(
-    max_position_embeddings = 512L,
-    hidden_size = 128L,
-    initializer_range = 0.02,
-    trainable = TRUE,
-    name = "PositionEmbedding",
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
+.custom_layer_position_embedding_init <- function(param_list, ...) {
+  self$params <- .update_list(param_list, list(...))
 
-  self$embedding_table <- NULL
-
+  self$supports_masking <- TRUE
   super()$`__init__`(name = self$params$name)
 }
 
@@ -133,39 +120,18 @@ custom_layer_position_embedding <- function(object,
 
 
 #' @keywords internal
-.custom_layer_bert_embeddings_init <- function(param_list = list(), ...) {
-  # Quick way of mimicking the params-flow structure.
-  self$params <- list(
-    vocab_size = NULL,
-    use_token_type = TRUE,
-    use_position_embeddings = TRUE,
-    token_type_vocab_size = 2L,
-    hidden_dropout = 0.1,
-    hidden_size = 768L,
-    #TODO: I think NA, not NULL, is the way to go here. Ugh, still need to fix
-    # more. Have to change the param loader function if I keep NAs. Revisit
-    # this question.
-    embedding_size = NULL,   # NULL for BERT, not NULL for ALBERT.
-    max_position_embeddings = 512L,
-    initializer_range = 0.02,
-    trainable = TRUE,
-    name = NULL,
-    dtype = tensorflow::tf$float32$name,
-    dynamic = FALSE
-  )
-  self$params <- .update_list(self$params, param_list)
-  self$params <- .update_list(self$params, list(...))
+.custom_layer_bert_embeddings_init <- function(param_list, ...) {
+  self$params <- .update_list(param_list, list(...))
+  if (isFALSE(self$params$use_token_type)) {
+    warning("use_token_type FALSE is not supported; treating as TRUE.")
+  }
+  if (isFALSE(self$params$use_position_embeddings)) {
+    warning("use_position_embeddings FALSE is not supported; treating as TRUE.")
+  }
 
-  #TODO: do I really need to declare these all here?
-  self$word_embeddings_layer <- NULL
-  self$token_type_embeddings_layer <- NULL
-  self$position_embeddings_layer <- NULL
   self$word_embeddings_projector_layer <- NULL  # for ALBERT
-  self$layer_norm <- NULL
-  self$dropout_layer <- NULL
 
   self$supports_masking <- TRUE
-
 
   super()$`__init__`(name = self$params$name)
 }
@@ -194,28 +160,20 @@ custom_layer_position_embedding <- function(object,
   if (!is.null(self$params$embedding_size)) {
     self$word_embeddings_projector_layer <-
       keras::layer_dense(units = self$params$hidden_size)
-      # custom_layer_embeddings_proj(param_list = self$params,
-      #   #TODO: I think I will need to do more with names, to ensure uniqueness.
-      #                              name = "word_embeddings_projector"
-      # )
   }
 
-  if (self$params$use_token_type) {
-    self$token_type_embeddings_layer <- keras::layer_embedding(
-      input_dim = self$params$token_type_vocab_size, # ~2L
-      output_dim = position_embedding_size,
-      mask_zero = FALSE,
-      name = "token_type_embeddings"
-    )
-  }
+  self$token_type_embeddings_layer <- keras::layer_embedding(
+    input_dim = self$params$token_type_vocab_size, # ~2L
+    output_dim = position_embedding_size,
+    mask_zero = FALSE,
+    name = "token_type_embeddings"
+  )
 
-  if (self$params$use_position_embeddings) {
-    self$position_embeddings_layer <- custom_layer_position_embedding(
-      param_list = self$params,
-      name = "position_embeddings",
-      hidden_size = position_embedding_size
-    )
-  }
+  self$position_embeddings_layer <- custom_layer_position_embedding(
+    param_list = self$params,
+    name = "position_embeddings",
+    hidden_size = position_embedding_size
+  )
 
   self$layer_norm <- custom_layer_layernorm(
     param_list = self$params,
@@ -234,51 +192,51 @@ custom_layer_position_embedding <- function(object,
                                                training = NULL) {
   if (inherits(inputs, "list")) {
     if (length(inputs) != 2) {
-      stop("In BertEmbeddingsLayer: ",
-           "Expecting inputs to be a [input_ids, token_type_ids] list, ",
-           "or else just input_ids.")
+      stop("In bert_embeddings layer: ",
+           "Input is not a length-2 list.",
+           "Expecting inputs to be a [input_ids, token_type_ids] list.")
     }
     input_ids <- inputs[[1]]
     token_type_ids <- inputs[[2]]
   } else{
-    input_ids <- inputs
-    token_type_ids <- NULL
+    stop("In bert_embeddings layer: ",
+         "Input is not a list.",
+         "Expecting inputs to be a [input_ids, token_type_ids] list.")
   }
 
+  # base token embeddings...
   input_ids <- tensorflow::tf$cast(input_ids, dtype = tensorflow::tf$int32)
-
   embedding_output <- self$word_embeddings_layer(input_ids)
 
-  if (!is.null(token_type_ids)) {
-    token_type_ids <- tensorflow::tf$cast(token_type_ids,
-                                          dtype = tensorflow::tf$int32)
-    #TODO: use tf add here? No, probably not.
-    embedding_output <- embedding_output +
-      self$token_type_embeddings_layer(token_type_ids)
-  }
+  # token type embeddings...
+  token_type_ids <- tensorflow::tf$cast(token_type_ids,
+                                        dtype = tensorflow::tf$int32)
+  embedding_output <- embedding_output +
+    self$token_type_embeddings_layer(token_type_ids)
 
-  if (!is.null(self$position_embeddings_layer)) {
-    seq_len <- input_ids$shape$as_list()[[2]] # check index
-    eos <- embedding_output$shape$as_list()
-    emb_size <- eos[[length(eos)]]
+  # token postion embeddings...
+  # Position indices are already implicit in the tensor structure, so we
+  # don't need to pass in a tensor of ids, just the sequence length.
+  seq_len <- input_ids$shape$as_list()[[2]] # check index
+  eos <- embedding_output$shape$as_list()
+  emb_size <- eos[[length(eos)]]
 
-    pos_embeddings <- self$position_embeddings_layer(seq_len)
+  pos_embeddings <- self$position_embeddings_layer(seq_len)
 
-    # broadcast over all dimension but the last two [..., seq_len, width]
-    broadcast_shape <- as.list(
-      c(rep(1L, embedding_output$shape$ndims - 2),
-        seq_len, emb_size)
-    )
+  # Broadcast over all dimensions but the last two [..., seq_len, width].
+  # Because we construct this embedding layer from scratch, we do this to
+  # bring it to the right shape.
+  broadcast_shape <- as.list(
+    c(rep(1L, embedding_output$shape$ndims - 2),
+      seq_len, emb_size)
+  )
 
-    embedding_output <- embedding_output +
-      tensorflow::tf$reshape(pos_embeddings, broadcast_shape)
-  }
+  embedding_output <- embedding_output +
+    tensorflow::tf$reshape(pos_embeddings, broadcast_shape)
 
   embedding_output <- self$layer_norm(embedding_output)
   embedding_output <- self$dropout_layer(embedding_output,
                                          training = training)
-  # embedding_output <- keras::layer_dropout(embedding_output,
-  #                                          rate = self$params$hidden_dropout)
 
   # ALBERT: project embeddings
   if (!is.null(self$word_embeddings_projector_layer)) {
@@ -296,8 +254,10 @@ custom_layer_position_embedding <- function(object,
 
     initialize = .custom_layer_bert_embeddings_init,
     build = .custom_layer_bert_embeddings_build,
-    call = .custom_layer_bert_embeddings_call,
-    compute_mask <- function() {} # add this here!
+    call = .custom_layer_bert_embeddings_call
+    # I can't figure out how to invoke the compute_mask method so that it works.
+    # Move the computation of the mask into the bert layer `call` method. -JDB
+    # compute_mask <- function(inputs, mask = NULL) {}
   )
 
   python_layer_object <- attr(layer_function, which = "layer")
@@ -324,7 +284,7 @@ custom_layer_bert_embeddings <- function(object,
                 trainable = NULL,
                 param_list = list(),
                 ...) {
-  keras::create_layer(layer_class = .custom_layers$bert_embeddings, # define in .onLoad
+  keras::create_layer(layer_class = .custom_layers$bert_embeddings,
                       object = object,
                       args = list(
                         name = name,
