@@ -8,10 +8,6 @@ check_vocab(words, ckpt_dir = NULL, vocab_file = find_vocab(ckpt_dir))
 }
 \arguments{
 \item{words}{Character vector; words to check.}
-
-\item{vocab_file}{path to vocabulary file. File is assumed to be a text file,
-with one token per line, with the line number corresponding to the index of
-that token in the vocabulary.}
 }
 \value{
 A logical vector containing \code{TRUE} if the corresponding word was

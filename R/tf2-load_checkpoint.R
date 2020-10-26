@@ -16,19 +16,33 @@
 
 # get_params_from_checkpoint ---------------------------------------------
 
-# our version of this function just needs to be able to extract a list
-# from a json.
-get_params_from_checkpoint <- function(json_file = NULL) {
-  # /shared/BERT_checkpoints/uncased_L-12_H-768_A-12/bert_config.json
-  bert_ckpt_dir <- "/shared/BERT_checkpoints/uncased_L-12_H-768_A-12/"
-  json_file <- file.path(bert_ckpt_dir, "bert_config.json") # temporary, for convenience
-  bc <- jsonlite::fromJSON(json_file)
+
+#' Get Model Parameters from Checkpoint
+#'
+#' Read the parameters for a BERT model from the specified checkpoint.
+#'
+#' @param ckpt_dir Character; path to checkpoint directory. If specified, any
+#'   other checkpoint files required by this function (\code{vocab_file},
+#'   \code{bert_config_file}, or \code{init_checkpoint}) will default to
+#'   standard filenames within \code{ckpt_dir}.
+#' @param bert_config_file Character; the path to a json config file.
+#'
+#' @return A list of BERT model parameters.
+#'
+#' @export
+get_params_from_checkpoint <- function(
+  ckpt_dir = NULL,
+  bert_config_file = find_config(ckpt_dir)
+) {
+  bc <- jsonlite::fromJSON(bert_config_file)
 
   size_per_head <- bc$hidden_size / bc$num_attention_heads
   if (as.integer(size_per_head) != size_per_head) {
-    stop("inconsistent size per head parameter.")
+    stop("Inconsistent size per head implied.")
   }
   # some parameters need to be renamed...
+  #TODO: rename what we can to be more consistent with original BERT conventions,
+  # then streamline this maybe?
   bert_params <- list(
     num_layers = bc$num_hidden_layers,
     num_heads = bc$num_attention_heads,
@@ -66,14 +80,22 @@ get_params_from_checkpoint <- function(json_file = NULL) {
 
 
 
-# get_weights_from_checkpoint --------------------------------------------
+# load_checkpoint_weights --------------------------------------------
 #
 
-# load_bert_weights <- function(bert, ckpt_path) {
-get_weights_from_checkpoint <- function(ckpt_path) {
-  # put checks here to return helpful messages if bad arguments given
-  # ckpt_path <- "/shared/BERT_checkpoints/uncased_L-12_H-768_A-12/bert_model.ckpt"
-
+#' Load Weights from Checkpoint
+#'
+#' Updates the given BERT model with the weights from the given checkpoint.
+#'
+#' @param mod BERT model to update with pretrained weights. Modified in
+#'   place.
+#' @param ckpt_dir Directory of checkpoint with pretrained weights.
+#'
+#' @return TRUE, invisibly. Function is called for side effects.
+#'
+#' @keywords internal
+.load_checkpoint_weights <- function(mod, ckpt_dir) {
+  ckpt_path <- find_ckpt(ckpt_dir)
   ckpt_reader <- tensorflow::tf$train$load_checkpoint(ckpt_path)
 
   stock_weights_names <- names(ckpt_reader$get_variable_to_dtype_map())
@@ -82,7 +104,49 @@ get_weights_from_checkpoint <- function(ckpt_path) {
                                        ckpt_reader$get_tensor(n)
                                      })
 
-  names(stock_weights_values) <- stock_weights_names
-  return(stock_weights_values)
+  canonical_checkpoint_names <- paste0(stock_weights_names, ":0")
+
+  mwts <- mod$get_weights()
+  # # The following used to work, and doesn't now. I have no idea why. I think
+  # # time travel might be involved.
+  # tmp <- mod$model_vnames
+  # # tmp is a Python object. This is the easiest way to make it an R vector.
+  # model_vnames <- purrr::map_chr(seq_len(length(tmp)), function(i) {tmp[[i-1]]})
+
+  model_vnames <- purrr::map_chr(mod$variables, "name")
+
+  # Accomodate models with "bert_1", etc. Though I can't get this to happen
+  # with TF >= 2.3.
+  canonical_model_vnames <- stringr::str_replace_all(model_vnames,
+                                                     pattern = "bert(_[\\d]+)?",
+                                                     replacement = "bert")
+  name_map <- canonical_model_vnames
+  names(name_map) <- canonical_model_vnames
+  # There are a few exceptions that I can't easily change in RBERT, so just
+  # manually adjust them here.
+  #TODO: we can save a lot of time here by just saving the name map rather than
+  #reconstructing it each time!
+  name_map[["bert/embeddings/word_embeddings/embeddings:0"]] <-
+    "bert/embeddings/word_embeddings:0"
+  name_map[["bert/embeddings/token_type_embeddings/embeddings:0"]] <-
+    "bert/embeddings/token_type_embeddings:0"
+  name_map[["bert/embeddings/position_embeddings/position_embedding:0"]] <-
+    "bert/embeddings/position_embeddings:0"
+
+  all(name_map %in% canonical_checkpoint_names)
+  all(names(name_map) %in% canonical_model_vnames)
+
+  # Use name_map to copy checkpoint weights by name over into model weights.
+  for (vn in names(name_map)) {
+    cpn <- name_map[[vn]]
+
+    mwts[names(name_map) == vn][[1]] <-
+      stock_weights_values[canonical_checkpoint_names == cpn][[1]]
+  }
+  # mod is passed by reference, not value, so this sets the weights on the
+  # input model.
+  mod$set_weights(mwts)
+  return(invisible(TRUE))
 }
+
 

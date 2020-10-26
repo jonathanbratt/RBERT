@@ -15,17 +15,6 @@
   init_checkpoint = find_ckpt(ckpt_dir)
 )
 }
-\arguments{
-\item{vocab_file}{path to vocabulary file. File is assumed to be a text file,
-with one token per line, with the line number corresponding to the index of
-that token in the vocabulary.}
-
-\item{bert_config_file}{Character; the path to a json config file.}
-
-\item{init_checkpoint}{Character; path to the checkpoint directory, plus
-checkpoint name stub (e.g. "bert_model.ckpt"). Path must be absolute and
-explicit, starting with "/".}
-}
 \value{
 A list with components vocab_file, bert_config_file, and
   init_checkpoint.
@@ -33,5 +22,8 @@ A list with components vocab_file, bert_config_file, and
 \description{
 In some functions, the user can specify a model, a ckpt_dir, and/or specific
 paths to checkpoint files. This function sorts all of that out.
+}
+\details{
+This used to inheritParams from extract_features. FIX!
 }
 \keyword{internal}

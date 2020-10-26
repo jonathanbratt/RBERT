@@ -84,7 +84,7 @@ find_ckpt <- function(ckpt_dir) {
 #' In some functions, the user can specify a model, a ckpt_dir, and/or specific
 #' paths to checkpoint files. This function sorts all of that out.
 #'
-#' @inheritParams extract_features
+#'  This used to inheritParams from extract_features. FIX!
 #' @return A list with components vocab_file, bert_config_file, and
 #'   init_checkpoint.
 #' @keywords internal
@@ -154,3 +154,196 @@ init_checkpoint = find_ckpt(ckpt_dir)) {
     )
   )
 }
+
+# gelu --------------------------------------------------------------------
+
+#' Gaussian Error Linear Unit
+#'
+#' This is a smoother version of the RELU. Original paper:
+#' https://arxiv.org/abs/1606.08415
+#'
+#' @param x Float Tensor to perform activation on.
+#'
+#' @return `x` with the GELU activation applied.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tfx <- tensorflow::tf$get_variable("none", tensorflow::shape(10L))
+#' gelu(tfx)
+#' }
+gelu <- function(x) {
+  cdf <- 0.5*(1.0 + tensorflow::tf$tanh(
+    (sqrt(2/pi)*(x + 0.044715 * tensorflow::tf$pow(x, 3))))
+  )
+  return(x*cdf)
+}
+
+
+
+# get_activation ----------------------------------------------------------
+
+#' Map a string to a Python function
+#'
+#' Example: "relu" => `tensorflow::tf$nn$relu`.
+#'
+#' @param activation_string String name of the activation function.
+#'
+#' @return A function corresponding to the activation function. If
+#'   \code{activation_string} is NA, empty, or "linear", this will return NA. If
+#'   \code{activation_string} is not a string, it will return
+#'   \code{activation_string}.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' get_activation("gelu")
+#' }
+get_activation <- function(activation_string) {
+  if (!is.character(activation_string)) {
+    # this is the python behavior, but I think I should return this only if
+    # activation_string has class "function" or "python.builtin.function",
+    # and return NA otherwise.
+    return(activation_string)
+  }
+  activation_string <- tolower(trimws(activation_string))
+  if (is.na(activation_string) | activation_string=="") {
+    return(NA)
+  }
+  # if we add dplyr to imports, change this to a case_when?
+  if (activation_string == "linear") {
+    return(NA)
+  } else if (activation_string == "relu") {
+    return(tensorflow::tf$nn$relu)
+  } else if (activation_string == "gelu") {
+    return(gelu)
+  } else if (activation_string == "tanh") {
+    return(tensorflow::tf$tanh)
+  } else {
+    stop(paste("Unsupported activation", activation_string))
+  }
+}
+
+
+
+# transpose_for_scores ----------------------------------------------------
+
+#' Reshape and transpose tensor
+#'
+#' In Python code, this is internal to attention_layer. Pulling it out into
+#' separate function here.
+#'
+#' @param input_tensor Tensor to reshape and transpose.
+#' @param batch_size Size of the first dimension of input_tensor.
+#' @param num_attention_heads Size of the third dimension of input_tensor. (Will
+#'   be transposed to second dimension.)
+#' @param seq_length Size of the second dimension of input_tensor. (Will be
+#'   transposed to third dimension.)
+#' @param width Size of fourth dimension of input_tensor.
+#'
+#' @return  Tensor of shape: batch_size, num_attention_heads, seq_length, width.
+#'
+#' @keywords internal
+.transpose_for_scores <- function(input_tensor,
+                                  batch_size,
+                                  num_attention_heads,
+                                  seq_length,
+                                  width) {
+  # NB: the element ordering convention used by TF is different from the
+  # convention used by, say, as.array in R.
+  output_tensor <-  tensorflow::tf$reshape(
+    input_tensor,
+    # We can't use shape() here, because batch_size is still undetermined
+    # at this point. -JDB
+    list(batch_size,
+         as.integer(seq_length),
+         as.integer(num_attention_heads),
+         as.integer(width))
+  )
+  # The R tensorflow package indexes from 1 in some places,
+  # but the perm parameter labels the dimensions using zero-indexing. *shrug*
+  output_tensor <- tensorflow::tf$transpose(output_tensor,
+                                            perm = list(0L, 2L, 1L, 3L))
+  return(output_tensor)
+}
+
+
+# get_shape_list ----------------------------------------------------------
+
+#' Return the shape of tensor
+#'
+#' Returns a list of the shape of tensor, preferring static dimensions. (A
+#' static dimension is known at graph definition time, and a dynamic dimension
+#' is known only at graph execution time.)
+#' https://stackoverflow.com/questions/37096225/
+#'
+#' @param tensor A tf.Tensor object to find the shape of.
+#' @param expected_rank The expected rank of \code{tensor}, as an integer vector
+#'   or list. If this is specified and the \code{tensor} has a rank not listed
+#'   in \code{expected_rank}, an exception will be thrown.
+#'
+#' @param name Optional name of the tensor for the error message.
+#'
+#' @return A list of dimensions of the shape of tensor. All static dimensions
+#'   will be returned as native integers, and dynamic dimensions will be
+#'   returned as tf.Tensor scalars. (I'm not very comfortable with this
+#'   behavior. It's not usually good practice to make the return type vary
+#'   depending on the input.)
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' with(tensorflow::tf$variable_scope("examples",
+#'                                    reuse = tensorflow::tf$AUTO_REUSE),
+#'  {
+#'    phx <- tensorflow::tf$placeholder(tensorflow::tf$int32, shape = c(4))
+#'    get_shape_list(phx) # static
+#'    tfu <- tensorflow::tf$unique(phx)
+#'    tfy <- tfu$y
+#'    get_shape_list(tfy) # dynamic
+#'  }
+#' )
+#' }
+get_shape_list <- function(tensor, expected_rank = NULL, name = NULL) {
+  if (is.null(name)) {
+    name <- tensor$name
+  }
+
+  if (!is.null(expected_rank)) {
+    assert_rank(tensor, expected_rank, name)
+  }
+
+  shape <- tensor$shape$as_list()
+
+  shape <- as.list(shape) # for consistency
+
+  # dynamic dimensions will be NULL in the shape vector.
+  # When NULLs are list or vector elements it gets ... tricky in R.
+  # I believe the following works, but there is likely a better way to do this.
+
+  non_static_indexes <- c()
+
+  for (index in seq_along(shape) ) {
+    dim <- shape[index] # will now be "NULL" if dynamic dimension.
+    if (dim == "NULL") {
+      non_static_indexes <- c(non_static_indexes, index)
+    }
+  }
+
+  if (length(non_static_indexes) == 0) {
+    return(shape)
+  }
+
+  dyn_shape <- tensorflow::tf$shape(tensor)
+
+  for (index in non_static_indexes) {
+    # Note: the R tensorflow package now uses 1-based indexing by default.
+    # ... but generally sticks to zero-indexing for Tensor indices.
+    shape[[index]] <- dyn_shape[index]
+  }
+
+  return(shape)
+}
+
