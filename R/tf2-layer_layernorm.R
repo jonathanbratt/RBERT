@@ -53,8 +53,6 @@
 
 #' @keywords internal
 .custom_layer_layernorm_call <- function(inputs, ...) {
-
-  #TODO double check the axes indexing conventions here.
   mv <- tensorflow::tf$nn$moments(inputs, axes = -1L, keepdims = TRUE)
   mean <- mv[[1]]
   var <- mv[[2]] # uses N, not N-1, in denominator. Just FYI.
@@ -92,19 +90,7 @@
 #' Create a layer that applies layer normalization to the previous layer output.
 #' Note that this layer contains trainable parameters.
 #'
-#' @param object Model or layer object.
-#' @param name Character; An optional name for the layer. Must be unique in a
-#'   model.
-#' @param trainable Logical; whether the layer weights will be updated during
-#'   training.
-#' @param param_list A named list of parameter values used in defining the
-#'   layer.
-#'   \describe{
-#'    \item{`epsilon`}{Numeric; small value added to denominators to avoid
-#'    dividing by zero. Defaults to `1e-12`.}
-#'    \item{`dtype`}{The data type of the layer output. Defaults to "float32".
-#'    Valid values from `tensorflow::tf$float32$name`, etc. }
-#'   }
+#' @inheritParams custom_layer_BERT
 #'
 #' @source \url{https://arxiv.org/pdf/1607.06450.pdf}
 #' @export

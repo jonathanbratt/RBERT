@@ -22,11 +22,24 @@ model.}
 training.}
 
 \item{param_list}{A named list of parameter values used in defining the
-layer.
+layer. Some parameters for the BERT model are:
 \describe{
-\item{\code{dtype}}{The data type of the layer output.
-Defaults to "float32". Valid values from \code{tensorflow::tf$float32$name},
-etc. }
+\item{\code{num_layers}}{Integer; the number of attention layers to create.}
+\item{\code{num_heads}}{Integer; the number of attention heads per layer.}
+\item{\code{hidden_size}}{Integer; the size of the embedding vectors.}
+\item{\code{hidden_dropout}}{Dropout probability to apply to dense layers...}
+\item{\code{attention_dropout}}{Dropout probability to apply to attention... }
+\item{\code{intermediate_size}}{Integer; size of dense layers after self
+attention mechanism.}
+\item{\code{intermediate_activation}}{Character; activation function to use with
+dense layers... }
+\item{\code{vocab_size}}{Integer; number of tokens in vocabulary.}
+\item{\code{token_type_vocab_size}}{Integer; number of input segments that the
+model will recognize. (Two for BERT models.) }
+\item{\code{max_position_embeddings}}{Integer; maximum number of tokens in
+input.}
+\item{\code{embedding_size}}{(Used for ALBERT; NULL for BERT.) }
+\item{\code{shared_layer}}{(TRUE for ALBERT, FALSE for BERT.) }
 }}
 }
 \description{

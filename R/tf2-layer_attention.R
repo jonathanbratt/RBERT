@@ -19,21 +19,6 @@
 .custom_layer_attention_init <- function(param_list, ...) {
   self$params <- .update_list(param_list, list(...))
 
-  #TODO: is this needed?
-  self$query_activation <- self$params$query_activation
-  self$key_activation <- self$params$key_activation
-  self$value_activation <- self$params$value_activation
-
-  self$size_per_head <- self$params$hidden_size / self$params$num_heads
-
-  #TODO: decide one place this check should go!
-  if (!is.null(self$params$size_per_head)) {
-    if (self$params$size_per_head != self$size_per_head) {
-      stop("In custom attention layer: ",
-           "calculated size_per_head doesn't match passed value.")
-    }
-  }
-
   self$supports_masking <- TRUE
 
   super()$`__init__`(name = self$params$name)
@@ -42,38 +27,35 @@
 #' @keywords internal
 .custom_layer_attention_build <- function(input_shape) {
   # B, F, T, N, H - batch, from_seq_len, to_seq_len, num_heads, size_per_head
-  dense_units <- self$params$num_heads * self$size_per_head # N*H
-  # This should be equal to hidden size.
 
   ki <- keras::initializer_truncated_normal(
     stddev = self$params$initializer_range
   )
 
   self$query_layer <- keras::layer_dense(
-    units = dense_units,
-    activation = self$query_activation,
+    units = self$params$hidden_size,
+    activation = self$params$query_activation,
     kernel_initializer = ki,
     # So variable names match canonical. Slightly questionable. :)
     name = "self/query"
   )
 
   self$key_layer <- keras::layer_dense(
-    units = dense_units,
-    activation = self$key_activation,
+    units = self$params$hidden_size,
+    activation = self$params$key_activation,
     kernel_initializer = ki,
     name = "self/key"
   )
 
   self$value_layer <- keras::layer_dense(
-    units = dense_units,
-    activation = self$value_activation,
+    units = self$params$hidden_size,
+    activation = self$params$value_activation,
     kernel_initializer = ki,
     name = "self/value"
   )
 
   self$dropout_layer <- keras::layer_dropout(
     rate = self$params$attention_dropout)
-
 
   self$attention_projector <- custom_layer_proj_add_norm(
     object = NULL,
@@ -107,7 +89,7 @@
 
   batch_size <- input_shape[[1]]
   from_seq_len <- input_shape[[2]]
-  from_width <- input_shape[[3]]  # this should be equal to hidden size
+  from_width <- input_shape[[3]]  # hidden_size
   to_seq_len <- from_seq_len
 
   query <- self$query_layer(from_tensor)  # [B,F, N*H]
@@ -120,7 +102,7 @@
     batch_size = batch_size,
     num_attention_heads = self$params$num_heads,
     seq_length = from_seq_len,
-    width = self$size_per_head
+    width = self$params$size_per_head
   ) # now: [B, N, F, H]
 
   key <- .transpose_for_scores(
@@ -128,7 +110,7 @@
     batch_size = batch_size,
     num_attention_heads = self$params$num_heads,
     seq_length = to_seq_len,
-    width = self$size_per_head
+    width = self$params$size_per_head
   ) # [B, N, T, H]
 
   value <- .transpose_for_scores(
@@ -136,7 +118,7 @@
     batch_size = batch_size,
     num_attention_heads = self$params$num_heads,
     seq_length = to_seq_len,
-    width = self$size_per_head
+    width = self$params$size_per_head
   ) # [B, N, T, H]
 
   attention_scores <- tensorflow::tf$matmul(query, key, transpose_b = TRUE)
@@ -144,7 +126,7 @@
 
   attention_scores <- tensorflow::tf$multiply(
     attention_scores,
-    tensorflow::tf$math$rsqrt(as.numeric(self$size_per_head))
+    tensorflow::tf$math$rsqrt(as.numeric(self$params$size_per_head))
   )
 
   if (!is.null(attention_mask)) {
@@ -166,8 +148,8 @@
   # `attention_probs` = [B, N, F, T]
   attention_probs <-  tensorflow::tf$nn$softmax(attention_scores)
 
-  # This is actually dropping out entire tokens to attend to, which might
-  # seem a bit unusual, but is taken from the original Transformer paper.
+  # "This is actually dropping out entire tokens to attend to, which might
+  # seem a bit unusual, but is taken from the original Transformer paper."
   attention_probs <- self$dropout_layer(attention_probs) # [B, N, F, T]
 
   # `context_layer` = [B, N, F, H]
@@ -178,31 +160,22 @@
   context_layer <- tensorflow::tf$transpose(context_layer,
                                             perm = list(0L, 2L, 1L, 3L))
 
-  # At this point in original RBERT, there was a switch for
-  # returning a 2D tensor (or 4D, which was the default).
-  # Now, a 3D tensor is standard. Maybe change back to 4D?
-  # Also, this is where we have the attention probabilities,
-  # and modified the code to include them in the return.
-
   # [B, F, N*H]
   output_shape <- list(
     batch_size,
     from_seq_len,
-    as.integer(self$params$num_heads*self$size_per_head)
+    self$params$hidden_size # N*H is just hidden_size
   )
   context_layer <- tensorflow::tf$reshape(context_layer, output_shape)
-  # return(context_layer) #TODO: edit to include attention probs in output.
 
-  # Add residual and layer norm at this point, rather than making whole other
-  # layer.
-
-  # I think the mask parameter needs to be explicitly passed here, because
+  # Add residual and layer norm here, rather than making whole other layer.
+  # I think the mask parameter needs to be explicitly passed, because
   # it may have been changed in this layer.
   attention_output <- self$attention_projector(list(context_layer,
                                                     inputs),
                                                mask = mask)
 
-  return(list(attention_output, attention_probs)) #include attention probs
+  return(list(attention_output, attention_probs))
 }
 
 #' @keywords internal
@@ -233,14 +206,7 @@
 #' Note that this layer implements more of the attention mechanism than
 #' does `keras::layer_attention`.
 #'
-#' @inheritParams custom_layer_layernorm
-#' @param param_list A named list of parameter values used in defining the
-#'   layer.
-#'   \describe{
-#'   \item{`dtype`}{The data type of the layer output.
-#'     Defaults to "float32". Valid values from `tensorflow::tf$float32$name`,
-#'     etc. }
-#'   }
+#' @inheritParams custom_layer_BERT
 #'
 #' @export
 #' @md
@@ -259,6 +225,3 @@ custom_layer_attention <- function(object,
                       )
   )
 }
-
-
-

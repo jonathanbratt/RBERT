@@ -54,7 +54,6 @@
 
   output <- self$encoders_layer(embedding_output,
                                 mask = mask,
-                                # mask = mask2,
                                 training = training)
   # The order of elements in a combined list can be unpredictable here,
   # so set it explicitly.
@@ -82,12 +81,30 @@
 #'
 #' Create a BERT (or ALBERT) model.
 #'
-#'
-#' @inheritParams custom_layer_layernorm
+#' @param object Model or layer object.
+#' @param name Character; An optional name for the layer. Must be unique in a
+#'   model.
+#' @param trainable Logical; whether the layer weights will be updated during
+#'   training.
 #' @param param_list A named list of parameter values used in defining the
-#'   layer. *standardize this here*
+#'   layer. Some parameters for the BERT model are:
 #'   \describe{
-#'   \item{`xxx`}{description }
+#'   \item{`num_layers`}{Integer; the number of attention layers to create.}
+#'   \item{`num_heads`}{Integer; the number of attention heads per layer.}
+#'   \item{`hidden_size`}{Integer; the size of the embedding vectors.}
+#'   \item{`hidden_dropout`}{Dropout probability to apply to dense layers...}
+#'   \item{`attention_dropout`}{Dropout probability to apply to attention... }
+#'   \item{`intermediate_size`}{Integer; size of dense layers after self
+#'         attention mechanism.}
+#'   \item{`intermediate_activation`}{Character; activation function to use with
+#'         dense layers... }
+#'   \item{`vocab_size`}{Integer; number of tokens in vocabulary.}
+#'   \item{`token_type_vocab_size`}{Integer; number of input segments that the
+#'         model will recognize. (Two for BERT models.) }
+#'   \item{`max_position_embeddings`}{Integer; maximum number of tokens in
+#'         input.}
+#'   \item{`embedding_size`}{(Used for ALBERT; NULL for BERT.) }
+#'   \item{`shared_layer`}{(TRUE for ALBERT, FALSE for BERT.) }
 #'   }
 #'
 #' @export

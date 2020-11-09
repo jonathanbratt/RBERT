@@ -83,19 +83,7 @@
 #'
 #' Create position embeddings for the input layer.
 #'
-#' @inheritParams custom_layer_layernorm
-#' @param param_list A named list of parameter values used in defining the
-#'   layer.
-#'   \describe{
-#'   \item{`hidden_size`}{Integer; The size of the output. Should match the
-#'     size of the second input.}
-#'   \item{`max_position_embeddings`}{Numeric; .}
-#'   \item{`initializer_range`}{Numeric; the value passed in as the `stddev`
-#'     parameter to the `initializer_truncated_normal` in the dense layer
-#'     initializer.}
-#'   \item{`dtype`}{The data type of the layer output. Defaults to "float32".
-#'   Valid values from `tensorflow::tf$float32$name`, etc. }
-#'  }
+#' @inheritParams custom_layer_BERT
 #'
 #' @export
 #' @md
@@ -122,15 +110,7 @@ custom_layer_position_embedding <- function(object,
 #' @keywords internal
 .custom_layer_bert_embeddings_init <- function(param_list, ...) {
   self$params <- .update_list(param_list, list(...))
-  if (isFALSE(self$params$use_token_type)) {
-    warning("use_token_type FALSE is not supported; treating as TRUE.")
-  }
-  if (isFALSE(self$params$use_position_embeddings)) {
-    warning("use_position_embeddings FALSE is not supported; treating as TRUE.")
-  }
-
   self$word_embeddings_projector_layer <- NULL  # for ALBERT
-
   self$supports_masking <- TRUE
 
   super()$`__init__`(name = self$params$name)
@@ -256,7 +236,7 @@ custom_layer_position_embedding <- function(object,
     build = .custom_layer_bert_embeddings_build,
     call = .custom_layer_bert_embeddings_call
     # I can't figure out how to invoke the compute_mask method so that it works.
-    # Move the computation of the mask into the bert layer `call` method. -JDB
+    # Moved the computation of the mask into the bert layer `call` method. -JDB
     # compute_mask <- function(inputs, mask = NULL) {}
   )
 
@@ -267,15 +247,11 @@ custom_layer_position_embedding <- function(object,
 
 #' Custom Layer: Bert Embeddings
 #'
-#' Create layer...
+#' Create embeddings layer for BERT model. Embeddings (may) include token type
+#' and position embeddings components as well as token embeddings. All
+#' embeddings components have the same dimension, and are simply added together.
 #'
-#' @inheritParams custom_layer_layernorm
-#' @param param_list A named list of parameter values used in defining the
-#'   layer.
-#'   \describe{
-#'   \item{`dtype`}{The data type of the layer output. Defaults to "float32".
-#'   Valid values from `tensorflow::tf$float32$name`, etc. }
-#'  }
+#' @inheritParams custom_layer_BERT
 #'
 #' @export
 #' @md
