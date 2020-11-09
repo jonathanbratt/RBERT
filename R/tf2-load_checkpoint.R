@@ -41,8 +41,8 @@ get_params_from_checkpoint <- function(
     stop("Inconsistent size per head implied.")
   }
   # some parameters need to be renamed...
-  #TODO: rename what we can to be more consistent with original BERT conventions,
-  # then streamline this maybe?
+  #TODO: rename what we can to be more consistent with original BERT
+  #conventions, then streamline this maybe?
   bert_params <- list(
     num_layers = bc$num_hidden_layers,
     num_heads = bc$num_attention_heads,
@@ -54,8 +54,6 @@ get_params_from_checkpoint <- function(
     intermediate_activation = bc$hidden_act,
 
     vocab_size = bc$vocab_size,
-    use_token_type = TRUE,
-    use_position_embeddings = TRUE,
     token_type_vocab_size = bc$type_vocab_size,
     max_position_embeddings = bc$max_position_embeddings,
 
@@ -70,7 +68,6 @@ get_params_from_checkpoint <- function(
     negative_infinity = -10000.0,
     epsilon = 1e-12,
     trainable = TRUE,
-    # dtype = tensorflow::tf$float32$name,
     dynamic = FALSE,
     name = "bert",
     return_all_layers = TRUE

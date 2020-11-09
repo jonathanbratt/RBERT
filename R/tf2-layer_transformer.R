@@ -19,17 +19,14 @@
   self$params <- .update_list(param_list, list(...))
 
   if (self$params$hidden_size %% self$params$num_heads != 0) {
-    stop("In SingleTransformerEncoderLayer$initialize: ",
+    stop("In .custom_layer_transformer_encoder_single_init: ",
          "hidden_size should be multiple of num_heads.")
   }
 
-  self$size_per_head <- self$params$hidden_size / self$params$num_heads
-
-  if (!is.null(self$params$size_per_head)) {
-    if (self$params$size_per_head != self$size_per_head) {
-      stop("In SingleTransformerEncoderLayer$initialize: ",
-           "calculated size_per_head doesn't match passed value.")
-    }
+  size_per_head <- self$params$hidden_size / self$params$num_heads
+  if (self$params$size_per_head != size_per_head) {
+    stop("In .custom_layer_transformer_encoder_single_init: ",
+         "calculated size_per_head doesn't match passed value.")
   }
 
   self$supports_masking <- TRUE
@@ -101,15 +98,7 @@
 #'
 #' Create single layer of a transformer-based encoder.
 #'
-#'
-#' @inheritParams custom_layer_layernorm
-#' @param param_list A named list of parameter values used in defining the
-#'   layer.
-#'   \describe{
-#'   \item{`dtype`}{The data type of the layer output.
-#'     Defaults to "float32". Valid values from `tensorflow::tf$float32$name`,
-#'     etc. }
-#'   }
+#' @inheritParams custom_layer_BERT
 #'
 #' @export
 #' @md
@@ -207,6 +196,7 @@ custom_layer_transformer_encoder_single <- function(object,
     attention_probs_all[[layer_index]] <- attention_probs
   }
 
+  # I think it's probably best to just always return all the layers. -JDB
   if (self$params$return_all_layers) {
     final_output <- list("output" = layer_output_all,
                          "attention" = attention_probs_all)
@@ -238,14 +228,7 @@ custom_layer_transformer_encoder_single <- function(object,
 #' Create a multi-layer transformer-based encoder.
 #'
 #'
-#' @inheritParams custom_layer_layernorm
-#' @param param_list A named list of parameter values used in defining the
-#'   layer.
-#'   \describe{
-#'   \item{`dtype`}{The data type of the layer output.
-#'     Defaults to "float32". Valid values from `tensorflow::tf$float32$name`,
-#'     etc. }
-#'   }
+#' @inheritParams custom_layer_BERT
 #'
 #' @export
 #' @md

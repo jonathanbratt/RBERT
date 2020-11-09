@@ -28,7 +28,7 @@
 .custom_layer_proj_add_norm_build <- function(input_shape) {
   if (!(inherits(input_shape, "list") & length(input_shape) == 2)) {
     stop("In ProjAddNorm$build: input_shape must be length-2 list.")
-    #TODO: also make sure dimensions are compatible with hidden_size?
+    #TODO: also make sure dimensions are compatible with hidden_size.
   }
 
   self$dense <- keras::layer_dense(
@@ -84,20 +84,7 @@
 #' (followed by dropout) to the first input, then adds the second (as a
 #' residual) and normalizes the sum.
 #'
-#' @inheritParams custom_layer_layernorm
-#' @param param_list A named list of parameter values used in defining the
-#'   layer.
-#'   \describe{
-#'   \item{`hidden_size`}{Integer; The size of the output. Should match the
-#'     size of the second input.}
-#'   \item{`hidden_dropout`}{Numeric; the dropout rate (fraction to drop)
-#'     applied after the dense layer projection.}
-#'   \item{`initializer_range`}{Numeric; the value passed in as the `stddev`
-#'     parameter to the `initializer_truncated_normal` in the dense layer
-#'     initializer.}
-#'   \item{`dtype`}{The data type of the layer output. Defaults to "float32".
-#'   Valid values from `tensorflow::tf$float32$name`, etc. }
-#'  }
+#' @inheritParams custom_layer_BERT
 #'
 #' @export
 #' @md
