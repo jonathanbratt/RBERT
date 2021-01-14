@@ -347,3 +347,4 @@ get_shape_list <- function(tensor, expected_rank = NULL, name = NULL) {
   return(shape)
 }
 
+

@@ -94,3 +94,24 @@
                x = as.character(tensorflow::tf_version())))
 }
 
+
+# .pad_vector ---------------------------------------------------------
+
+#' Pad a Vector to a Certain Length
+#'
+#' Pad or truncate the given vector to specified length.
+#'
+#' @param x Vector to pad.
+#' @param len Integer; length to pad or truncate to.
+#' @param padding Object to use for padding
+#'
+#' @return `x` padded or truncated to given length.
+#' @keywords internal
+.pad_vector <- function(x, len, padding) {
+  # add check for len > 0; maybe start using assert?
+  if(length(x) >= len) {
+    return(x[1:len])
+  }
+  return(c(x, rep(padding, len-length(x))))
+}
+

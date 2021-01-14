@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# custom layer: transformer_encoder_single ----------------------------------------
+# custom layer: transformer_encoder_single ------------------------------------
 
 #' @keywords internal
 .custom_layer_transformer_encoder_single_init <- function(param_list, ...) {
