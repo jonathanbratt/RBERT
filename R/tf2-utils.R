@@ -1,4 +1,4 @@
-# Copyright 2020 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
+# Copyright 2021 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -92,5 +92,27 @@
 .tf2 <- function() {
   return(grepl(pattern = "^2\\.",
                x = as.character(tensorflow::tf_version())))
+}
+
+
+# .pad_vector ---------------------------------------------------------
+
+#' Pad a Vector to a Certain Length
+#'
+#' Pad or truncate the given vector to specified length.
+#'
+#' @param x Vector to pad.
+#' @param len Integer; length to pad or truncate to.
+#' @param padding Object to use for padding
+#'
+#' @return `x` padded or truncated to given length.
+#' @keywords internal
+.pad_vector <- function(x, len, padding) {
+  # add check for len > 0; maybe start using assert?
+  # https://github.com/jonathanbratt/RBERT/issues/60
+  if(length(x) >= len) {
+    return(x[1:len])
+  }
+  return(c(x, rep(padding, len-length(x))))
 }
 

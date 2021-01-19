@@ -1,4 +1,4 @@
-# Copyright 2020 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
+# Copyright 2021 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,34 +39,31 @@ load_bert_model <- function(ckpt_dir, n_token_max = 128L) {
   attr(model_b, "ckpt_dir") <- ckpt_dir
   attr(model_b, "n_token_max") <- n_token_max
   attr(model_b, "param_list") <- param_list
-  # model_b is basically a pointer to a python object, which is passed by reference.
+  # model_b is basically a pointer to a python object, which is passed by
+  # reference.
   .load_checkpoint_weights(model_b, ckpt_dir)
 
   return(model_b)
 }
 
 #' @export
-run_bert_model_on_text <- function(bert_model, text) {
+run_bert_model_on_text <- function(bert_model, text, use_vocab_cache = TRUE) {
   ckpt_dir <- attr(bert_model, "ckpt_dir")
   n_token_max <- attr(bert_model, "n_token_max")
   param_list <- attr(bert_model, "param_list")
-  #This doesn't work yet with multi-segment input.
-  #TODO: fix that! And make this whole thing better. The tokenization stuff
-  # here is just a patch to get this working; needs to be written properly.
-  tokenized_text <- tokenize_text(text, ckpt_dir = ckpt_dir)
+
   # This correctly handles both single and multiple inputs to `text`:
-  n_inputs <- length(tokenized_text)
+  n_inputs <- length(text)
+
   vocab_file <- find_vocab(ckpt_dir)
-  vocab <- load_vocab(vocab_file = vocab_file)
-  tids <- purrr::map(tokenized_text, function(tt) {
-    tmp <- convert_tokens_to_ids(vocab = vocab, tokens = tt)
-    c(tmp, rep(0, n_token_max-length(tmp))) # pad with zeros
-  })
-  #TODO add check for n_token_max here.
-  # Update this to work with multi-segment inputs.
-  ttypes <- purrr::map(tokenized_text, function(tt) {
-    rep(0, n_token_max)
-  })
+  vocab <- wordpiece::load_or_retrieve_vocab(vocab_file = vocab_file,
+                                             use_cache = use_vocab_cache)
+  tids <- tokenize_input(seq_list = text,
+                         vocab = vocab,
+                         pad_to_length = n_token_max)
+
+  # The ttype ids are attached as an attribute on the tokenization output...
+  ttypes <- attr(tids, "tt_ids")
 
   bert_input <- list(token_ids = t(array(unlist(tids),
                                          c(n_token_max,n_inputs))),
@@ -92,8 +89,11 @@ run_bert_model_on_text <- function(bert_model, text) {
   # assuming we include the zeroth layer embeddings, and attention:
   n_layer <- (length(bert_out) - 1) /2
   segment_index <- unlist(ttypes) + 1 # at this point, make 1-indexed
-  token_id_index <- unlist(tids) # maybe should include this in output too?
-  token <-  names(token_id_index) # make sure this is robust
+  token_id_index <- unlist(tids)
+  # make sure this process is robust (unlisting `tids` and extracting names to
+  # get the tokens)
+  # (https://github.com/jonathanbratt/RBERT/issues/59)
+  token <- names(token_id_index)
   sequence_index <- rep(seq_len(n_inputs), each = n_token_max)
   token_index <- rep(seq_len(n_token_max), times = n_inputs)
 
@@ -124,7 +124,9 @@ run_bert_model_on_text <- function(bert_model, text) {
     emb_df[["layer_index"]] <- rep(l-1, length(token))
     emb_df[["sequence_index"]] <- sequence_index
     emb_df[["token_index"]] <- token_index
-    emb_df <- dplyr::filter(emb_df, token != "")
+    #TODO: decide how much of the BERT conventions should be hard-coded
+    # https://github.com/jonathanbratt/RBERT/issues/58
+    emb_df <- dplyr::filter(emb_df, ! token %in% c("", "[PAD]"))
     return(emb_df)
   })
   emb_out <- dplyr::bind_rows(big_output, emb_out)
@@ -141,8 +143,9 @@ run_bert_model_on_text <- function(bert_model, text) {
   n_token_max <- d[[3]]
 
   segment_index <- unlist(ttypes) + 1 # at this point, make 1-indexed
-  token_id_index <- unlist(tids) # maybe should include this in output too?
-  token <-  names(token_id_index) # make sure this is robust
+  token_id_index <- unlist(tids)
+  # make sure this is robust (https://github.com/jonathanbratt/RBERT/issues/59)
+  token <- names(token_id_index)
   sequence_index <- rep(seq_len(n_inputs), each = n_token_max)
   token_index <- rep(seq_len(n_token_max), times = n_inputs)
 
@@ -194,7 +197,11 @@ run_bert_model_on_text <- function(bert_model, text) {
     att_df <- as.data.frame(attmat)
     att_df <- dplyr::rename(att_df, "attention_weight" = V1)
     att_df <- dplyr::bind_cols(att_id_cols, att_df)
-    att_df <- dplyr::filter(att_df, token != "", attention_token != "")
+    #TODO: decide how much of BERT conventions should be hard-coded
+    # https://github.com/jonathanbratt/RBERT/issues/58
+    att_df <- dplyr::filter(att_df,
+                            ! token %in% c("", "[PAD]"),
+                            !attention_token %in% c("", "[PAD]"))
     att_df <- dplyr::mutate(att_df, layer_index = l)
   })
   att_out <- dplyr::bind_rows(big_attention, att_out)

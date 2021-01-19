@@ -1,4 +1,4 @@
-# Copyright 2020 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
+# Copyright 2021 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# custom layer: transformer_encoder_single ----------------------------------------
+# custom layer: transformer_encoder_single ------------------------------------
 
 #' @keywords internal
 .custom_layer_transformer_encoder_single_init <- function(param_list, ...) {
