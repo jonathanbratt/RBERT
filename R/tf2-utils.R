@@ -109,6 +109,7 @@
 #' @keywords internal
 .pad_vector <- function(x, len, padding) {
   # add check for len > 0; maybe start using assert?
+  # https://github.com/jonathanbratt/RBERT/issues/60
   if(length(x) >= len) {
     return(x[1:len])
   }

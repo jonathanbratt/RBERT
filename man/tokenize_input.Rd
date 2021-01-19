@@ -45,8 +45,8 @@ The token type ids (0 for first segment, 1 for second) are attached as an
 attribute.
 }
 \examples{
-\dontrun{
-# assuming vocabulary `vocab`
+vocab_path <- system.file("extdata", "tiny_vocab.txt", package = "wordpiece")
+vocab <- wordpiece::load_vocab(vocab_file = vocab_path)
 tokenize_input(c(
   "Here are some words.",
   "Here are some more words."
@@ -63,5 +63,4 @@ tokenize_input(list(
   )
 ),
 vocab)
-}
 }

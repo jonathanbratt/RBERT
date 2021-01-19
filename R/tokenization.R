@@ -41,8 +41,8 @@
 #'   attached as an attribute.
 #' @export
 #' @examples
-#' \dontrun{
-#' # assuming vocabulary `vocab`
+#' vocab_path <- system.file("extdata", "tiny_vocab.txt", package = "wordpiece")
+#' vocab <- wordpiece::load_vocab(vocab_file = vocab_path)
 #' tokenize_input(c(
 #'   "Here are some words.",
 #'   "Here are some more words."
@@ -59,7 +59,6 @@
 #'   )
 #' ),
 #' vocab)
-#' }
 tokenize_input <- function(seq_list,
                            vocab,
                            pad_to_length = NULL,
@@ -116,6 +115,7 @@ tokenize_input <- function(seq_list,
 
   # I don't particularly like doing it this way, but I can't think of a better
   # way at this time.
+  # https://github.com/jonathanbratt/RBERT/issues/61
   attr(to_return, "tt_ids") <- tt_ids
 
   return(to_return)

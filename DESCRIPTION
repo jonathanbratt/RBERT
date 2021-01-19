@@ -33,7 +33,7 @@ Imports:
     tibble (>= 3.0.4),
     tidyr (>= 1.1.2),
     utils,
-    wordpiece (>= 0.0.4)
+    wordpiece (>= 0.0.6)
 Remotes:
     jonathanbratt/wordpiece
 Suggests: 
