@@ -71,8 +71,8 @@ find_ckpt <- function(ckpt_dir) {
   # files with suffixes '.index', '.meta', etc.
   ckpt_filestub <- file.path(ckpt_dir, "bert_model.ckpt")
   ckpt_file1 <- file.path(ckpt_dir, "bert_model.ckpt.index")
-  ckpt_file2 <- file.path(ckpt_dir, "bert_model.ckpt.meta")
-  if (file.exists(ckpt_file1) & file.exists(ckpt_file2)) {
+  # Used to check for .meta file, but that's not in every checkpoint.
+  if (file.exists(ckpt_file1)) {
     return(ckpt_filestub)
   } else {
     stop("Checkpoint file(s) missing from ", ckpt_dir) # nocov
@@ -89,6 +89,10 @@ find_ckpt <- function(ckpt_dir) {
 #'   init_checkpoint.
 #' @keywords internal
 .infer_model_paths <- function(model = c(
+  "bert_tiny_uncased",
+  "bert_mini_uncased",
+  "bert_small_uncased",
+  "bert_medium_uncased",
   "bert_base_uncased",
   "bert_base_cased",
   "bert_large_uncased",
