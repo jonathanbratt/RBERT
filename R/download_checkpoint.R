@@ -67,7 +67,11 @@
 #'  temp_dir <- tempdir()
 #'  download_BERT_checkpoint("bert_base_uncased", dir = temp_dir)
 #' }
-download_BERT_checkpoint <- function(model = c("bert_base_uncased",
+download_BERT_checkpoint <- function(model = c("bert_tiny_uncased",
+                                               "bert_mini_uncased",
+                                               "bert_small_uncased",
+                                               "bert_medium_uncased",
+                                               "bert_base_uncased",
                                                "bert_base_cased",
                                                "bert_large_uncased",
                                                "bert_large_cased",

@@ -3,6 +3,22 @@ google_base_url <- "https://storage.googleapis.com/bert_models/"
 scibert_base_url <- "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/tensorflow_models/"
 
 checkpoint_url_map <- c(
+  "bert_tiny_uncased" = paste0(
+    google_base_url,
+    "2020_02_20/uncased_L-2_H-128_A-2.zip"
+  ),
+  "bert_mini_uncased" = paste0(
+    google_base_url,
+    "2020_02_20/uncased_L-4_H-256_A-4.zip"
+  ),
+  "bert_small_uncased" = paste0(
+    google_base_url,
+    "2020_02_20/uncased_L-4_H-512_A-8.zip"
+  ),
+  "bert_medium_uncased" = paste0(
+    google_base_url,
+    "2020_02_20/uncased_L-8_H-512_A-8.zip"
+  ),
   "bert_base_uncased" = paste0(
     google_base_url,
     "2018_10_18/uncased_L-12_H-768_A-12.zip"
@@ -60,7 +76,7 @@ checkpoint_url_map <- tibble::enframe(
 ) %>%
   dplyr::mutate(
     archive_type = c(
-      rep("zip", 8),
+      rep("zip", 12),
       rep("tar-gzip", 4)
     )
   )
