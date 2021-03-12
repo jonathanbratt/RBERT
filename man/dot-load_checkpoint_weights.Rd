@@ -7,8 +7,8 @@
 .load_checkpoint_weights(mod, ckpt_dir)
 }
 \arguments{
-\item{mod}{BERT model to update with pretrained weights. Modified in
-place.}
+\item{mod}{BERT model (or model with BERT layers) to update with pretrained
+weights. Modified in place.}
 
 \item{ckpt_dir}{Directory of checkpoint with pretrained weights.}
 }
@@ -16,6 +16,7 @@ place.}
 TRUE, invisibly. Function is called for side effects.
 }
 \description{
-Updates the given BERT model with the weights from the given checkpoint.
+Updates the given BERT model (or model with BERT layers) with the weights
+from the given checkpoint.
 }
 \keyword{internal}

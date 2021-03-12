@@ -82,10 +82,11 @@ get_params_from_checkpoint <- function(
 
 #' Load Weights from Checkpoint
 #'
-#' Updates the given BERT model with the weights from the given checkpoint.
+#' Updates the given BERT model (or model with BERT layers) with the weights
+#' from the given checkpoint.
 #'
-#' @param mod BERT model to update with pretrained weights. Modified in
-#'   place.
+#' @param mod BERT model (or model with BERT layers) to update with pretrained
+#'   weights. Modified in place.
 #' @param ckpt_dir Directory of checkpoint with pretrained weights.
 #'
 #' @return TRUE, invisibly. Function is called for side effects.
@@ -104,11 +105,6 @@ get_params_from_checkpoint <- function(
   canonical_checkpoint_names <- paste0(stock_weights_names, ":0")
 
   mwts <- mod$get_weights()
-  # # The following used to work, and doesn't now. I have no idea why. I think
-  # # time travel might be involved.
-  # tmp <- mod$model_vnames
-  # # tmp is a Python object. This is the easiest way to make it an R vector.
-  # model_vnames <- purrr::map_chr(seq_len(length(tmp)), function(i) {tmp[[i-1]]})
 
   model_vnames <- purrr::map_chr(mod$variables, "name")
 
@@ -130,14 +126,16 @@ get_params_from_checkpoint <- function(
   name_map[["bert/embeddings/position_embeddings/position_embedding:0"]] <-
     "bert/embeddings/position_embeddings:0"
 
-  all(name_map %in% canonical_checkpoint_names)
-  all(names(name_map) %in% canonical_model_vnames)
+  # the name_map may have other non-pretrained layers, so keep just the names
+  # that overlap:
+  bert_layer_name_map <- name_map[name_map %in% canonical_checkpoint_names]
 
-  # Use name_map to copy checkpoint weights by name over into model weights.
-  for (vn in names(name_map)) {
-    cpn <- name_map[[vn]]
+  # Use bert_layer_name_map to copy checkpoint weights by name over into model
+  # weights.
+  for (vn in names(bert_layer_name_map)) {
+    cpn <- bert_layer_name_map[[vn]]
 
-    mwts[names(name_map) == vn][[1]] <-
+    mwts[names(bert_layer_name_map) == vn][[1]] <-
       stock_weights_values[canonical_checkpoint_names == cpn][[1]]
   }
   # mod is passed by reference, not value, so this sets the weights on the
