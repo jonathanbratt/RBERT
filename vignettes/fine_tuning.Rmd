@@ -1,0 +1,339 @@
+---
+title: "Fine-tuning with RBERT"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fine-tuning with RBERT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+ <!-- 
+ Copyright 2021 Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning. 
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ -->
+
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+RBERT's TF2 implementation of BERT as a custom keras layer makes it relatively
+simple to fine-tune BERT-based models with RBERT. Here we will walk through a
+fine-tuning example that roughly follows the tutorial here:
+https://www.tensorflow.org/official_models/fine_tuning_bert
+
+
+
+```{r setup}
+library(RBERT)
+library(keras)
+library(dplyr)
+# I want to follow the fine-tuning tutorial here:
+# https://www.tensorflow.org/official_models/fine_tuning_bert
+
+ckpt_dir <- download_BERT_checkpoint("bert_base_uncased")
+vocab_file <- find_vocab(ckpt_dir)
+vocab <- wordpiece::load_or_retrieve_vocab(vocab_file = vocab_file,
+                                           use_cache = TRUE)
+n_token_max <- 128L
+
+```
+
+# Preparing (loading) the data
+
+For this example, we will follow the linked tutorial and use the MRPC 
+(Microsoft Research Paraphrase Corpus) dataset. This data can be obtained at ...
+
+The dataset consists of pairs of statements, along with a human-assigned label 
+of 1 (if the statements are close paraphrases of each other) and 0 (if not).
+It contains xxx examples in the training set, and yyy in the testing set.
+Following the tutorial, we will use the first xxx training examples for actual
+training, and the remaining xxx as a validation set.
+
+
+(for now, just load pre-processed data below. Flesh out these steps later.)
+
+
+## Tokenizing the data
+
+The first step, once we have the raw data, is to put the data into a form that
+can be input into a BERT model. This means that the text must be tokenized into
+lists of token ids. Tokenizing all the text will take a little while, so it 
+makes sense to do it once and save it.
+
+Note that this task requires two distinct segments in each example, corresponding
+to the two statments being compared. In the BERT tokenization, this is handled
+by inserting a "[SEP]" token between the two input segments, and by assigning
+appropriate values of the token type id.
+
+(insert more discussion about how
+BERT requires ttype id input along with token ids. Also comment about masking?)
+
+```{r}
+
+# change these paths 
+train_df <- readRDS("~/msr-paraphrase-corpus/mrpc_part_train.rds")
+val_df <- readRDS("~/msr-paraphrase-corpus/mrpc_val.rds")
+
+
+train_tok <- readRDS("~/msr-paraphrase-corpus/mrpc_part_train_tokenized.rds")
+val_tok <- readRDS("~/msr-paraphrase-corpus/mrpc_val_tokenized.rds")
+```
+
+(after tokenization, also put into array, etc.)
+
+# Defining the model
+
+The general idea behind fine-tuning BERT is to construct a model using BERT as
+the lower layer(s), with additional task-specific layers added on top. The
+weights of the BERT layers will be initialized from a pre-trained model, and the
+whole model will then be trained as usual.
+
+RBERT provides a custom BERT layer that can be used as part of a task-specific
+model. Because there are multiple inputs, we use the functional Keras API:
+
+(code block constructing the model)
+
+```{r}
+layers_to_include <- 4 # concat (up to) this many layers of the [CLS] embedding
+param_list <- get_params_from_checkpoint(ckpt_dir = ckpt_dir)
+
+input1 <- keras::layer_input(shape = list(n_token_max),
+                             dtype = "int32",
+                             name = "token_ids")
+# for token type
+input2 <- keras::layer_input(shape = list(n_token_max),
+                             dtype = "int32",
+                             name = "ttype_ids")
+
+
+blayer_all <- custom_layer_BERT(list(input1, input2),
+                                param_list = param_list,
+                                name = "bert",
+                                return_all_layers = TRUE) # this argument is ignored. clean up.
+
+# Following the tutorial, I ran into an ambiguity here. The tutorial just loads
+# a saved model, and uses the "pooled_output" from it. However, it's not clear
+# what exactly that output is. Searching online reveals two general opinions as
+# to what it is. Some suggest that it's the result of (max?) pooling all the
+# token embeddings (from the ~last layer?). But most responses say it's
+# basically [CLS] (from last layer?), with some additional stuff, e.g.:
+# "Pooled output is the embedding of the [CLS] token (from Sequence output),
+# further processed by a Linear layer and a Tanh activation function."
+# It's hard to find details, so I probably won't be able to reproduce this
+# model exactly. I think I'll try a few things.
+
+nlayers <- param_list$num_layers
+layers_to_include <- min(layers_to_include, nlayers)
+
+cls_tok_list <- purrr::map((nlayers-layers_to_include+1):nlayers,
+                           function(l) {
+                             # just first token from each layer ([CLS])
+                             blayer_all$layer_output[[l]][,1,]
+                           })
+if (length(cls_tok_list) > 1) {
+  cls_tok_cat <- keras::layer_concatenate(cls_tok_list)
+} else {
+  cls_tok_cat <- cls_tok_list[[1]]
+}
+
+# send through dense layer with units = size of embedding (768 for base)
+emb_dim <- param_list$hidden_size
+#call it pooled output just to match tfhub models...
+pooled_output <- keras::layer_dense(cls_tok_cat, units=emb_dim,
+                                    activation = RBERT::get_activation("tanh"))
+
+
+# then dropout. May as well use same rate as BERT model...
+dropout_output <- keras::layer_dropout(pooled_output,
+                                       rate = param_list$hidden_dropout)
+# now two-level classifier!
+output_layer <- keras::layer_dense(dropout_output,
+                                   units = 2L,
+                                   activation="softmax")
+
+# now define the actual model
+model_b <- keras::keras_model(inputs = list(input1, input2),
+                              outputs = output_layer)
+
+```
+
+
+# Loading pre-trained weights in BERT layers
+
+...this can be done easily with
+(RBERT:::.load_checkpoint_weights(model_b, ckpt_dir)) # export this function!
+
+```{r}
+# So we can see (one of) the weights change:
+bwts <- model_b$get_weights()
+bwts[[3]][1,1] # randomly initialized right now
+
+RBERT:::.load_checkpoint_weights(model_b, ckpt_dir)
+
+bwts <- model_b$get_weights()
+bwts[[3]][1,1] # now pretrained: base: 0.0175..
+
+```
+
+
+# Setting up the optimizer and compiling
+
+It's possible to just compile and fit the model to the training data at this 
+point, using the defaults. But in general, you'll want finer control of the
+fine-tuning process. In particular, it is often(?) better to set the learning
+rate according to a schedule...
+(still need to figure out how to set an arbitrary LR schedule)
+
+```{r}
+
+
+# need to define the learning rate schedule...
+epochs <- 3
+batch_size <- 32
+eval_batch_size <- 32
+
+train_data_size <- length(train_tok)
+steps_per_epoch <- as.integer(train_data_size / batch_size)
+num_train_steps <- steps_per_epoch * epochs
+
+decay_schedule <- tensorflow::tf$keras$optimizers$schedules$PolynomialDecay(
+  initial_learning_rate = 2e-5,
+  decay_steps = num_train_steps,
+  end_learning_rate = 0)
+
+# hmm, it doesn't look like warmup + decay training schedules are implemented.
+# Will eventually want to be able to use arbitrary schedules. For now, just decay.
+
+optimizer <- tensorflow::tf$keras$optimizers$Adam(learning_rate=decay_schedule)
+
+
+model_b %>% compile(
+  optimizer = optimizer,
+  loss = "sparse_categorical_crossentropy",
+  metrics = c("sparse_categorical_accuracy")
+)
+
+```
+
+
+# Fine-tuning!
+
+(code chunk here, probably some screenshots)
+
+```{r}
+# first have to prepare the input data...
+
+
+n_inputs <- length(train_tok)
+
+train_input <- list(token_ids = t(array(unlist(train_tok),
+                                        c(n_token_max, n_inputs))),
+                    ttype_ids = t(array(unlist(attr(train_tok, "tt_ids")),
+                                        c(n_token_max, n_inputs))))
+n_val_inputs <- length(val_tok)
+val_input <- list(token_ids = t(array(unlist(val_tok),
+                                        c(n_token_max, n_val_inputs))),
+                    ttype_ids = t(array(unlist(attr(val_tok, "tt_ids")),
+                                        c(n_token_max, n_val_inputs))))
+
+train_labels <- as.integer(train_df$label)-1
+val_labels <- as.integer(val_df$label)-1
+
+history <- model_b %>% fit(
+  train_input,
+  train_labels,
+  epochs = epochs,
+  batch_size = batch_size,
+  validation_data = list(val_input, val_labels)
+)
+
+```
+
+# Do stuff with model
+
+(need to fill in this section more)
+
+
+```{r}
+
+examples <- list(
+  list("The rain in Spain falls mainly on the plain.",
+       "It mostly rains on the flat lands of Spain."),
+  list("Look I fine tuned BERT.",
+       "Is it working? This does not match."))
+
+
+
+
+new_tok <- RBERT::tokenize_input(seq_list = examples,
+  vocab,
+  pad_to_length = n_token_max)
+
+new_input <- list(token_ids = t(array(unlist(new_tok),
+                                        c(n_token_max, length(examples)))),
+                    ttype_ids = t(array(unlist(attr(new_tok, "tt_ids")),
+                                        c(n_token_max, length(examples)))))
+
+model_b$predict(new_input)
+
+
+# other examples to try:
+examples2 <- list(
+  list("This is a sentence to test your process.",
+       "You can check your procedure with this phrase."),
+  list("What is another word for process?",
+       "An operation is an act of surgery."))
+
+examples_mom <- list(
+  list("A change in momentum is produced by an impulse.",
+       "Impulse is equal to a change in momentum."),
+  list("Impulse is force times time.",
+       "Impulse is equal to a change in momentum."),
+  list("Momentum is conserved.",
+       "Impulse is equal to a change in momentum."))
+
+
+# does order matter? hmm, it does... a lot, in some cases!
+examples_mom2 <- list(
+  list("Impulse is equal to a change in momentum.",
+       "A change in momentum is produced by an impulse."),
+  list("Impulse is equal to a change in momentum.",
+       "Impulse is force times time."),
+  list("Impulse is equal to a change in momentum.",
+       "Momentum is conserved."))
+
+```
+
+# Saving/loading
+
+This is important. For now, have to save/load just weights, not full model.
+
+```{r}
+# for now, have to save weights...
+
+# mwts <- model_b$get_weights()
+# and then use $set_weights(mwts) to load.
+# saveRDS(mwts, "~/scratch/BERT_scratch/models/saved_weights.rds")
+
+# mwts <- readRDS("~/scratch/BERT_scratch/models/saved_weights.rds")
+# model_b$set_weights(mwts)
+
+```
+
